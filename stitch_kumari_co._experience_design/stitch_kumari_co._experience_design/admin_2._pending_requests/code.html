@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Dashboard - Pending Requests</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Typography: Plus Jakarta Sans & Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #fff8f5; /* surface */
+        }
+        h1, h2, h3, .font-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom Scrollbar for subtle look */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c9be; /* outline-variant */
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#36430d",
+                        "secondary": "#924a28",
+                        "primary-container": "#355e3b",
+                        "tertiary-fixed-dim": "#bdce89",
+                        "outline": "#727970",
+                        "on-primary-fixed": "#002109",
+                        "inverse-surface": "#34302c",
+                        "secondary-fixed": "#ffdbcd",
+                        "on-secondary-fixed": "#360f00",
+                        "surface-container-low": "#fbf2ed",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1e1b18",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#e1d8d4",
+                        "surface-container-high": "#efe6e2",
+                        "primary": "#1d4626",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#274f2e",
+                        "on-tertiary-fixed-variant": "#3e4c16",
+                        "on-primary-container": "#a8d6a9",
+                        "on-tertiary-container": "#c1d28d",
+                        "secondary-container": "#ffa278",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#3e6844",
+                        "surface-container-highest": "#e9e1dc",
+                        "tertiary-container": "#4d5b23",
+                        "outline-variant": "#c1c9be",
+                        "primary-fixed": "#bfeec1",
+                        "inverse-primary": "#a4d2a6",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f5ece7",
+                        "surface-bright": "#fff8f5",
+                        "inverse-on-surface": "#f8efea",
+                        "surface": "#fff8f5",
+                        "on-secondary-container": "#783615",
+                        "primary-fixed-dim": "#a4d2a6",
+                        "secondary-fixed-dim": "#ffb596",
+                        "tertiary-fixed": "#d9eaa3",
+                        "surface-variant": "#e9e1dc",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fff8f5",
+                        "on-secondary-fixed-variant": "#753413",
+                        "on-background": "#1e1b18",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#424941",
+                        "on-tertiary-fixed": "#161f00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "16px",
+                        "xl": "24px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "gutter": "12px",
+                        "container-margin": "16px",
+                        "base": "4px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Be Vietnam Pro"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "display-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-sm": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-dim shadow-sm h-16 flex justify-between items-center px-container-margin max-w-[480px] mx-auto left-0 right-0">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl">spa</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">Admin Panel</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A small professional portrait of a woman with dark hair, smiling warmly, with a clean and professional background. The style is focused, high-resolution, and uses natural warm lighting to emphasize a friendly, local expert aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ2m7zXOzmIXUpZTJEeblaegEcl3DkrHfC1BnhfT-PxVYo8qApBaaIvKusBFwA3BQcnWuKJjYP3j-iqpdbuAE844ZA98VlVa-5Ki8mnbLxMSPSEcEm1WiIppOszjx-zNM2uqZGHXEknQ8D5whhEfJmNvSHBFgrE89iAeU2-9869iibnqyQJH1_rrrwfGVP8HvMwj4Kj4EYelB7eejagLkP93Sl9WwNqF0HP6T3Qu9ChYvQGRvb8N4e6QR0EOksNMxg75v5cn9atw"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-24 px-container-margin max-w-[480px] mx-auto min-h-screen">
+<!-- Dashboard Header Section -->
+<section class="mb-6">
+<p class="font-label-sm text-label-sm text-on-tertiary-fixed-variant uppercase tracking-wider mb-1">Admin Dashboard</p>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center justify-between">
+                Pending Requests
+                <span class="bg-surface-container-highest px-3 py-1 rounded-full text-label-sm text-on-surface-variant flex items-center gap-1.5 border border-outline-variant/30">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                    12 Active Requests
+                </span>
+</h1>
+</section>
+<!-- Tab Filters -->
+<div class="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+<button class="whitespace-nowrap px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-transform active:scale-95">
+                All Requests
+            </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-highest transition-colors">
+                Upcoming Week
+            </button>
+<button class="whitespace-nowrap px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-highest transition-colors">
+                High Value
+            </button>
+</div>
+<!-- Request Cards List -->
+<div class="space-y-4">
+<!-- Card 1 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/20 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A studio portrait of a woman named Elena Rodriguez with a friendly expression. Soft studio lighting with a warm cream background, professional photography style, high detail in skin and hair texture, consistent with a boutique service application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ5rZrlixL9s9iR5q1ttyLJRh5lreDF7Urg1i7qcn2zm4j9k2pvFvjn6uv2NDZFPRCctWTthrZgSMSPdSjU0sQ89cnwChLsLacXQQF813guR5mr9l1OxC6dVa0pcBYqm_vFP1T9ST2Avwf1QEbVMuJUto4whseXAwuD8MdRHcVozQgU_0ha8izrT0Cq69HNH-5Gpn_Nl_m4TxNvLSDa-Tjvy7fvezG03YXKdmXKyYQ13v1LlMDF4rcF526wNcNZs-DWjuUGdnQNA"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Elena Rodriguez</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Standard Client</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-1 rounded border border-outline-variant/50 text-on-surface-variant uppercase tracking-tighter">NEW</span>
+</div>
+<div class="space-y-3 mb-5">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">spa</span>
+<span class="font-body-md text-body-md">Botanical Facial Therapy</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+<span class="font-body-md text-body-md">Oct 24, 2023</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+<span class="font-body-md text-body-md">02:30 PM (60 min)</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-primary-container text-on-primary-container py-2.5 rounded-lg font-label-md text-label-md active:scale-95 transition-transform">Accept</button>
+<button class="border border-outline text-on-surface py-2.5 rounded-lg font-label-md text-label-md active:scale-95 transition-transform">Reject</button>
+<button class="col-span-2 text-primary py-2 font-label-md text-label-md hover:underline">Suggest Time</button>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/20 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="A portrait of an older gentleman with gray hair and a sophisticated appearance named Marcus Thorne. Professional setting, warm lighting, high-end photography, sharp focus on eyes, cream and olive color palette to match the boutique spa theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeZQWEBDZthV3rP57shou46sBx_11m7pEhktZVijm9QuAOnXnB8T5FCFNG_pZtTR_g8py2jOFYPnkskk9gPygtgZCldt2S6lShD1K3YF128WRDU9XYpd4asPhg5xKkLtdkp4TIi9qkJMCfnUamt8_sd1nFJ9PePWK_0fET-8RnF57omCPVkJFsw_kqNOzV7gelb7KCUhSLf88CwAien8SoA2kkx3HGoxse2tpjV2psERLdhheIZkjvVNd43LktowGrj7rud0fobQ"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Marcus Thorne</h3>
+<span class="font-label-sm text-label-sm text-tertiary-container flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                VIP Member
+                            </span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded border border-tertiary/20 uppercase tracking-tighter">VIP</span>
+</div>
+<div class="space-y-3 mb-5">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">back_hand</span>
+<span class="font-body-md text-body-md">Deep Tissue Alignment</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+<span class="font-body-md text-body-md">Oct 25, 2023</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+<span class="font-body-md text-body-md">10:00 AM (90 min)</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-primary-container text-on-primary-container py-2.5 rounded-lg font-label-md text-label-md active:scale-95 transition-transform">Accept</button>
+<button class="border border-outline text-on-surface py-2.5 rounded-lg font-label-md text-label-md active:scale-95 transition-transform">Reject</button>
+<button class="col-span-2 text-primary py-2 font-label-md text-label-md hover:underline">Suggest Time</button>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/20 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Portrait of a young woman named Sarah Jenkins, looking pleasant and approachable. Warm sunlight filtering through, high-quality digital photography with a focus on natural aesthetic, matching the spa's hunter green and cream color theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbnYjF7Qsz08Y2vGWpxiZrnK_STSsWk5NAildss3Hu_Oq9Sura_9MA3FeGe_X9ZuVrhS0ClbtEKhrQ7PQUbDMpUcsPKN-svP91sWNtmNbJxO2sA0l75M3OvgvKhDBHDFeqtYUVJr_WXZ6IvzG8t6qjyHby7ifHvHhbeb7zZBW-o5irYTpR6I36IC6UU6GqJKtEuv5qloTxA8otwcJN7uoSyeo57D0YJLH2Ijf89l6Q6JZPCwMCk5h9OB_VjNKGLNMb6vknfqZP3Q"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Sarah Jenkins</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Returning Client</span>
+</div>
+</div>
+</div>
+<div class="space-y-3 mb-5">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">air</span>
+<span class="font-body-md text-body-md">Aromatic Oil Massage</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+<span class="font-body-md text-body-md">Oct 25, 2023</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+<span class="font-body-md text-body-md">04:45 PM (60 min)</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-primary-container text-on-primary-container py-2.5 rounded-lg font-label-md text-label-md active:scale-95 transition-transform">Accept</button>
+<button class="border border-outline text-on-surface py-2.5 rounded-lg font-label-md text-label-md active:scale-95 transition-transform">Reject</button>
+<button class="col-span-2 text-primary py-2 font-label-md text-label-md hover:underline">Suggest Time</button>
+</div>
+</article>
+<!-- Card 4 (Placeholder/Continuing the list) -->
+<article class="bg-surface-container-lowest rounded-xl p-4 shadow-sm border border-outline-variant/20 opacity-90">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Portrait of a person with a serene expression, soft morning light hitting their face. High fidelity photo, professional bokeh effect background in earthy tones, fitting the brand identity of a trusted local expert spa." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKJjSpmUbY8wiTRceYUSILdX82OIt1uSstuiW9dAJ2mDCgnB_p5kfpk9Scht1AWU2HfCHzJdCPrIGywlmIIayGE69P6h1nfeTp4A25eBM_PR61gUt30mexJr4Qp9iQG1AhrR_gjsTj_VmB_Bom5y41F9v7WxXsKikje71l59iWW3XfG5rZAMtmCl6wbAQwGEFFlXgpIhPlLTFUH3P6CoAL6cgKGy_Pw9CLNZOm8l6YYwaLxaARrZMNJc-UFuSyr6i06DhjymLipQ"/>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Lydia Vance</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant opacity-70">First-time Client</span>
+</div>
+</div>
+</div>
+<div class="space-y-3 mb-5">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">eco</span>
+<span class="font-body-md text-body-md">Herbal Poultice Therapy</span>
+</div>
+</div>
+<button class="w-full bg-surface-container py-3 rounded-lg font-label-md text-label-md text-on-surface-variant flex items-center justify-center gap-2">
+                    View Full Details
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</article>
+</div>
+<div class="mt-8 mb-12 flex justify-center">
+<button class="px-6 py-3 bg-surface-container-high rounded-full font-label-md text-label-md text-primary flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+                View All Requests
+                <span class="material-symbols-outlined">trending_flat</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto bg-surface-container dark:bg-surface-container-highest flex justify-around items-center py-2 px-gutter z-50 rounded-t-xl shadow-[0_-2px_8px_rgba(29,70,38,0.08)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-label-sm text-label-sm mt-1">Services</span>
+</a>
+<!-- Active State for Bookings/Requests -->
+<a class="flex flex-col items-center justify-center bg-primary-container dark:bg-primary text-on-primary-container dark:text-on-primary rounded-xl px-4 py-1.5 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_available</span>
+<span class="font-label-sm text-label-sm mt-1">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<!-- Floating Action Button Contextual Suppression check: 
+         According to instructions, FAB suppressed on "Details" or "Transaction" type screens. 
+         This is a Management/Request screen. Typically FAB is for "New Service" as seen in Screen 1.
+         Leaving it out to prioritize Card focus. 
+    -->
+<script>
+        // Micro-interaction: Tab filter toggle
+        const filterButtons = document.querySelectorAll('.whitespace-nowrap');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+                    b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                btn.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+                btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+            });
+        });
+
+        // Simple scale interaction for buttons
+        const actionButtons = document.querySelectorAll('button');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('scale-95'));
+        });
+    </script>
+</body></html>
