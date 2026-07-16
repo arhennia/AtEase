@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Appointment Summary - Kumari &amp; Co.</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "tertiary-container": "#4d5b23",
+                    "surface-container-high": "#efe6e2",
+                    "on-primary-fixed-variant": "#274f2e",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#c1c9be",
+                    "on-secondary-fixed-variant": "#753413",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary-container": "#355e3b",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#ffdbcd",
+                    "secondary-container": "#ffa278",
+                    "on-secondary-fixed": "#360f00",
+                    "on-surface-variant": "#424941",
+                    "on-primary-container": "#a8d6a9",
+                    "surface-dim": "#e1d8d4",
+                    "tertiary-fixed-dim": "#bdce89",
+                    "secondary-fixed-dim": "#ffb596",
+                    "error-container": "#ffdad6",
+                    "surface": "#ffffff",
+                    "primary-fixed-dim": "#a4d2a6",
+                    "surface-tint": "#3e6844",
+                    "outline": "#727970",
+                    "tertiary-fixed": "#d9eaa3",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e9e1dc",
+                    "on-primary-fixed": "#002109",
+                    "inverse-on-surface": "#f8efea",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#161f00",
+                    "primary-fixed": "#bfeec1",
+                    "on-background": "#1e1b18",
+                    "secondary": "#924a28",
+                    "surface-container": "#f5ece7",
+                    "on-tertiary-fixed-variant": "#3e4c16",
+                    "on-secondary-container": "#783615",
+                    "surface-container-low": "#fbf2ed",
+                    "inverse-surface": "#34302c",
+                    "surface-variant": "#e9e1dc",
+                    "primary": "#1d4626",
+                    "tertiary": "#36430d",
+                    "surface-bright": "#ffffff",
+                    "inverse-primary": "#a4d2a6",
+                    "on-surface": "#1e1b18",
+                    "background": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "12px",
+                    "xl": "16px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "12px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "base": "4px",
+                    "container-margin": "20px"
+            },
+            "fontFamily": {
+                    "display-sm": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "label-md": ["Be Vietnam Pro"],
+                    "label-sm": ["Be Vietnam Pro"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "body-md": ["Be Vietnam Pro"]
+            },
+            "fontSize": {
+                    "display-sm": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-lg": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-md": ["16px", {"lineHeight": "22px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                    "label-sm": ["10px", {"lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+      }
+      body {
+        -webkit-tap-highlight-color: transparent;
+        background-color: #ffffff;
+      }
+      .custom-border {
+        border: 1px solid rgba(29, 70, 38, 0.08);
+      }
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+    </style>
+</head>
+<body class="font-body-md text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed antialiased">
+<!-- Top Navigation -->
+<header class="w-full sticky top-0 z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-container-margin h-14 max-w-[480px] mx-auto">
+<div class="flex items-center gap-3">
+<button aria-label="Go back" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors duration-200">
+<span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Booking Review</h1>
+</div>
+<div class="w-7 h-7 rounded-full overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjTt8VjJZNcT_uwMYv3PtTI5zRtnszhGvbIPbHodX8Qo5THqOVfZDGI0bMN9ya7WCaSpE9C6px9rxBW0GrPebj07geNNTEnuDU_i5x500DmZgTKi9MkOcBWowpWHdcOWCz9o8Vz5wzyjFHOctnLYNf2Dic4wrENUIDFFH_AzxsgzBMHc38nx-tEAvF-E2O3INOpU94yr6XxBuLygrb9M2cw-sYiLOk_t8GG3dJ2LVYXIF_-wARVoSLIwQmNu2qXnXaAY6dUBjmXA"/>
+</div>
+</header>
+<main class="max-w-[480px] mx-auto pb-40 px-container-margin">
+<!-- Refined Intro -->
+<div class="py-md border-b border-outline-variant/20 mb-lg">
+<p class="font-label-sm text-label-sm text-secondary uppercase mb-2">Kumari &amp; Co. Signature</p>
+<p class="font-body-md text-on-surface-variant leading-relaxed">Please review your selections for the house-call appointment in Bhubaneswar.</p>
+</div>
+<!-- Section 1: Streamlined Services -->
+<section class="space-y-sm mb-xl">
+<h2 class="font-label-sm text-label-sm text-outline uppercase px-1 mb-md">Selected Services</h2>
+<div class="space-y-3">
+<!-- Service Card 1 -->
+<div class="flex gap-md items-center py-2 px-1 transition-opacity active:opacity-70">
+<div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-low">
+<img class="w-full h-full object-cover" data-alt="Deep Tissue Therapy" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA8vnRN1i1_mHeBDNeg7pKOePLT2puOt5XuRyICWsJxbHTo_Bl2vnQ6Fix44uRhaPIc2Xc2XRnbCfBysPm2kOG5-OP7wxy3Iy2AYsLbTtm9jXn3X7weg0lShy9RIuDhZf2rwInhLdJTcR4CcLKL2SFIW2p5yg6kla5s0U5ADkcrY0Aksvbs-H4MeFhkk7ginfsR-zv6FS1n_qCMYOdn0FUBNQ8gZq8FD1PDjeR2Dg4WiV4xT5NSnhJRpmlK7-SDN_fbgDdesVOiQ"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md text-on-surface">Deep Tissue Therapy</h3>
+<p class="font-label-md text-label-md text-on-surface-variant/70">60 mins</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">₹2,400</p>
+</div>
+</div>
+<!-- Service Card 2 -->
+<div class="flex gap-md items-center py-2 px-1 transition-opacity active:opacity-70">
+<div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-low">
+<img class="w-full h-full object-cover" data-alt="Aromatherapy Add-on" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhJZAIuTpYHF-mBmLNCC5LIXxiYuXI9gtEZxzqDVGwva5o8AMa3zpmYmEAIkGG27g-FDSC99_twLilUJRi_Z6o3UXxsTsqiuu97iVM-zQeUQ-HTMG__SXf18hyAS__lazisy8p-rEhYAqGF-2PfIvpGyu2p97xlvKTnSNjmI_Cl-EUebVbtNXV2021Xnzj3JhwQCBPBno8kJZ1n0RWMtb-rLTSU7HYUYNxTeXqXFtN4VujC8vpOLFyVtZ0GhK2inoM_vylf-mwHQ"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-md text-headline-md text-on-surface">Aromatherapy Add-on</h3>
+<p class="font-label-md text-label-md text-on-surface-variant/70">15 mins</p>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">₹650</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Compact Duration Summary -->
+<div class="flex items-center justify-between py-4 border-y border-outline-variant/20 mb-xl">
+<div class="flex items-center gap-2 text-primary/80">
+<span class="material-symbols-outlined text-[18px]" data-icon="timer">timer</span>
+<span class="font-label-sm text-label-sm uppercase">Total Treatment Time</span>
+</div>
+<span class="font-headline-md text-headline-md text-primary">1h 15m</span>
+</div>
+<!-- Compact Billing Card -->
+<section class="bg-surface-container-low/50 rounded-xl p-md space-y-sm custom-border">
+<div class="flex justify-between items-center px-1">
+<span class="font-body-md text-on-surface-variant">Services</span>
+<span class="font-body-md text-on-surface">₹3,050</span>
+</div>
+<div class="flex justify-between items-center px-1">
+<span class="font-body-md text-on-surface-variant">Travel (Home Service)</span>
+<span class="font-body-md text-on-surface">₹150</span>
+</div>
+<div class="pt-3 border-t border-outline-variant/30 flex justify-between items-baseline px-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Grand Total</span>
+<div class="text-right">
+<p class="font-display-sm text-display-sm text-primary">₹3,200</p>
+<p class="font-label-sm text-[9px] text-outline text-right uppercase">Inc. all taxes</p>
+</div>
+</div>
+</section>
+<!-- Discreet Guarantee -->
+<div class="mt-xl flex items-center gap-3 px-1 py-3 border-t border-outline-variant/10">
+<span class="material-symbols-outlined text-tertiary opacity-50" data-icon="shield_check">shield_check</span>
+<p class="font-label-md text-label-md text-on-surface-variant leading-tight">
+        Certified practitioners with 5+ years experience in Bhubaneswar.
+    </p>
+</div>
+</main>
+<!-- Elegant Sticky Footer -->
+<div class="fixed bottom-0 w-full z-50 max-w-[480px] left-1/2 -translate-x-1/2 bg-surface/90 backdrop-blur-lg px-container-margin pb-10 pt-4 border-t border-outline-variant/20">
+<button class="w-full bg-primary text-on-primary h-14 rounded-full font-headline-md text-headline-md flex items-center justify-center gap-2 shadow-xl hover:bg-primary-container transition-all duration-300 active:scale-[0.97]">
+<span>Choose Date &amp; Time</span>
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_month">calendar_month</span>
+</button>
+</div>
+<script>
+        // Subtle interaction feedback
+        document.querySelectorAll('.flex.gap-md').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.backgroundColor = 'rgba(29, 70, 38, 0.02)';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</body></html>
