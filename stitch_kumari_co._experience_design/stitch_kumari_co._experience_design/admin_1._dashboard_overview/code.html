@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kumari &amp; Co. - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Newsreader:opsz,wght@6-72,400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary": "#36430d",
+            "secondary": "#924a28",
+            "primary-container": "#355e3b",
+            "tertiary-fixed-dim": "#bdce89",
+            "outline": "#727970",
+            "on-primary-fixed": "#002109",
+            "inverse-surface": "#34302c",
+            "secondary-fixed": "#ffdbcd",
+            "on-secondary-fixed": "#360f00",
+            "surface-container-low": "#fbf2ed",
+            "on-error": "#ffffff",
+            "on-surface": "#1e1b18",
+            "on-error-container": "#93000a",
+            "surface-dim": "#e1d8d4",
+            "surface-container-high": "#efe6e2",
+            "primary": "#1d4626",
+            "error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#274f2e",
+            "on-tertiary-fixed-variant": "#3e4c16",
+            "on-primary-container": "#a8d6a9",
+            "on-tertiary-container": "#c1d28d",
+            "secondary-container": "#ffa278",
+            "on-primary": "#ffffff",
+            "surface-tint": "#3e6844",
+            "surface-container-highest": "#e9e1dc",
+            "tertiary-container": "#4d5b23",
+            "outline-variant": "#c1c9be",
+            "primary-fixed": "#bfeec1",
+            "inverse-primary": "#a4d2a6",
+            "on-secondary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#f5ece7",
+            "surface-bright": "#fff8f5",
+            "inverse-on-surface": "#f8efea",
+            "surface": "#fff8f5",
+            "on-secondary-container": "#783615",
+            "primary-fixed-dim": "#a4d2a6",
+            "secondary-fixed-dim": "#ffb596",
+            "tertiary-fixed": "#d9eaa3",
+            "surface-variant": "#e9e1dc",
+            "on-tertiary": "#ffffff",
+            "background": "#fff8f5",
+            "on-secondary-fixed-variant": "#753413",
+            "on-background": "#1e1b18",
+            "error": "#ba1a1a",
+            "on-surface-variant": "#424941",
+            "on-tertiary-fixed": "#161f00"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "16px",
+            "xl": "24px",
+            "full": "9999px"
+          },
+          "spacing": {
+            "lg": "24px",
+            "gutter": "12px",
+            "container-margin": "16px",
+            "base": "4px",
+            "md": "16px",
+            "sm": "8px",
+            "xs": "4px",
+            "xl": "32px"
+          },
+          "fontFamily": {
+            "body-lg": ["beVietnamPro"],
+            "label-md": ["beVietnamPro"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-sm": ["beVietnamPro"],
+            "body-md": ["beVietnamPro"],
+            "display-sm": ["Plus Jakarta Sans"],
+            "serif": ["Newsreader", "serif"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+            "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+            "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+            "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "display-sm": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #fff8f5;
+      font-family: 'beVietnamPro', sans-serif;
+    }
+    .serif-heading {
+      font-family: 'Newsreader', serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-shadow {
+      box-shadow: 0 4px 20px -2px rgba(29, 70, 38, 0.05);
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface shadow-sm max-w-[480px] mx-auto left-0 right-0 h-16 flex justify-between items-center px-container-margin">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="spa">spa</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-extrabold tracking-tight">Kumari &amp; Co.</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 rounded-full hover:bg-surface-container-low transition-colors active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-8 object-cover" data-alt="A professional headshot of an Indian woman in her early 30s with her hair tied back, wearing a neat olive green blazer against a soft cream background, reflecting a warm modernist and dependable boutique brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpMldKoP7NoWB5wwey1qYOfLrKgF6XKTSZnckL-03QDx4zDS51gOxU2BYz5RWGNAJ82IR82H6xhm13jTDCoWwJqEkLGjDiRLjuWbwbxyCudFKSNZER1q2BwUtuNwMx9QceU0hRtL2K1nuH6VJexvvGH05cLhVqjbfnNDob8_5hRVnrfhjPpqZmoNoWErSzSV_lAS7USQ5CdRXH2GgEs19aHLHWfwaVFwcE5XH4rLmV4eGXlJ7CWApP7X3sFo0TCubKRWQnO-oV6Q"/>
+</div>
+</div>
+</header>
+<main class="pt-20 pb-24 px-container-margin max-w-[480px] mx-auto min-h-screen">
+<!-- Hero Section -->
+<section class="mb-xl">
+<p class="text-label-sm font-semibold uppercase tracking-wider text-on-surface-variant mb-base">ADMINISTRATIVE OVERVIEW</p>
+<h2 class="serif-heading text-display-sm text-primary mb-md">Good Morning, Ananya</h2>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-lg py-sm rounded-lg font-label-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+        New Service
+      </button>
+</section>
+<!-- Bento Stats Grid -->
+<section class="grid grid-cols-1 gap-md mb-xl">
+<!-- Total Revenue Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 p-md rounded-xl custom-shadow flex flex-col justify-between h-32 relative overflow-hidden group hover:border-primary/30 transition-all">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="payments">payments</span>
+</div>
+<div class="flex items-center text-tertiary font-label-sm gap-1 bg-tertiary-fixed/30 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+            +12%
+          </div>
+</div>
+<div>
+<p class="text-label-md text-on-surface-variant">Total Revenue</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-headline-lg font-bold text-on-surface">₹ 1,42,850</h3>
+<span class="text-label-sm text-outline">vs last month</span>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
+<span class="material-symbols-outlined text-[120px]" data-icon="show_chart">show_chart</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<!-- Pending Requests Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 p-md rounded-xl custom-shadow flex flex-col justify-between h-36 relative">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-secondary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="pending_actions">pending_actions</span>
+</div>
+<span class="bg-error text-on-error text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-tighter">URGENT</span>
+</div>
+<div>
+<p class="text-label-md text-on-surface-variant">Pending Requests</p>
+<h3 class="text-headline-md font-bold text-on-surface">24</h3>
+<p class="text-label-sm text-outline leading-tight mt-1">3 new since 9:00 AM</p>
+</div>
+</div>
+<!-- Today's Appointments Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 p-md rounded-xl custom-shadow flex flex-col justify-between h-36">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="calendar_today">calendar_today</span>
+</div>
+<span class="text-label-sm text-outline">Today</span>
+</div>
+<div>
+<p class="text-label-md text-on-surface-variant">Appointments</p>
+<h3 class="text-headline-md font-bold text-on-surface">12</h3>
+<p class="text-label-sm text-primary font-medium leading-tight mt-1">Next in 45 mins</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Operations -->
+<section class="mb-xl">
+<h3 class="serif-heading text-headline-md text-primary mb-md">Quick Operations</h3>
+<div class="grid grid-cols-3 gap-sm">
+<button class="bg-surface-container-low hover:bg-surface-container-high transition-colors p-md rounded-xl flex flex-col items-center gap-sm active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="visibility">visibility</span>
+<span class="text-label-sm text-on-surface-variant text-center leading-tight">View Requests</span>
+</button>
+<button class="bg-surface-container-low hover:bg-surface-container-high transition-colors p-md rounded-xl flex flex-col items-center gap-sm active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="calendar_month">calendar_month</span>
+<span class="text-label-sm text-on-surface-variant text-center leading-tight">View Calendar</span>
+</button>
+<button class="bg-surface-container-low hover:bg-surface-container-high transition-colors p-md rounded-xl flex flex-col items-center gap-sm active:scale-95">
+<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+<span class="text-label-sm text-on-surface-variant text-center leading-tight">Settings</span>
+</button>
+</div>
+</section>
+<!-- Recent Activity -->
+<section class="mb-xl">
+<div class="flex justify-between items-end mb-md">
+<h3 class="serif-heading text-headline-md text-primary">Recent Activity</h3>
+<button class="text-label-sm text-primary hover:underline">View History</button>
+</div>
+<div class="space-y-sm">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container-lowest p-md rounded-lg border-l-4 border-primary flex justify-between items-center group cursor-pointer hover:bg-surface-bright transition-colors">
+<div class="flex gap-md items-start">
+<div class="w-2 h-2 rounded-full bg-primary mt-2"></div>
+<div>
+<p class="text-body-md font-medium text-on-surface">Payment confirmed for <span class="font-bold">Deepak S.</span></p>
+<p class="text-label-sm text-outline">12 minutes ago</p>
+</div>
+</div>
+<p class="text-label-md font-bold text-primary">₹ 4,500</p>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container-lowest p-md rounded-lg border-l-4 border-outline-variant flex justify-between items-center group cursor-pointer hover:bg-surface-bright transition-colors">
+<div class="flex gap-md items-start">
+<div class="w-2 h-2 rounded-full bg-outline-variant mt-2"></div>
+<div>
+<p class="text-body-md font-medium text-on-surface">New booking request from <span class="font-bold">Ayesha Khan</span></p>
+<p class="text-label-sm text-outline">45 minutes ago</p>
+</div>
+</div>
+<span class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded uppercase">PENDING</span>
+</div>
+</div>
+</section>
+<!-- Interactive Map/Location Visual -->
+<section class="mb-xl">
+<div class="relative w-full h-40 rounded-xl overflow-hidden border border-outline-variant/30">
+<div class="absolute inset-0 bg-primary-container/5 mix-blend-multiply pointer-events-none"></div>
+<div class="w-full h-full" data-location="Bhubaneswar, Odisha" style="">
+<!-- Location representation -->
+<div class="w-full h-full bg-cover bg-center" data-alt="A subtle minimalist stylized map of Bhubaneswar India showing soft green arterial roads and cream blocks, reflecting a warm local expertise and boutique spa service location aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCvLUGW4Q4M9WtZfFnBM-hLN3kywTuB4P7TBoQW0ml40YXKNiTpOehKbhnRX_qSiNFxm0yMedlV3ych6HiYZ3VSCWQQnf3UIhD3uLyl5u671cUplZC4pf02BDs-Nbu2PVFBoNXvylTLgpsAiVXACC3t-L0CJOCydQ2STSiG4WiNUpW3EQaDYWdevwivS67U1xr5y0z1s_dyWXmCUwlDKEuAe622-NWujwMw7v-71rttAxCF4UkDKhvCSF19F6TMsqtO_-Dy675kKQ')"></div>
+</div>
+<div class="absolute bottom-md left-md bg-white/90 backdrop-blur-md px-md py-sm rounded-lg shadow-sm border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">location_on</span>
+<span class="text-label-md font-bold">24° C</span>
+</div>
+<p class="text-[10px] text-on-surface-variant italic leading-tight mt-1">"The best way to find yourself is to lose yourself in the service of others."</p>
+</div>
+</div>
+</section>
+<!-- Quick Tips Footer Card -->
+<section class="mb-lg">
+<div class="bg-[#eef2e1] p-md rounded-xl border border-[#d9e0bd]">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="lightbulb">lightbulb</span>
+<span class="text-label-sm font-bold text-tertiary-container uppercase tracking-widest">QUICK TIPS</span>
+</div>
+<p class="text-body-md text-tertiary-container/80 leading-relaxed">
+          Monday mornings are your highest volume for wellness consultations. Consider staffing up next week.
+        </p>
+<button class="mt-md w-full bg-tertiary-container text-on-tertiary-container text-label-sm py-2 rounded-lg font-semibold active:scale-95 transition-transform">
+          Review Insights
+        </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 w-full max-w-[480px] mx-auto bg-surface-container dark:bg-surface-container-highest shadow-[0_-2px_8px_rgba(29,70,38,0.08)] py-2 px-gutter flex justify-around items-center z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm mt-0.5">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-surface-container-high transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-label-sm text-label-sm mt-0.5">Services</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-surface-container-high transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="font-label-sm text-label-sm mt-0.5">Bookings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:bg-surface-container-high transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-0.5">Profile</span>
+</a>
+</nav>
+<script>
+    // Lightweight interaction for cards
+    document.querySelectorAll('.custom-shadow').forEach(card => {
+      card.addEventListener('touchstart', () => {
+        card.style.transform = 'scale(0.98)';
+      });
+      card.addEventListener('touchend', () => {
+        card.style.transform = 'scale(1)';
+      });
+    });
+  </script>
+</body></html>
