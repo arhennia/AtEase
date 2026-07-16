@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=beVietnamPro:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    try {
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+              "primary": "#1d4626", // Hunter Green
+              "secondary": "#924a28", // Burnt Orange
+              "tertiary": "#36430d", // Moss Green
+              "on-surface": "#1e1b18", // Deep Charcoal
+              "on-surface-variant": "#424941",
+              "background": "#ffffff", // White
+              "surface": "#ffffff",
+              "surface-container": "#f8f9f8", // Very light tint
+              "outline-variant": "#e0e4df",
+              "on-primary": "#ffffff",
+            },
+            "borderRadius": {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+            "spacing": {
+              "gutter": "12px",
+              "lg": "24px",
+              "xs": "4px",
+              "xl": "32px",
+              "md": "16px",
+              "sm": "8px",
+              "base": "4px",
+              "container-margin": "16px"
+            },
+            "fontFamily": {
+              "display-sm": ["Plus Jakarta Sans"],
+              "headline-lg": ["Plus Jakarta Sans"],
+              "headline-md": ["Plus Jakarta Sans"],
+              "headline-lg-mobile": ["Plus Jakarta Sans"],
+              "label-md": ["beVietnamPro"],
+              "label-sm": ["beVietnamPro"],
+              "body-lg": ["beVietnamPro"],
+              "body-md": ["beVietnamPro"]
+            },
+            "fontSize": {
+              "display-sm": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+              "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+              "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+              "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+              "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+              "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+              "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+              "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    } catch (_e) {}
+  </script>
+<style>
+    .boutique-border {
+      border-left: 3px solid #1d4626;
+    }
+    .receipt-dash {
+      background-image: linear-gradient(to right, #c1c9be 50%, transparent 50%);
+      background-position: bottom;
+      background-size: 8px 1px;
+      background-repeat: repeat-x;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex justify-center">
+<div class="w-full max-w-[480px] bg-white min-h-screen flex flex-col relative shadow-xl">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-white border-b border-outline-variant transition-colors duration-200 flex items-center justify-between px-container-margin h-16 max-w-[480px] mx-auto">
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Booking Review</h1>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img alt="Professional Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCslFZBF6PkMdpo9PFjqJojXbcbDolwUl-4TOvx2TdS6w4gp2TtctBobjMNN_Ii1v4LMmuk370iF1c3lUGhKjBXs4pkG37XUC5BoIrC7b5gcdO_8K4CkYe5hnWhXEyljDZgOG1ngv6xoHFUcz3LScelPUjyqIB4K3w87dy44pmWSHbpguXqbumMtAWlzaD9hj8aUDckBqXAABreOaVe1IRLwnqp5NsNw4OLf04KmUs8VgHJar_Ms6G6NYoTC-L-YemKwP13AW8m7g"/>
+</div>
+</header>
+<main class="flex-1 px-container-margin py-lg space-y-6">
+<!-- Summary Header -->
+<section class="text-center space-y-1">
+<span class="font-label-sm text-secondary uppercase tracking-[2px]">Kumari &amp; Co.</span>
+<h2 class="font-display-sm text-on-surface">Confirm Details</h2>
+</section>
+<!-- Unified "Boutique Receipt" Card -->
+<div class="bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
+<!-- Service Header Section -->
+<div class="p-md flex gap-4 items-center bg-surface-container border-b border-outline-variant">
+<img alt="Service Image" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV15xjZxG2DQ7iYDIz7upkMuM3UlOlVF4tGn7JdBlxhgITZWFEVvGwWQzUQCJA4iHyqpr0SgLxn7V8eoA32rj6t17WOVQeTj56PQA1x9xHer22VID9DghttvpNeedfkwGXLKnL_yzgLKMYYsg58IqNCl1krzvneYXrYSpYSdumtYjSJAcnSWsU1Z74NJpQGxGELcPvA7Ld8z5cYw0YIK--HCyFOv2jSNEhfq6F0y3KYI60pSADGC_nuIijgei7G_UMzYef6bmB6g"/>
+<div>
+<h3 class="font-headline-md text-primary leading-tight">Hair Spa &amp; Scalp Massage</h3>
+<p class="font-body-md text-on-surface-variant">60 min • Professional Care</p>
+</div>
+</div>
+<!-- Details Grid -->
+<div class="p-md space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider">Date</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary" data-icon="calendar_month">calendar_month</span>
+<span class="font-body-lg text-on-surface font-semibold">Oct 24, 2023</span>
+</div>
+</div>
+<div class="space-y-1">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider">Time</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary" data-icon="schedule">schedule</span>
+<span class="font-body-lg text-on-surface font-semibold">11:30 AM</span>
+</div>
+</div>
+</div>
+<!-- Address & Small Map -->
+<div class="space-y-3">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-wider">Service Location</p>
+<div class="flex gap-4 items-start">
+<div class="flex-1">
+<p class="font-body-lg text-on-surface font-semibold leading-tight">Flat 402, Green Meadows</p>
+<p class="font-body-md text-on-surface-variant">Bhubaneswar, Odisha</p>
+</div>
+<div class="w-20 h-20 rounded-lg overflow-hidden grayscale border border-outline-variant shrink-0">
+<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDdVgGfXCUqTwq1F703dGrR77M6YDBoERdqmrE5srjSt8aLLUU-CYeWzywu0tSoJ1lMOfIrBCGydDAWuoeE2qdvwdw0F0eOee9V3d1fZw1in8neGcI1YrCrYmWwOyhIx0ZLZ4hIFfimwMQ7fBkhTQdFGGRSQdGO-CCAKtMLEXT8CP-ezIGh2RknzH5X-CCCrkHLn5Fwk9kC7R4gkQcakBXhG6qZ6gL5SrBdspTCgKsbAcq_m5Cv7C91Vnp9qhicKCC2TJQ1dFdgwg')"></div>
+</div>
+</div>
+</div>
+<!-- Billing Breakdown (The "Receipt" part) -->
+<div class="pt-4 mt-4 border-t border-dashed border-outline-variant space-y-2">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Service Fee</span>
+<span class="text-on-surface">₹800.00</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Travel Fee</span>
+<span class="text-on-surface">₹150.00</span>
+</div>
+<div class="receipt-dash pt-3 mt-2 flex justify-between items-center">
+<span class="font-headline-md text-on-surface">Amount Due</span>
+<span class="font-headline-md text-primary">₹950.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Professional Policy Note -->
+<div class="flex items-start gap-3 p-md bg-surface-container rounded-xl border-l-4 border-secondary/30">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="auto_awesome">auto_awesome</span>
+<p class="font-body-md text-on-surface-variant leading-relaxed italic">
+          Cancellation is free up to 2 hours prior. Our professional will arrive within 15 minutes of your slot.
+        </p>
+</div>
+<div class="h-24"></div>
+</main>
+<!-- Prominent Sticky Footer -->
+<div class="fixed bottom-0 w-full z-50 max-w-[480px] bg-white border-t border-outline-variant p-container-margin shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe">
+<button class="w-full bg-primary text-on-primary font-headline-md text-headline-md py-4 rounded-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/20" id="requestBtn">
+<span>Request Booking</span>
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<p class="text-center mt-3 font-label-sm text-on-surface-variant">
+        Pay ₹950 after service completion
+      </p>
+</div>
+</div>
+<script>
+    document.getElementById('requestBtn').addEventListener('click', function() {
+      const btn = this;
+      btn.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Processing...
+        </div>
+      `;
+      btn.disabled = true;
+      btn.classList.add('opacity-90');
+
+      setTimeout(() => {
+        btn.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined">verified</span>
+            Request Sent
+          </div>
+        `;
+        btn.classList.remove('bg-primary');
+        btn.classList.add('bg-tertiary');
+      }, 1500);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const main = document.querySelector('main');
+      main.style.opacity = '0';
+      main.style.transform = 'translateY(10px)';
+      main.style.transition = 'all 0.5s ease-out';
+      setTimeout(() => {
+        main.style.opacity = '1';
+        main.style.transform = 'translateY(0)';
+      }, 50);
+    });
+  </script>
+</body></html>
