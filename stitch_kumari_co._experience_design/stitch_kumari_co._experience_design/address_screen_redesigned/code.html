@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="en" class="light" style=""><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#4d5b23",
+                        "surface-container-high": "#efe6e2",
+                        "on-primary-fixed-variant": "#274f2e",
+                        "on-tertiary-container": "#c1d28d",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c1c9be",
+                        "on-secondary-fixed-variant": "#753413",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-container": "#355e3b",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdbcd",
+                        "secondary-container": "#ffa278",
+                        "on-secondary-fixed": "#360f00",
+                        "on-surface-variant": "#424941",
+                        "on-primary-container": "#a8d6a9",
+                        "surface-dim": "#e1d8d4",
+                        "tertiary-fixed-dim": "#bdce89",
+                        "secondary-fixed-dim": "#ffb596",
+                        "error-container": "#ffdad6",
+                        "surface": "#ffffff",
+                        "primary-fixed-dim": "#a4d2a6",
+                        "surface-tint": "#1d4626",
+                        "outline": "#727970",
+                        "tertiary-fixed": "#d9eaa3",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e9e1dc",
+                        "on-primary-fixed": "#002109",
+                        "inverse-on-surface": "#f8efea",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#161f00",
+                        "primary-fixed": "#bfeec1",
+                        "on-background": "#1e1b18",
+                        "secondary": "#924a28",
+                        "surface-container": "#f5f5f5",
+                        "on-tertiary-fixed-variant": "#3e4c16",
+                        "on-secondary-container": "#783615",
+                        "surface-container-low": "#fafafa",
+                        "inverse-surface": "#34302c",
+                        "surface-variant": "#f0f2ef",
+                        "primary": "#1d4626",
+                        "tertiary": "#36430d",
+                        "surface-bright": "#ffffff",
+                        "inverse-primary": "#a4d2a6",
+                        "on-surface": "#1e1b18",
+                        "background": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "12px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "base": "4px",
+                        "container-margin": "16px"
+                    },
+                    "fontFamily": {
+                        "display-sm": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "body-md": ["Be Vietnam Pro"]
+                    },
+                    "fontSize": {
+                        "display-sm": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-md": ["16px", {"lineHeight": "22px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "body-lg": ["15px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-md": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}}catch(_e){}</script><meta charset="utf-8"></head><body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md text-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-white border-b border-surface-variant transition-colors duration-200">
+<div class="flex items-center justify-between px-container-margin h-14 max-w-[480px] mx-auto">
+<button class="w-8 h-8 flex items-center justify-start text-primary" aria-label="Go back">
+<span class="material-symbols-outlined text-[22px]" data-icon="arrow_back" data-original-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary flex-1 text-center font-bold tracking-tight">Service Address</h1>
+<div class="w-8 h-8"></div>
+</div>
+</header>
+<main class="flex-1 w-full max-w-[480px] mx-auto px-container-margin py-lg space-y-xl">
+<!-- Saved Addresses Section -->
+<section class="space-y-md">
+<div class="flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-wider text-[11px] opacity-60">Saved Locations</h2>
+</div>
+<div class="space-y-2">
+<!-- Address Card 1: Active -->
+<div class="address-card p-3 bg-surface-container-low border border-primary rounded-lg flex items-center gap-md relative overflow-hidden transition-all duration-150 active:scale-[0.98] cursor-pointer">
+<div class="text-primary bg-primary/10 w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;" data-icon="home">home</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-bold text-body-lg text-on-surface">Home</p>
+<p class="text-on-surface-variant text-body-md truncate opacity-80">Plot No. 42, Unit-III, Kharabela Nagar...</p>
+</div>
+<div class="text-primary flex items-center">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<!-- Address Card 2 -->
+<div class="address-card p-3 bg-white border border-outline-variant rounded-lg flex items-center gap-md transition-all duration-150 active:scale-[0.98] hover:border-primary/50 cursor-pointer">
+<div class="text-on-surface-variant bg-surface-variant/50 w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="work">work</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-bold text-body-lg text-on-surface">Work</p>
+<p class="text-on-surface-variant text-body-md truncate opacity-80">DLF Cyber City, Tower B, 4th Floor...</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Divider with Note -->
+<div class="px-xs">
+<div class="bg-primary/5 border border-primary/10 p-3 rounded flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="info">info</span>
+<p class="text-primary font-label-sm text-[11px] uppercase tracking-wide">Available in Bhubaneswar only</p>
+</div>
+</div>
+<!-- Add New Address Form -->
+<section class="space-y-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-wider text-[11px] opacity-60">Add New Details</h2>
+<div class="grid grid-cols-2 gap-x-md gap-y-lg">
+<!-- House/Flat -->
+<div class="col-span-1 space-y-1.5 relative">
+<label class="text-[10px] uppercase font-semibold text-on-surface-variant tracking-widest px-0.5">House / Flat</label>
+<input type="text" placeholder="e.g. 101" class="w-full h-10 bg-transparent border-b border-outline-variant rounded-none px-0 text-body-lg input-focus-ring transition-all placeholder:text-outline/40 rounded-xl">
+</div>
+<!-- Pincode -->
+<div class="col-span-1 space-y-1.5 relative">
+<label class="text-[10px] uppercase font-semibold text-on-surface-variant tracking-widest px-0.5">Pincode</label>
+<input type="number" placeholder="751001" class="w-full h-10 bg-transparent border-b border-outline-variant rounded-none px-0 text-body-lg input-focus-ring transition-all placeholder:text-outline/40 rounded-xl">
+</div>
+<!-- Apartment/Building -->
+<div class="col-span-2 space-y-1.5 relative">
+<label class="text-[10px] uppercase font-semibold text-on-surface-variant tracking-widest px-0.5">Apartment / Street</label>
+<input type="text" placeholder="e.g. Green Valley Residency" class="w-full h-10 bg-transparent border-b border-outline-variant rounded-none px-0 text-body-lg input-focus-ring transition-all placeholder:text-outline/40 rounded-xl">
+</div>
+<!-- Area -->
+<div class="col-span-2 space-y-1.5 relative">
+<label class="text-[10px] uppercase font-semibold text-on-surface-variant tracking-widest px-0.5">Area / Locality</label>
+<input type="text" placeholder="e.g. Nayapalli" class="w-full h-10 bg-transparent border-b border-outline-variant rounded-none px-0 text-body-lg input-focus-ring transition-all placeholder:text-outline/40 rounded-xl">
+</div>
+<!-- Landmark -->
+<div class="col-span-2 space-y-1.5 relative">
+<label class="text-[10px] uppercase font-semibold text-on-surface-variant tracking-widest px-0.5">Landmark</label>
+<input type="text" placeholder="e.g. Near Big Bazaar" class="w-full h-10 bg-transparent border-b border-outline-variant rounded-none px-0 text-body-lg input-focus-ring transition-all placeholder:text-outline/40 rounded-xl">
+</div>
+</div>
+</section>
+<!-- Special Instructions -->
+<section class="space-y-lg">
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-wider text-[11px] opacity-60">Entry Instructions</h2>
+<textarea placeholder="e.g. Door bell is broken, please call on arrival..." rows="2" class="w-full bg-surface-variant/30 border border-outline-variant/30 p-md text-body-md input-focus-ring transition-all placeholder:text-outline/50 resize-none italic rounded-xl"></textarea>
+</section>
+<!-- Spacer for FAB -->
+<div class="h-28"></div>
+</main>
+<!-- Fixed Bottom Action Bar - Seamlessly integrated -->
+<footer class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 bg-white/90 backdrop-blur-md px-container-margin py-md flex justify-center">
+<div class="pt-2 w-full"><button onclick="handleReview()" class="w-full bg-primary text-on-primary h-14 rounded-xl font-bold flex items-center justify-center gap-sm transition-all active:scale-[0.98] shadow-lg shadow-primary/20"><span class="uppercase tracking-widest text-[13px]">Confirm &amp; Review</span><span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span></button></div>
+</footer>
+<script>
+        function handleReview() {
+            const btn = document.querySelector('button[onclick="handleReview()"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="uppercase tracking-widest text-[13px]">Processing...</span>';
+            
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+            }, 800);
+        }
+
+        // Toggle address selection
+        document.querySelectorAll('.address-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Reset others
+                document.querySelectorAll('.address-card').forEach(c => {
+                    c.classList.remove('active', 'border-primary', 'bg-surface-container-low');
+                    c.classList.add('border-outline-variant', 'bg-white');
+                    
+                    const check = c.querySelector('[data-icon="check_circle"]');
+                    if(check) check.parentElement.remove();
+                    
+                    const iconBg = c.querySelector('.bg-primary\\/10');
+                    if(iconBg) {
+                        iconBg.classList.replace('bg-primary/10', 'bg-surface-variant/50');
+                        iconBg.classList.replace('text-primary', 'text-on-surface-variant');
+                        const icon = iconBg.querySelector('.material-symbols-outlined');
+                        if(icon) icon.style.fontVariationSettings = "'FILL' 0";
+                    }
+                });
+                
+                // Set active
+                card.classList.add('active', 'border-primary', 'bg-surface-container-low');
+                card.classList.remove('border-outline-variant', 'bg-white');
+                
+                const iconBg = card.querySelector('.bg-surface-variant\\/50');
+                if(iconBg) {
+                    iconBg.classList.replace('bg-surface-variant/50', 'bg-primary/10');
+                    iconBg.classList.replace('text-on-surface-variant', 'text-primary');
+                    const icon = iconBg.querySelector('.material-symbols-outlined');
+                    if(icon) icon.style.fontVariationSettings = "'FILL' 1";
+                }
+
+                if(!card.querySelector('[data-icon="check_circle"]')) {
+                    const checkDiv = document.createElement('div');
+                    checkDiv.className = "text-primary flex items-center";
+                    checkDiv.innerHTML = '<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: \'FILL\' 1;" data-icon="check_circle">check_circle</span>';
+                    card.appendChild(checkDiv);
+                }
+            });
+        });
+    </script>
+</body></html>
