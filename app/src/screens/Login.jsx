@@ -101,8 +101,13 @@ export function Login() {
         {/* Footer */}
         <footer className="py-8 text-center">
           <p className="text-sm text-on-surface/70">
-            New to Kumari & Co.? 
-            <button className="text-accent-orange font-bold ml-1 hover:underline decoration-2 underline-offset-4">Create Account</button>
+            New to Kumari & Co.?{' '}
+            <button
+              onClick={() => navigate('/create-account')}
+              className="text-accent-orange font-bold ml-1 hover:underline decoration-2 underline-offset-4"
+            >
+              Create Account
+            </button>
           </p>
         </footer>
       </div>
