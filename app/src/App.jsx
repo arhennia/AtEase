@@ -10,6 +10,7 @@ import { DateTimeSelection } from './screens/DateTimeSelection';
 import { AddressScreen } from './screens/AddressScreen';
 import { BookingReview } from './screens/BookingReview';
 import { BookingSuccess } from './screens/BookingSuccess';
+import { CreateAccount } from './screens/CreateAccount';
 import { Layout } from './components/Layout';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/address" element={<AddressScreen />} />
         <Route path="/review" element={<BookingReview />} />
         <Route path="/success" element={<BookingSuccess />} />
+        <Route path="/create-account" element={<CreateAccount />} />
         <Route element={<Layout />}>
           <Route path="/home" element={<Home />} />
         </Route>
