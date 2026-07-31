@@ -1,237 +1,335 @@
-# 💇‍♀️ Kumari & Co.
+# Aura
 
-**Mobile-first beauty appointment booking platform for Kumari & Co., designed to simplify appointment scheduling for customers and solo salon owners.**
+**AI-powered SaaS platform for independent beauty professionals, helping solo beauty businesses manage appointments, customers, operations, and business growth from a single platform.**
 
-> Bhubaneswar · Estd. 2024
+> MVP built for **Kumari & Co.** · Bhubaneswar, India
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
+- [Problem Statement](#problem-statement)
+- [Solution](#solution)
+- [Current MVP](#current-mvp)
+- [Vision](#vision)
 - [Features](#features)
+- [AI Roadmap](#ai-roadmap)
 - [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [App Screens](#app-screens)
-- [Design System](#design-system)
-- [Scripts](#scripts)
-- [Roadmap](#roadmap)
+- [Development Roadmap](#development-roadmap)
+- [Long-Term Goal](#long-term-goal)
 - [License](#license)
 
 ---
 
-## Overview
+# Overview
 
-Kumari & Co. is a boutique appointment-booking web app built for a solo salon business in Bhubaneswar, India. The app offers a polished, mobile-first experience that guides customers through the entire booking flow — from browsing services and selecting a time slot, to providing an address and confirming the appointment. Designed with warm, earthy aesthetics and smooth page transitions, the interface reflects the salon's premium, approachable brand identity.
+Aura is an AI-powered Software-as-a-Service (SaaS) platform designed for independent beauty professionals such as home salon owners, freelance makeup artists, hairstylists, nail technicians, beauticians, and other solo service providers.
 
----
+Small beauty businesses often manage appointments through WhatsApp, phone calls, notebooks, or spreadsheets. While these methods work initially, they become difficult to manage as the customer base grows, leading to scheduling conflicts, missed appointments, poor customer tracking, and limited business insights.
 
-## ✨ Features
+Aura aims to provide an affordable, modern, and intelligent platform that helps independent beauty professionals run their business more efficiently while delivering a seamless booking experience for their customers.
 
-| Feature | Description |
-| --- | --- |
-| **Animated Splash Screen** | Branded entry with parallax motion and auto-redirect |
-| **Phone + OTP Login** | Streamlined authentication with Google sign-in option |
-| **Service Catalogue** | Categorised services (Hair, Skin, Threading, Waxing, Body) with detailed descriptions |
-| **Date & Time Picker** | Interactive calendar and time-slot selection |
-| **Address Input** | Delivery/visit address collection for at-home services |
-| **Booking Review** | Summary screen before final confirmation |
-| **Confetti Success** | Celebratory confirmation with booking details card |
-| **Smooth Transitions** | Page-to-page animations via Framer Motion + `AnimatePresence` |
+The current implementation serves as the Minimum Viable Product (MVP) for **Kumari & Co.**, validating the customer booking workflow before expanding into a scalable multi-tenant SaaS platform.
 
 ---
 
-## 🛠 Tech Stack
+# Problem Statement
+
+Independent beauty professionals commonly face operational challenges such as:
+
+- Managing appointments through WhatsApp and phone calls
+- Double bookings and scheduling conflicts
+- Lack of customer history and records
+- Manual appointment reminders
+- No centralized business dashboard
+- Difficulty tracking revenue and bookings
+- Limited digital presence
+- Expensive software designed primarily for large salons
+
+Most existing salon software targets established businesses with multiple employees, leaving solo professionals with tools that are either too expensive or unnecessarily complex.
+
+---
+
+# Solution
+
+Aura provides a centralized platform that enables beauty professionals to manage their business from one place.
+
+The platform is designed to simplify daily operations by providing:
+
+- Online appointment booking
+- Customer management
+- Appointment scheduling
+- Business insights
+- Marketing support
+- AI-powered automation
+- Business analytics
+
+Instead of building software for a single salon, Aura is designed as a scalable SaaS platform where each business receives its own secure workspace.
+
+---
+
+# Current MVP
+
+The current version focuses on validating the customer booking experience through a complete mobile-first booking flow.
+
+Implemented features include:
+
+- Splash screen
+- Phone number authentication
+- OTP verification
+- Service catalogue
+- Service details
+- Appointment scheduling
+- Date and time selection
+- Home service address collection
+- Booking review
+- Booking confirmation
+- Responsive interface
+- Smooth page transitions
+
+The MVP is currently customized for **Kumari & Co.**, serving as the foundation for the larger Aura platform.
+
+---
+
+# Vision
+
+Aura aims to become an operating system for independent beauty professionals.
+
+Rather than solving only appointment booking, the platform will eventually provide complete business management capabilities including scheduling, customer management, analytics, AI assistance, marketing, and financial insights.
+
+The goal is to help solo beauty professionals spend less time managing their business and more time serving their customers.
+
+---
+
+# Features
+
+## Customer Features
+
+- Secure phone authentication
+- Browse available services
+- View service details
+- Select preferred appointment date and time
+- Book home services
+- Appointment review
+- Booking confirmation
+- Booking history *(planned)*
+- Online payments *(planned)*
+
+---
+
+## Business Owner Features
+
+- Appointment management
+- Calendar view *(planned)*
+- Customer management *(planned)*
+- Revenue tracking *(planned)*
+- Service management *(planned)*
+- Business dashboard *(planned)*
+- Marketing tools *(planned)*
+- Notification management *(planned)*
+
+---
+
+# AI Roadmap
+
+Artificial Intelligence will become a core part of Aura in future releases.
+
+## Smart Appointment Scheduling
+
+Automatically optimize appointment schedules by minimizing idle time, reducing conflicts, and improving daily planning.
+
+---
+
+## AI Marketing Assistant
+
+Generate promotional content including:
+
+- Instagram captions
+- WhatsApp promotions
+- Festival campaigns
+- Service advertisements
+
+based on current services and seasonal trends.
+
+---
+
+## Intelligent Service Recommendations
+
+Recommend additional services based on customer history and previous appointments.
+
+---
+
+## AI Business Insights
+
+Generate intelligent summaries including:
+
+- Best-performing services
+- Customer retention trends
+- Monthly business performance
+- Revenue growth
+- Seasonal demand forecasting
+
+---
+
+## Dynamic Pricing Suggestions
+
+Recommend pricing adjustments during peak demand periods based on historical booking trends.
+
+---
+
+# Tech Stack
 
 | Layer | Technology |
-| --- | --- |
-| **Framework** | [React 19](https://react.dev) |
-| **Bundler** | [Vite 8](https://vite.dev) |
-| **Routing** | [React Router v7](https://reactrouter.com) |
-| **Styling** | [Tailwind CSS v3](https://tailwindcss.com) |
-| **Animations** | [Framer Motion](https://www.framer.com/motion/) |
-| **Icons** | [Lucide React](https://lucide.dev) + [Material Symbols](https://fonts.google.com/icons) |
-| **Confetti** | [canvas-confetti](https://github.com/catdad/canvas-confetti) |
-| **Linting** | [OxLint](https://oxc.rs) |
-| **Fonts** | Newsreader (serif), Inter (sans-serif), Plus Jakarta Sans, Be Vietnam Pro |
+|--------|------------|
+| Frontend | React 19 |
+| Build Tool | Vite |
+| Routing | React Router |
+| Styling | Tailwind CSS |
+| Animation | Framer Motion |
+| Icons | Lucide React |
+| Authentication | OTP Authentication (Backend Planned) |
+| Backend | Planned |
+| Database | Planned |
+| AI Integration | Planned |
 
 ---
 
-## 📁 Project Structure
+# Architecture
 
+```text
+                   Customer
+                       │
+                       ▼
+               React Frontend
+                       │
+                       ▼
+             REST API (Future Backend)
+                       │
+      ┌────────────────────────────────┐
+      │ Authentication                 │
+      │ Booking Management             │
+      │ Customer Management            │
+      │ Analytics Engine               │
+      │ AI Recommendation Engine       │
+      └────────────────────────────────┘
+                       │
+                       ▼
+                  Database
 ```
-kumari-and-co/
-├── app/                          # Main application
+
+---
+
+# Project Structure
+
+```text
+aura/
+├── app/
 │   ├── public/
-│   │   ├── favicon.svg
-│   │   └── icons.svg
 │   ├── src/
-│   │   ├── assets/               # Static assets (hero.png, SVGs)
+│   │   ├── assets/
 │   │   ├── components/
-│   │   │   ├── Layout.jsx        # Shared layout wrapper with bottom nav
-│   │   │   └── TopNav.jsx        # Top navigation bar component
 │   │   ├── data/
-│   │   │   └── mockData.js       # Mock categories, bookings, offers, user data
 │   │   ├── screens/
-│   │   │   ├── Splash.jsx        # Animated brand splash screen
-│   │   │   ├── Login.jsx         # Phone number + Google login
-│   │   │   ├── OtpVerification.jsx  # OTP input & verification
-│   │   │   ├── Home.jsx          # Dashboard with categories, bookings, offers
-│   │   │   ├── ServiceDetails.jsx   # Individual service info & pricing
-│   │   │   ├── DateTimeSelection.jsx # Calendar & time-slot picker
-│   │   │   ├── AddressScreen.jsx    # Address form for at-home services
-│   │   │   ├── BookingReview.jsx    # Order summary before confirmation
-│   │   │   └── BookingSuccess.jsx   # Confetti celebration + booking card
-│   │   ├── App.jsx               # Route definitions & AnimatePresence
-│   │   ├── App.css               # Global app styles
-│   │   ├── index.css             # Tailwind base imports
-│   │   └── main.jsx              # React DOM entry point
-│   ├── index.html                # HTML shell
-│   ├── tailwind.config.js        # Custom theme (colors, fonts, spacing)
-│   ├── vite.config.js            # Vite configuration
-│   ├── postcss.config.js         # PostCSS with Tailwind plugin
-│   └── package.json              # Dependencies & scripts
-├── stitch_kumari_co._experience_design/  # UX/UI design assets
-├── LICENSE                       # MIT License
-└── README.md                     # ← You are here
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── index.html
+│   ├── tailwind.config.js
+│   ├── vite.config.js
+│   ├── postcss.config.js
+│   └── package.json
+├── design/
+├── LICENSE
+└── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+# Getting Started
 
-### Prerequisites
+## Prerequisites
 
-- **Node.js** ≥ 18
-- **npm** ≥ 9
+- Node.js 18+
+- npm 9+
 
-### Installation
+## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/byarti/kumari-and-co.git
-cd kumari-and-co/app
+git clone https://github.com/byarti/aura.git
 
-# Install dependencies
+cd aura/app
+
 npm install
 
-# Start the dev server
 npm run dev
 ```
 
-The app will be available at **http://localhost:5173** (default Vite port).
-
----
-
-## 📱 App Screens
-
-The booking flow follows this linear user journey:
+The application will be available at:
 
 ```
-Splash → Login → OTP Verification → Home → Service Details → Date & Time → Address → Review → Success
+http://localhost:5173
 ```
 
-### Splash
-Animated brand introduction with a rotating decorative ring, parallax mouse-tracking, and atmospheric gradient blurs. Auto-redirects to Login after 3.5 seconds.
+---
 
-### Login
-Phone number input with `+91` prefix, form validation (10 digits), and an alternative Google sign-in option. Clean, minimal layout.
+# Development Roadmap
 
-### OTP Verification
-Four-digit OTP entry with auto-focus progression between input fields. Includes a resend timer.
+## Phase 1 - MVP
 
-### Home
-The main dashboard featuring:
-- 🔍 Search bar for services
-- 📂 Horizontally scrollable category icons
-- 📅 "Your Next Session" upcoming appointment card
-- 🔁 "Book Again" quick-rebook carousel
-- 🎁 Special offer banners with promo codes
-
-### Service Details
-Full-page hero image with gradient overlay, service description, "What's Included" cards (Deep Conditioning, Scalp Massage, Steam Treatment), benefit tags, and a sticky bottom price/CTA bar.
-
-### Date & Time Selection
-Interactive calendar with available date highlighting and a time-slot grid.
-
-### Address
-Form for entering the service location for at-home appointments.
-
-### Booking Review
-Complete order summary — service, date, time, address, and price — with a confirm button.
-
-### Booking Success
-Celebratory screen with canvas confetti, a large check icon, booking ID, technician info, date/time card, estimated arrival note, and action buttons (Track Booking / Back to Home).
+- Customer booking flow
+- Authentication
+- Service catalogue
+- Appointment scheduling
+- Responsive UI
 
 ---
 
-## 🎨 Design System
+## Phase 2
 
-### Color Palette
-
-| Token | Hex | Usage |
-| --- | --- | --- |
-| `primary` | `#355E3B` | Buttons, headings, brand accent (deep forest green) |
-| `accent-orange` | `#D27D56` | CTAs, highlights, promo badges |
-| `accent-moss` | `#8A9A5B` | Secondary accents, category badges |
-| `on-surface` | `#2D2926` | Body text, dark foreground |
-| `on-surface-variant` | `#595450` | Secondary text, captions |
-| `background` | `#FFFFFF` | Page background |
-| `surface-container-low` | `#F9F9F7` | Cards, input fields |
-| `outline-variant` | `#E8E8E3` | Borders, dividers |
-
-### Typography
-
-| Role | Font Family | Weights |
-| --- | --- | --- |
-| Headings / Display | Newsreader (serif) | 400–700 |
-| Body / UI | Inter (sans-serif) | 300–600 |
-| Accent | Plus Jakarta Sans | 600–700 |
-| Labels | Be Vietnam Pro | 400–600 |
-
-### Spacing
-
-| Token | Value |
-| --- | --- |
-| `container-margin` | 20px |
-| `gutter` | 12px |
-| `xs` | 4px |
-| `sm` | 6px |
-| `md` | 12px |
-| `lg` | 20px |
-| `xl` | 28px |
+- Backend API
+- Database integration
+- Payment gateway
+- Push notifications
+- Owner dashboard
 
 ---
 
-## 📜 Scripts
+## Phase 3
 
-Run these from the `app/` directory:
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start Vite dev server with HMR |
-| `npm run build` | Build production bundle to `dist/` |
-| `npm run preview` | Preview production build locally |
-| `npm run lint` | Run OxLint |
+- Multi-tenant SaaS architecture
+- Customer management
+- Revenue dashboard
+- Analytics
+- Subscription plans
 
 ---
 
-## 🗺 Roadmap
+## Phase 4
 
-- [ ] Backend API integration (appointments, auth)
-- [ ] Real OTP verification via SMS gateway
-- [ ] Payment gateway integration (Razorpay / UPI)
-- [ ] Push notifications for appointment reminders
-- [ ] Admin dashboard for salon owner
-- [ ] PWA support with offline capabilities
-- [ ] Multi-language support (Odia, Hindi, English)
-- [ ] Dark mode theme
+- AI Appointment Scheduling
+- AI Marketing Assistant
+- AI Business Insights
+- Recommendation Engine
+- Dynamic Pricing
+- Business Forecasting
 
 ---
 
-## 📄 License
+# Long-Term Goal
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+Aura aims to become an affordable AI-powered business operating platform built specifically for independent beauty professionals.
+
+The platform is designed to simplify business operations, improve customer experience, automate repetitive tasks, and provide actionable business insights, enabling solo entrepreneurs to grow their business without relying on multiple disconnected tools.
+
+---
+
+# License
+
+This project is licensed under the **MIT License**.
 
 © 2026 byarti
