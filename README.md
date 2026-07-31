@@ -332,4 +332,4 @@ The platform is designed to simplify business operations, improve customer exper
 
 This project is licensed under the **MIT License**.
 
-© 2026 byarti
+© 2026 arhennia
