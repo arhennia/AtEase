@@ -14,7 +14,7 @@ export function Login() {
 
   const handleSendOtp = () => {
     if (!phoneNumber || phoneNumber.length < 8) {
-      setErrorNotice('Please enter a valid phone number.');
+      setErrorNotice('PLEASE ENTER A VALID PHONE NUMBER.');
       return;
     }
     setErrorNotice('');
@@ -27,7 +27,6 @@ export function Login() {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto focus next input
     if (value && index < 3) {
       const nextInput = document.getElementById(`otp-input-${index + 1}`);
       if (nextInput) nextInput.focus();
@@ -37,7 +36,7 @@ export function Login() {
   const handleVerifyOtp = () => {
     const code = otp.join('');
     if (code.length < 4) {
-      setErrorNotice('Please enter 4-digit OTP.');
+      setErrorNotice('PLEASE ENTER 4-DIGIT OTP.');
       return;
     }
     setIsVerifying(true);
@@ -52,60 +51,63 @@ export function Login() {
   };
 
   return (
-    <div className="bg-surface h-screen w-full relative overflow-hidden font-body-md text-on-surface antialiased">
-      {/* Mock Background Content (Blurred/Dimmed by Scrim) */}
+    <div className="bg-white h-screen w-full relative overflow-hidden font-sans text-black antialiased flex items-center justify-center">
+      
+      {/* Editorial Backdrop Image */}
       <div 
-        className="w-full h-full absolute inset-0 -z-10 bg-cover bg-center transition-all duration-700 filter brightness-90" 
-        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCdVC1j6EEOBGLeDVJeedRgKoO505w1lmnr_UY01V7tGVyHrPQrcZ1rOdqB5nDCDHwWwcMs4lEjHs90X7ytF2cCfp72pZEnYPAiqVxHtzdBtO1V8uyBmtXqTCj25JQ9KvZKfjajOFPk-6UxbptMMWBiz32BfQVYTgXeMcKAyWd3EE6RnZNgH8gj2wOUa_daGpx7GaGuBottipVjO1k7Z2lB7iOVmGzq1ybUvRLxMrVKKRCYOxf2fhph')" }}
+        className="w-full h-full absolute inset-0 -z-10 bg-cover bg-center filter grayscale contrast-125 opacity-15" 
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=1200')" }}
       >
       </div>
 
-      {/* Scrim Overlay */}
-      <div className="fixed inset-0 scrim-bg z-40 flex flex-col justify-end p-0 md:p-6">
+      {/* Scrim Container */}
+      <div className="fixed inset-0 bg-white/70 backdrop-blur-md z-40 flex flex-col justify-end md:justify-center items-center p-0 md:p-6">
         
-        {/* Bottom Sheet Modal */}
+        {/* Minimal ZARA Style Modal */}
         <motion.div 
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="bg-on-primary w-full md:w-[480px] md:mx-auto rounded-t-sheet md:rounded-b-sheet border-t border-primary md:border slide-up min-h-[460px] flex flex-col z-50 shadow-2xl overflow-hidden"
+          className="bg-white w-full md:max-w-md md:mx-auto border-t md:border border-black min-h-[500px] flex flex-col justify-between p-8 md:p-12 shadow-2xl relative"
         >
-          {/* Top Drag Handle (Mobile) */}
-          <div className="w-full flex justify-center py-3 bg-surface-container-low">
-            <div className="w-12 h-1 bg-surface-variant rounded-full md:hidden"></div>
+          {/* Top Brand Title */}
+          <div className="text-center border-b border-black pb-4">
+            <h1 className="font-serif text-2xl tracking-[0.2em] uppercase font-normal text-black">
+              AT EASE
+            </h1>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-black/50 mt-1">
+              AUTHENTICATION & ACCESS
+            </p>
           </div>
 
-          {/* Persona Role Switcher Header */}
-          <div className="flex border-b border-surface-variant bg-surface-container-low text-xs">
+          {/* Role Selector Tabs */}
+          <div className="flex border-b border-black/20 text-[11px] tracking-[0.2em] uppercase font-medium">
             <button 
               onClick={() => setRole('CLIENT')}
-              className={`flex-1 py-3 font-label-caps text-center transition-colors flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-3 text-center transition-all ${
                 role === 'CLIENT' 
-                  ? 'border-b-2 border-primary text-primary font-bold bg-white' 
-                  : 'text-secondary hover:text-primary'
+                  ? 'border-b-2 border-black font-bold text-black' 
+                  : 'text-black/40 hover:text-black'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">person</span>
-              Client (Book Services)
+              CLIENT
             </button>
             <button 
               onClick={() => setRole('PROVIDER')}
-              className={`flex-1 py-3 font-label-caps text-center transition-colors flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-3 text-center transition-all ${
                 role === 'PROVIDER' 
-                  ? 'border-b-2 border-primary text-primary font-bold bg-white' 
-                  : 'text-secondary hover:text-primary'
+                  ? 'border-b-2 border-black font-bold text-black' 
+                  : 'text-black/40 hover:text-black'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">storefront</span>
-              Provider Partner (SaaS)
+              PROVIDER
             </button>
           </div>
 
-          {/* Content Container */}
-          <div className="px-margin-mobile md:px-margin-desktop py-6 flex-grow flex flex-col">
-            
+          {/* Content Step */}
+          <div className="py-6 flex-grow flex flex-col justify-between">
             {errorNotice && (
-              <div className="mb-4 p-2 bg-error-container text-on-error-container text-xs text-center rounded">
+              <div className="mb-4 text-[10px] tracking-[0.2em] uppercase text-red-600 text-center">
                 {errorNotice}
               </div>
             )}
@@ -117,60 +119,53 @@ export function Login() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className="flex-grow flex flex-col"
+                  className="flex-grow flex flex-col justify-between"
                 >
-                  {/* Header */}
-                  <div className="mb-stack-md text-center">
-                    <h2 className="font-headline-sm text-headline-sm text-primary mb-2 font-medium">
-                      {role === 'PROVIDER' ? 'Provider Partner Access' : 'Verify Your Number'}
+                  <div className="text-center space-y-2">
+                    <h2 className="text-sm tracking-[0.25em] uppercase font-bold text-black">
+                      {role === 'PROVIDER' ? 'PROVIDER PARTNER ACCESS' : 'VERIFY YOUR NUMBER'}
                     </h2>
-                    <p className="font-body-md text-body-md text-secondary">
-                      {role === 'PROVIDER' 
-                        ? 'Enter phone number to access studio manager & subscription.' 
-                        : 'Enter phone number to receive instant booking updates.'}
+                    <p className="text-xs tracking-wider text-black/60 font-light">
+                      ENTER MOBILE NUMBER TO CONTINUE
                     </p>
                   </div>
 
-                  {/* Input Group */}
-                  <div className="mb-stack-xl flex-grow">
-                    <div className="flex items-center border-b border-primary py-2 group focus-within:border-primary transition-colors">
-                      <div className="flex items-center pr-3 border-r border-surface-variant text-primary font-body-lg text-body-lg">
-                        <select 
-                          value={countryCode}
-                          onChange={(e) => setCountryCode(e.target.value)}
-                          className="bg-transparent border-none focus:ring-0 cursor-pointer font-medium text-primary text-sm pr-1"
-                        >
-                          <option value="+91">+91</option>
-                          <option value="+1">+1</option>
-                          <option value="+44">+44</option>
-                          <option value="+971">+971</option>
-                        </select>
-                      </div>
+                  {/* Underlined Phone Input */}
+                  <div className="my-auto py-6">
+                    <div className="flex items-center border-b border-black py-2">
+                      <select 
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="bg-transparent border-none focus:ring-0 cursor-pointer font-semibold text-black text-sm tracking-wider pr-2"
+                      >
+                        <option value="+91">+91</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                        <option value="+971">+971</option>
+                      </select>
                       <input 
                         type="tel"
                         autoComplete="tel"
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full pl-3 bg-transparent border-none focus:ring-0 font-body-lg text-body-lg text-primary placeholder:text-secondary-fixed-dim outline-none" 
+                        className="w-full pl-3 bg-transparent border-none focus:ring-0 text-base tracking-[0.2em] text-black placeholder:text-black/30 outline-none font-medium" 
                         placeholder="98765 43210" 
                       />
                     </div>
                   </div>
 
-                  {/* CTA */}
-                  <div className="mt-auto">
+                  <div>
                     <button 
                       onClick={handleSendOtp}
-                      className="w-full bg-primary text-on-primary font-button-text text-button-text py-4 flex items-center justify-center tracking-widest hover:bg-surface-tint transition-colors duration-200 mb-6 font-semibold uppercase"
+                      className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors mb-4"
                     >
                       SEND OTP
                     </button>
 
-                    {/* Footer */}
-                    <p className="text-center text-[11px] text-secondary font-body-md leading-tight">
-                      By continuing, you agree to At Ease's <br className="md:hidden"/>
-                      <a className="underline hover:text-primary transition-colors" href="#">Terms</a> &amp; 
-                      <a className="underline hover:text-primary transition-colors ml-1" href="#">Privacy Policy</a>.
+                    <p className="text-center text-[10px] tracking-[0.15em] text-black/50 uppercase leading-relaxed">
+                      BY CONTINUING YOU AGREE TO AT EASE <br/>
+                      <a className="underline hover:text-black font-semibold" href="#">TERMS</a> &amp; 
+                      <a className="underline hover:text-black font-semibold ml-1" href="#">PRIVACY POLICY</a>.
                     </p>
                   </div>
                 </motion.div>
@@ -180,24 +175,19 @@ export function Login() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="flex-grow flex flex-col"
+                  className="flex-grow flex flex-col justify-between"
                 >
-                  {/* Header */}
-                  <div className="mb-stack-md text-center">
+                  <div className="text-center space-y-2">
                     <button 
                       onClick={() => setStep('PHONE')}
-                      className="text-xs text-secondary hover:text-primary mb-2 flex items-center justify-center gap-1 mx-auto"
+                      className="text-[10px] tracking-[0.2em] text-black/50 hover:text-black uppercase mb-1"
                     >
-                      <span className="material-symbols-outlined text-[14px]">arrow_back</span> Edit Number ({countryCode} {phoneNumber})
+                      ← EDIT ({countryCode} {phoneNumber})
                     </button>
-                    <h2 className="font-headline-sm text-headline-sm text-primary mb-2 font-medium">Enter 4-Digit OTP</h2>
-                    <p className="font-body-md text-body-md text-secondary">
-                      Sent via SMS to <span className="text-primary font-medium">{countryCode} {phoneNumber}</span>
-                    </p>
+                    <h2 className="text-sm tracking-[0.25em] uppercase font-bold text-black">ENTER 4-DIGIT OTP</h2>
                   </div>
 
-                  {/* OTP Inputs */}
-                  <div className="mb-stack-xl flex justify-center gap-3">
+                  <div className="my-auto flex justify-center gap-4 py-6">
                     {otp.map((digit, idx) => (
                       <input 
                         key={idx}
@@ -206,35 +196,28 @@ export function Login() {
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
-                        className="w-12 h-14 text-center text-xl font-bold border-b-2 border-primary focus:border-black bg-surface-container-low outline-none transition-colors"
+                        className="w-12 h-14 text-center text-xl font-bold border-b-2 border-black focus:border-black bg-transparent outline-none tracking-widest"
                       />
                     ))}
                   </div>
 
-                  {/* CTA */}
-                  <div className="mt-auto">
+                  <div>
                     <button 
                       onClick={handleVerifyOtp}
                       disabled={isVerifying}
-                      className="w-full bg-primary text-on-primary font-button-text text-button-text py-4 flex items-center justify-center tracking-widest hover:bg-surface-tint transition-colors duration-200 mb-4 font-semibold uppercase disabled:opacity-50"
+                      className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors mb-2 disabled:opacity-40"
                     >
                       {isVerifying ? 'VERIFYING...' : `LOG IN AS ${role}`}
-                    </button>
-
-                    <button 
-                      onClick={() => setStep('PHONE')}
-                      className="w-full text-center text-xs text-secondary hover:text-primary py-1"
-                    >
-                      Resend Code in 00:24
                     </button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
           </div>
+
         </motion.div>
       </div>
+
     </div>
   );
 }
