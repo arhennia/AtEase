@@ -14,6 +14,7 @@ export function ProviderDashboard() {
   const [showMarketingModal, setShowMarketingModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
+  const [isNewCategory, setIsNewCategory] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('11:30 AM');
   const [delayedCount, setDelayedCount] = useState(0);
@@ -503,18 +504,56 @@ export function ProviderDashboard() {
                 <h3 className="text-sm tracking-[0.25em] uppercase font-bold text-black">ADD NEW SERVICE</h3>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5 max-h-[60vh] overflow-y-auto no-scrollbar pb-2">
                 <div>
-                  <label className="block text-xs tracking-[0.2em] font-bold text-black uppercase mb-1">SERVICE TITLE</label>
+                  <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase mb-1">SERVICE TITLE</label>
                   <input type="text" placeholder="E.G. ORGANIC BOTOPLEX THERAPY" className="w-full border-b border-black p-2 text-xs bg-transparent outline-none tracking-wider" />
                 </div>
+                
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase">CATEGORY</label>
+                    <button 
+                      onClick={() => setIsNewCategory(!isNewCategory)}
+                      className="text-[9px] tracking-widest uppercase font-bold text-black/50 hover:text-black underline"
+                    >
+                      {isNewCategory ? 'SELECT EXISTING' : '+ ADD NEW CATEGORY'}
+                    </button>
+                  </div>
+                  {isNewCategory ? (
+                    <input type="text" placeholder="E.G. LASER TREATMENTS" className="w-full border-b border-black p-2 text-xs bg-transparent outline-none tracking-wider" />
+                  ) : (
+                    <select className="w-full border-b border-black p-2 text-xs bg-transparent outline-none tracking-wider font-medium text-black/80">
+                      {categoriesData.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.categoryName}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase mb-1">DESCRIPTION</label>
+                  <textarea rows="2" placeholder="Brief details about the treatment..." className="w-full border-b border-black p-2 text-xs bg-transparent outline-none tracking-wider resize-none" />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs tracking-[0.2em] font-bold text-black uppercase mb-1">IN-SALON (₹)</label>
+                    <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase mb-1">TIME TAKEN</label>
+                    <input type="text" placeholder="E.G. 45 MINS" className="w-full border-b border-black p-2 text-xs bg-transparent outline-none tracking-wider" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase mb-1">IMAGE URL (OPTIONAL)</label>
+                    <input type="text" placeholder="HTTPS://..." className="w-full border-b border-black p-2 text-xs bg-transparent outline-none tracking-wider" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase mb-1">IN-SALON (₹)</label>
                     <input type="number" placeholder="5000" className="w-full border-b border-black p-2 text-xs bg-transparent outline-none font-mono font-bold" />
                   </div>
                   <div>
-                    <label className="block text-xs tracking-[0.2em] font-bold text-black uppercase mb-1">HOME VISIT (₹)</label>
+                    <label className="block text-[10px] tracking-[0.2em] font-bold text-black uppercase mb-1">HOME VISIT (₹)</label>
                     <input type="number" placeholder="5800" className="w-full border-b border-black p-2 text-xs bg-transparent outline-none font-mono font-bold" />
                   </div>
                 </div>
