@@ -1,57 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-
-const INITIAL_SERVICES = [
-  {
-    id: 's1',
-    category: 'HAIR TREATMENTS',
-    name: 'Signature Balayage & Gloss',
-    duration: '90 MINS',
-    inSalonPrice: 4500,
-    homeVisitPrice: 5200,
-    description: 'A personalized multi-dimensional color service using hand-painted techniques, finished with a high-shine gloss treatment for maximum luminosity and health.',
-    image: 'https://lh3.googleusercontent.com/aida/AP1WRLvwFf-4wqp5dnesfVFOZjcA_uAQ62FTA-ok-r12b63I0FBAXReCWkyHAzijt7E8inMeI1Mp4r_gz1KKV-GhgkkpmAIw8Q0nW-9bUNzrtVGkM3chCSrYo_i6r28XwstOTipPvodKpszvSxzC6rVjX_puTwOaA86QKzeZZGt24WRKUXd9Mw5osoaAoDF9m4neE4pamW-yCNfxmUjw5VpeC4FYvEXiw6Pt-THkgZlsAXepmXOL0TNi6h2G5_w',
-    products: [
-      "Olaplex Bond Building Technology",
-      "L'Oréal Professionnel Majirel",
-      "Kerastase Elixir Ultime"
-    ]
-  },
-  {
-    id: 's2',
-    category: 'HAIR TREATMENTS',
-    name: 'Keratin Smoothing Therapy',
-    duration: '120 MINS',
-    inSalonPrice: 6000,
-    homeVisitPrice: 6800,
-    description: 'Deep restorative keratin treatment eliminating frizz, enhancing shine, and sealing hair structure for up to 12 weeks.',
-    image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=600&q=80',
-    products: ["Brazilian Blowout Solution", "Argan Oil Moisture Lock"]
-  },
-  {
-    id: 's3',
-    category: 'FACIAL CARE',
-    name: 'HydraGlow Oxygen Facial',
-    duration: '60 MINS',
-    inSalonPrice: 3500,
-    homeVisitPrice: 4000,
-    description: 'Infuses hyperbaric oxygen and hyaluronics deep into dermis layer to instantly plump, brighten, and hydrate fatigued skin.',
-    image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80',
-    products: ["Dermafirm Oxygen Serum", "Hyaluronic Acid Complex"]
-  },
-  {
-    id: 's4',
-    category: 'FACIAL CARE',
-    name: 'Advanced Peel & Sculpt',
-    duration: '75 MINS',
-    inSalonPrice: 4200,
-    homeVisitPrice: 4800,
-    description: 'Medical-grade botanical AHA peel paired with micro-current lifting massage for smooth texture and refined jawline definition.',
-    image: 'https://lh3.googleusercontent.com/aida/AP1WRLvU9409W-pvXxdmFmA-JVHtqNLLJr_zvz44sNCbQEcUfxTXtnIXt63pZYto7osxVC0KJ4bZ-kesIz-iqEMDRjzMv-N2KH__6PpGZSMl4tk_R4fywxbojnBv8Skys177Q5a4ZcIedyEyqrl77psY_VdyAe41KoiT0bPz9EWRQOzVJQxWmu5H4mXwm1eCPOvXukZ2lRzdzECfDMe4G6fioHq4muIyQ98Sa2y4F9Rk2qd41TWZMCIHDVkbcg',
-    products: ["Skinceuticals Glycolic 20%", "Gua Sha Quartz Roller"]
-  }
-];
+import { motion, AnimatePresence } from 'framer-motion';
+import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
 
 const DATES = [
   { day: 'SUN', date: '23', available: true },
@@ -74,12 +24,46 @@ const TIME_SLOTS = [
 
 export function Home() {
   const navigate = useNavigate();
+  const provider = RAJKUMARI_PROVIDER_DATA.provider;
+  const categories = RAJKUMARI_PROVIDER_DATA.serviceCategories;
+
   const [pricingMode, setPricingMode] = useState('HOME_VISIT'); // 'IN_SALON' | 'HOME_VISIT'
-  const [selectedServices, setSelectedServices] = useState(['s1', 's3']);
+  const [selectedServices, setSelectedServices] = useState(['s1', 's10']);
   const [expandedServices, setExpandedServices] = useState(['s1']);
   const [selectedDate, setSelectedDate] = useState('24');
   const [selectedTime, setSelectedTime] = useState('03:00 PM');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isBagOpen, setIsBagOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(categories[0]?.id);
   const [bookingNotice, setBookingNotice] = useState(null);
+
+  // Track active scroll category
+  useEffect(() => {
+    const handleScroll = () => {
+      const categoryElements = categories.map(cat => document.getElementById(`cat-sec-${cat.id}`));
+      const scrollPosition = window.scrollY + 160;
+
+      for (let i = categoryElements.length - 1; i >= 0; i--) {
+        const el = categoryElements[i];
+        if (el && el.offsetTop <= scrollPosition) {
+          setActiveCategory(categories[i].id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [categories]);
+
+  const scrollToCategory = (catId) => {
+    setActiveCategory(catId);
+    const element = document.getElementById(`cat-sec-${catId}`);
+    if (element) {
+      const offsetTop = element.offsetTop - 80;
+      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+    }
+  };
 
   const toggleService = (id) => {
     if (selectedServices.includes(id)) {
@@ -98,24 +82,30 @@ export function Home() {
   };
 
   const calculateTotal = () => {
-    return selectedServices.reduce((sum, id) => {
-      const item = INITIAL_SERVICES.find(s => s.id === id);
-      if (!item) return sum;
-      return sum + (pricingMode === 'HOME_VISIT' ? item.homeVisitPrice : item.inSalonPrice);
-    }, 0);
+    let total = 0;
+    categories.forEach(cat => {
+      cat.services.forEach(service => {
+        if (selectedServices.includes(service.id)) {
+          total += pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
+        }
+      });
+    });
+    return total;
+  };
+
+  const getSelectedServiceItems = () => {
+    const allServices = categories.flatMap(c => c.services);
+    return selectedServices.map(id => allServices.find(s => s.id === id)).filter(Boolean);
   };
 
   const handleWhatsAppBooking = () => {
-    const selectedNames = selectedServices
-      .map(id => INITIAL_SERVICES.find(s => s.id === id)?.name)
-      .filter(Boolean)
-      .join(', ');
-
+    const selectedItems = getSelectedServiceItems();
+    const selectedNames = selectedItems.map(s => s.name).join(', ');
     const total = calculateTotal();
     const modeText = pricingMode === 'HOME_VISIT' ? 'Home Visit' : 'In-Salon / Studio';
     
     const message = encodeURIComponent(
-      `Hello Ananya, I would like to book a ${modeText} appointment!\n\n` +
+      `Hello Rajkumari Beauty & Aesthetics, I would like to book a ${modeText} appointment!\n\n` +
       `Services: ${selectedNames || 'None selected'}\n` +
       `Date: ${selectedDate} Aug | Time: ${selectedTime}\n` +
       `Total: ₹${total.toLocaleString('en-IN')}\n\n` +
@@ -123,397 +113,433 @@ export function Home() {
     );
 
     setBookingNotice(`Opening WhatsApp with your booking details for ₹${total.toLocaleString('en-IN')}!`);
+    setIsBagOpen(false);
     setTimeout(() => {
-      window.open(`https://wa.me/919876543210?text=${message}`, '_blank');
+      window.open(`https://wa.me/${provider.whatsappNumber}?text=${message}`, '_blank');
     }, 800);
   };
 
-  const hairServices = INITIAL_SERVICES.filter(s => s.category === 'HAIR TREATMENTS');
-  const facialServices = INITIAL_SERVICES.filter(s => s.category === 'FACIAL CARE');
-
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="bg-surface text-on-surface font-body-md antialiased min-h-screen pb-32"
-    >
-      {/* Top Banner Switcher for Persona Demo */}
-      <div className="bg-primary text-on-primary px-4 py-2 text-xs flex justify-between items-center z-50 relative">
-        <div className="flex items-center gap-2">
-          <span className="font-label-caps text-[10px] bg-white/20 px-2 py-0.5 rounded uppercase font-semibold tracking-wider">Client Persona</span>
-          <span className="hidden sm:inline opacity-80">Bespoke Beauty Booking Experience</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => navigate('/login')}
-            className="hover:underline opacity-90 text-[11px] flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-[14px]">lock</span>
-            Sign In / Register
-          </button>
-          <button 
-            onClick={() => navigate('/provider')}
-            className="bg-white text-primary px-2.5 py-1 rounded font-button-text text-[11px] font-medium hover:bg-surface-container transition-colors shadow-sm flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-[14px]">storefront</span>
-            Switch to Provider Portal →
-          </button>
-        </div>
-      </div>
+    <div className="bg-white text-black font-sans antialiased min-h-screen selection:bg-black selection:text-white">
+      
+      {/* ZARA Minimal Top Header Bar */}
+      <header className="sticky top-0 w-full z-40 bg-white/90 backdrop-blur-md border-b border-black/10">
+        <div className="max-w-[1300px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
+          
+          {/* Left Brand Title & Mode */}
+          <div className="flex items-center gap-6">
+            <h1 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="font-serif text-xl tracking-[0.15em] uppercase font-bold cursor-pointer"
+            >
+              AT EASE
+            </h1>
+            <button 
+              onClick={() => navigate('/provider')}
+              className="text-[10px] tracking-[0.2em] uppercase font-semibold text-black/50 hover:text-black transition-colors hidden md:block"
+            >
+              [ PROVIDER PORTAL ]
+            </button>
+          </div>
 
-      {/* TopAppBar */}
-      <header className="sticky top-0 w-full z-40 bg-surface/95 backdrop-blur border-b border-surface-variant flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 shadow-sm">
-        <button 
-          onClick={() => navigate('/login')} 
-          className="text-primary hover:opacity-70 transition-opacity flex items-center justify-center p-1"
-          title="Back / Auth"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
-        <h1 className="font-headline-sm text-headline-sm tracking-widest uppercase text-primary font-bold">AT EASE</h1>
-        <button 
-          onClick={() => navigate('/provider')} 
-          className="text-primary hover:opacity-70 transition-opacity flex items-center justify-center p-1"
-          title="Provider Dashboard"
-        >
-          <span className="material-symbols-outlined">more_vert</span>
-        </button>
+          {/* Center Minimal Underlined Search */}
+          <div className="hidden md:flex items-center relative w-64">
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="SEARCH SERVICES..."
+              className="w-full bg-transparent border-b border-black/30 focus:border-black text-[10px] tracking-[0.2em] uppercase py-1 pr-6 focus:outline-none placeholder:text-black/40 text-black font-medium"
+            />
+            <span className="material-symbols-outlined text-xs absolute right-0 text-black/60 pointer-events-none">search</span>
+          </div>
+
+          {/* Right ZARA Navigation Links */}
+          <div className="flex items-center gap-6 text-[10px] tracking-[0.2em] uppercase font-medium">
+            <button 
+              onClick={() => navigate('/login')}
+              className="hover:opacity-60 transition-opacity hidden sm:block"
+            >
+              ACCOUNT
+            </button>
+            <button 
+              onClick={() => setIsBagOpen(true)}
+              className="hover:opacity-60 transition-opacity flex items-center gap-1 border-b border-black pb-0.5 font-bold"
+            >
+              BAG [ {selectedServices.length} ]
+            </button>
+          </div>
+
+        </div>
       </header>
 
-      {/* Main Content Canvas */}
-      <main className="pt-8 max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+      {/* Main Editorial Canvas */}
+      <main className="max-w-[1300px] mx-auto px-6 md:px-10 pt-8 pb-32">
+
         {bookingNotice && (
-          <div className="mb-6 p-4 bg-primary text-on-primary rounded-lg text-center text-sm font-medium animate-pulse flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined">check_circle</span>
+          <div className="mb-8 p-3 border border-black text-center text-[10px] tracking-[0.2em] uppercase font-semibold bg-black text-white flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-xs">check_circle</span>
             {bookingNotice}
           </div>
         )}
 
-        {/* Hero Section */}
-        <section className="flex flex-col items-center text-center mb-stack-xl">
-          <div className="w-24 h-24 rounded-full solid-border mb-6 overflow-hidden flex-shrink-0 shadow-md">
-            <img 
-              alt="Ananya Sharma" 
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida/AP1WRLsMFicLKdh8cH0OYBoEkklHnkwALaiGyaFGID2YdBcqarnKz6yFygK2OpmWLrFAYa1iEOWmOQsV0ghRozd-_h-2I38lWFvvApjQATbhfRJQiJGOvKE6YxNSyLFbtwK4OEo40t1gmGoYkLLrOnQjEY_W7nGQ-rBExgT10pGIN5x1RzSmmhTwDt7_Or3QGGSXCPTm0Veb2e4kkjxlUxzyBDtdnm-Mn-jzPynCuyFzK8FCNYea435eCwA2HHA"
-            />
+        {/* Compact Hero Banner Section (Clean, Proportionate & Above the Fold) */}
+        <section className="mb-10 border-b border-black/10 pb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shrink-0 border border-black/20">
+              <img 
+                src={provider.avatarUrl} 
+                alt={provider.displayName} 
+                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+              />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase text-black/60 font-semibold">
+                <span>01 | ARTIST PROFILE</span>
+                <span>•</span>
+                <span>{provider.rating} ★ ({provider.reviewCount})</span>
+              </div>
+              <h2 className="font-serif text-xl md:text-2xl tracking-[0.05em] uppercase font-bold text-black">
+                {provider.displayName}
+              </h2>
+              <p className="text-[11px] tracking-[0.15em] uppercase font-medium text-black/70">
+                {provider.professionalTitle} — {provider.yearsOfExperience}
+              </p>
+              <p className="text-xs text-black/70 font-light italic">
+                "{provider.tagline}"
+              </p>
+            </div>
           </div>
-          <h2 className="font-headline-md text-headline-md text-primary mb-2 tracking-wide font-medium">ANANYA SHARMA</h2>
-          <div className="flex items-center gap-2 mb-4 justify-center flex-wrap">
-            <span className="font-label-caps text-label-caps text-secondary uppercase tracking-widest text-[11px]">15+ YRS EXPERIENCE</span>
-            <span className="text-secondary opacity-50">|</span>
-            <span className="font-label-caps text-label-caps text-secondary uppercase tracking-widest text-[11px]">BESPOKE HAIR & SKIN SPECIALIST</span>
-          </div>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full ghost-border bg-surface-container-low mb-6 shadow-xs">
-            <span className="material-symbols-outlined text-sm text-primary">location_on</span>
-            <span className="font-label-caps text-[10px] uppercase text-primary tracking-wide">Home Visits: Patia & Surrounding Areas | Boutique Studio Available</span>
-          </div>
-          <p className="font-body-lg text-body-lg max-w-2xl text-on-surface-variant mb-6 leading-relaxed">
-            Crafting bespoke beauty rituals with a decade of refined technique and an unwavering eye for detail.
-          </p>
-          <div className="flex items-center gap-1 justify-center">
-            <span className="material-symbols-outlined text-primary text-sm icon-fill">star</span>
-            <span className="font-button-text text-button-text text-primary font-bold">4.9</span>
-            <span className="font-body-md text-body-md text-secondary ml-1">(128 reviews)</span>
+
+          <div className="text-right text-[10px] tracking-[0.2em] uppercase font-medium text-black/60 shrink-0 border-t md:border-t-0 md:border-l border-black/10 pt-4 md:pt-0 md:pl-6">
+            <div className="flex items-center gap-1 justify-end">
+              <span className="material-symbols-outlined text-xs">location_on</span>
+              {provider.locationTag}
+            </div>
           </div>
         </section>
 
-        {/* Pricing Toggle */}
-        <section className="mb-stack-xl flex flex-col items-center">
-          <div className="inline-flex rounded-full inset-bg p-1 relative mb-2 shadow-inner">
+        {/* Pricing Mode Toggle - Compact Minimal Line */}
+        <section className="mb-10 flex justify-center">
+          <div className="flex items-center gap-6 text-xs tracking-[0.2em] uppercase font-medium border-b border-black/20 pb-2">
             <button 
               onClick={() => setPricingMode('IN_SALON')}
-              className={`px-6 py-3 rounded-full font-label-caps text-label-caps transition-all duration-200 ${
-                pricingMode === 'IN_SALON' 
-                  ? 'bg-primary text-on-primary shadow-sm font-semibold' 
-                  : 'text-secondary hover:text-primary'
-              }`}
+              className={`transition-all ${pricingMode === 'IN_SALON' ? 'font-bold border-b-2 border-black pb-2 -mb-2.5 text-black' : 'text-black/40 hover:text-black'}`}
             >
               IN-SALON / STUDIO
             </button>
+            <span className="text-black/30 font-light">|</span>
             <button 
               onClick={() => setPricingMode('HOME_VISIT')}
-              className={`px-6 py-3 rounded-full font-label-caps text-label-caps transition-all duration-200 ${
-                pricingMode === 'HOME_VISIT' 
-                  ? 'bg-primary text-on-primary shadow-sm font-semibold' 
-                  : 'text-secondary hover:text-primary'
-              }`}
+              className={`transition-all ${pricingMode === 'HOME_VISIT' ? 'font-bold border-b-2 border-black pb-2 -mb-2.5 text-black' : 'text-black/40 hover:text-black'}`}
             >
-              HOME VISIT
+              HOME VISIT (INCLUDES SETUP)
             </button>
           </div>
-          <p className="font-body-md text-[13px] text-secondary italic flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">info</span>
-            Home Visit prices include travel & customized equipment setup.
-          </p>
         </section>
 
-        {/* Service Catalog */}
-        <section className="mb-stack-xl">
-          <div className="flex flex-col md:flex-row gap-gutter">
-            
-            {/* Category 1: Hair Treatments */}
-            <div className="flex-1">
-              <h3 className="font-label-caps text-label-caps text-secondary mb-stack-sm border-b border-surface-variant pb-2 tracking-widest uppercase font-semibold">
-                HAIR TREATMENTS
-              </h3>
-              <div className="flex flex-col gap-4">
-                {hairServices.map(service => {
-                  const isSelected = selectedServices.includes(service.id);
-                  const isExpanded = expandedServices.includes(service.id);
-                  const currentPrice = pricingMode === 'HOME_VISIT' ? service.homeVisitPrice : service.inSalonPrice;
-
-                  return (
-                    <div key={service.id} className="ghost-border bg-surface-container-lowest p-6 flex flex-col gap-4 shadow-xs hover:shadow-sm transition-shadow">
-                      <div 
-                        className="flex justify-between items-start cursor-pointer"
-                        onClick={() => toggleExpand(service.id)}
-                      >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-headline-sm text-headline-sm text-primary mb-1">{service.name}</h4>
-                            <span className="material-symbols-outlined text-sm text-secondary">
-                              {isExpanded ? 'expand_less' : 'expand_more'}
-                            </span>
-                          </div>
-                          <span className="font-label-caps text-label-caps text-secondary">{service.duration}</span>
-                        </div>
-                        <span className="font-headline-sm text-headline-sm text-primary font-medium">₹{currentPrice.toLocaleString('en-IN')}</span>
-                      </div>
-
-                      {isExpanded ? (
-                        <>
-                          <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                            {service.description}
-                          </p>
-                          {service.image && (
-                            <div className="h-48 w-full ghost-border overflow-hidden bg-surface-variant rounded">
-                              <img alt={service.name} className="w-full h-full object-cover" src={service.image} />
-                            </div>
-                          )}
-                          <div>
-                            <h5 className="font-label-caps text-label-caps text-primary mb-2 uppercase font-semibold tracking-wider text-[11px]">PRODUCTS USED</h5>
-                            <ul className="list-disc list-inside font-body-md text-sm text-secondary space-y-1">
-                              {service.products.map((prod, idx) => (
-                                <li key={idx}>{prod}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <button 
-                            onClick={() => toggleService(service.id)}
-                            className={`w-full py-3 mt-2 font-button-text text-button-text transition-colors border uppercase tracking-wider font-medium ${
-                              isSelected 
-                                ? 'bg-primary text-on-primary border-primary' 
-                                : 'solid-border hover:bg-surface-container-low text-primary'
-                            }`}
-                          >
-                            {isSelected ? 'SELECTED (CLICK TO REMOVE)' : '+ ADD SERVICE'}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="flex justify-between items-center pt-2">
-                          <button 
-                            onClick={() => toggleExpand(service.id)}
-                            className="text-xs text-secondary hover:text-primary underline underline-offset-2"
-                          >
-                            View details & products
-                          </button>
-                          <button 
-                            onClick={() => toggleService(service.id)}
-                            className={`px-4 py-1.5 rounded-full font-label-caps text-xs border transition-colors ${
-                              isSelected 
-                                ? 'bg-primary text-on-primary border-primary' 
-                                : 'border-primary text-primary hover:bg-surface-container-low'
-                            }`}
-                          >
-                            {isSelected ? 'ADDED ✓' : '+ ADD'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Category 2: Facial Care */}
-            <div className="flex-1 mt-stack-md md:mt-0">
-              <h3 className="font-label-caps text-label-caps text-secondary mb-stack-sm border-b border-surface-variant pb-2 tracking-widest uppercase font-semibold">
-                FACIAL CARE
-              </h3>
-              <div className="flex flex-col gap-4">
-                {facialServices.map(service => {
-                  const isSelected = selectedServices.includes(service.id);
-                  const isExpanded = expandedServices.includes(service.id);
-                  const currentPrice = pricingMode === 'HOME_VISIT' ? service.homeVisitPrice : service.inSalonPrice;
-
-                  return (
-                    <div key={service.id} className="ghost-border bg-surface-container-lowest p-6 flex flex-col gap-4 shadow-xs hover:shadow-sm transition-shadow">
-                      <div 
-                        className="flex justify-between items-start cursor-pointer"
-                        onClick={() => toggleExpand(service.id)}
-                      >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-headline-sm text-headline-sm text-primary mb-1">{service.name}</h4>
-                            <span className="material-symbols-outlined text-sm text-secondary">
-                              {isExpanded ? 'expand_less' : 'expand_more'}
-                            </span>
-                          </div>
-                          <span className="font-label-caps text-label-caps text-secondary">{service.duration}</span>
-                        </div>
-                        <span className="font-headline-sm text-headline-sm text-primary font-medium">₹{currentPrice.toLocaleString('en-IN')}</span>
-                      </div>
-
-                      {isExpanded ? (
-                        <>
-                          <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                            {service.description}
-                          </p>
-                          {service.image && (
-                            <div className="h-48 w-full ghost-border overflow-hidden bg-surface-variant rounded">
-                              <img alt={service.name} className="w-full h-full object-cover" src={service.image} />
-                            </div>
-                          )}
-                          <div>
-                            <h5 className="font-label-caps text-label-caps text-primary mb-2 uppercase font-semibold tracking-wider text-[11px]">PRODUCTS USED</h5>
-                            <ul className="list-disc list-inside font-body-md text-sm text-secondary space-y-1">
-                              {service.products.map((prod, idx) => (
-                                <li key={idx}>{prod}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <button 
-                            onClick={() => toggleService(service.id)}
-                            className={`w-full py-3 mt-2 font-button-text text-button-text transition-colors border uppercase tracking-wider font-medium ${
-                              isSelected 
-                                ? 'bg-primary text-on-primary border-primary' 
-                                : 'solid-border hover:bg-surface-container-low text-primary'
-                            }`}
-                          >
-                            {isSelected ? 'SELECTED (CLICK TO REMOVE)' : '+ ADD SERVICE'}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="flex justify-between items-center pt-2">
-                          <button 
-                            onClick={() => toggleExpand(service.id)}
-                            className="text-xs text-secondary hover:text-primary underline underline-offset-2"
-                          >
-                            View details & products
-                          </button>
-                          <button 
-                            onClick={() => toggleService(service.id)}
-                            className={`px-4 py-1.5 rounded-full font-label-caps text-xs border transition-colors ${
-                              isSelected 
-                                ? 'bg-primary text-on-primary border-primary' 
-                                : 'border-primary text-primary hover:bg-surface-container-low'
-                            }`}
-                          >
-                            {isSelected ? 'ADDED ✓' : '+ ADD'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        {/* Booking Module: Select Date & Time */}
-        <section className="mb-stack-xl max-w-2xl mx-auto">
-          <h3 className="font-headline-sm text-headline-sm text-primary mb-stack-sm text-center font-medium tracking-wide uppercase">SELECT DATE & TIME</h3>
+        {/* Layout: Main Catalog (Left) + Right-Side Minimalist Category Index */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
-          {/* Date Strip */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4 mb-4 border-b border-surface-variant justify-start md:justify-center">
-            {DATES.map((item, idx) => {
-              const isSelected = selectedDate === item.date;
-              if (!item.available) {
-                return (
-                  <button 
-                    key={idx}
-                    disabled
-                    className="flex flex-col items-center justify-center min-w-[72px] h-[84px] ghost-border bg-surface-container-lowest opacity-40 cursor-not-allowed"
-                  >
-                    <span className="font-label-caps text-[10px] text-secondary mb-1">{item.day}</span>
-                    <span className="font-headline-sm text-[20px] text-primary">{item.date}</span>
-                  </button>
-                );
-              }
+          {/* Main Service List Column (lg:col-span-8) */}
+          <div className="lg:col-span-8 space-y-16">
+            {categories.map((category, index) => {
+              const catIndex = (index + 1).toString().padStart(2, '0');
+              const filteredServices = category.services.filter(s => 
+                !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase())
+              );
+
+              if (filteredServices.length === 0) return null;
+
               return (
-                <button 
-                  key={idx}
-                  onClick={() => setSelectedDate(item.date)}
-                  className={`flex flex-col items-center justify-center min-w-[72px] h-[84px] transition-colors ${
-                    isSelected 
-                      ? 'solid-border bg-primary text-on-primary shadow-sm' 
-                      : 'ghost-border bg-surface-container-lowest hover:bg-surface-container-low text-primary'
-                  }`}
-                >
-                  <span className={`font-label-caps text-[10px] mb-1 ${isSelected ? 'text-on-primary opacity-90' : 'text-secondary'}`}>{item.day}</span>
-                  <span className={`font-headline-sm text-[20px] ${isSelected ? 'text-on-primary' : 'text-primary'}`}>{item.date}</span>
-                </button>
+                <section key={category.id} id={`cat-sec-${category.id}`} className="scroll-mt-24">
+                  
+                  {/* Category Header */}
+                  <div className="border-b border-black pb-3 mb-6 flex justify-between items-end">
+                    <h3 className="text-xs md:text-sm tracking-[0.25em] uppercase font-bold text-black flex items-center gap-2">
+                      <span>| {catIndex} |</span>
+                      <span>{category.categoryName}</span>
+                    </h3>
+                    <span className="text-[10px] tracking-[0.2em] text-black/50 font-semibold">
+                      {filteredServices.length} SERVICES
+                    </span>
+                  </div>
+
+                  {/* Service Items List */}
+                  <div className="space-y-6">
+                    {filteredServices.map((service) => {
+                      const isSelected = selectedServices.includes(service.id);
+                      const isExpanded = expandedServices.includes(service.id);
+                      const currentPrice = pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
+
+                      return (
+                        <div key={service.id} className="border-b border-black/10 pb-6 space-y-3">
+                          
+                          {/* Service Header Row */}
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="space-y-1">
+                              <h4 
+                                onClick={() => toggleExpand(service.id)}
+                                className="text-sm md:text-base tracking-[0.05em] font-bold text-black cursor-pointer hover:opacity-60 transition-opacity"
+                              >
+                                {service.name}
+                              </h4>
+                              <p className="text-[10px] tracking-[0.2em] uppercase text-black/50 font-medium">
+                                {service.duration}
+                              </p>
+                            </div>
+
+                            <div className="text-right space-y-1">
+                              <div className="text-sm md:text-base tracking-[0.05em] font-bold text-black">
+                                ₹{currentPrice.toLocaleString('en-IN')}
+                              </div>
+                              <button 
+                                onClick={() => toggleService(service.id)}
+                                className={`text-[10px] tracking-[0.2em] uppercase font-bold transition-all border-b ${
+                                  isSelected 
+                                    ? 'border-black text-black font-extrabold' 
+                                    : 'border-transparent text-black/60 hover:text-black hover:border-black'
+                                }`}
+                              >
+                                {isSelected ? '[ REMOVE ]' : '[ + ADD TO BAG ]'}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Expandable Image & Description */}
+                          {isExpanded && (
+                            <div className="pt-1 space-y-3">
+                              <p className="text-xs leading-relaxed text-black/70 font-light">
+                                {service.description}
+                              </p>
+                              {service.imageUrl && (
+                                <div className="max-w-xs h-40 overflow-hidden rounded">
+                                  <img 
+                                    src={service.imageUrl} 
+                                    alt={service.name} 
+                                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" 
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </section>
               );
             })}
+
+            {/* Date & Time Selection Section */}
+            <section className="pt-8 border-t border-black space-y-6">
+              <div className="border-b border-black pb-3">
+                <h3 className="text-xs md:text-sm tracking-[0.25em] uppercase font-bold text-black">
+                  | SCHEDULE | SELECT DATE & TIME
+                </h3>
+              </div>
+
+              {/* Minimal Date Strip */}
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-3 border-b border-black/10">
+                {DATES.map((item, idx) => {
+                  const isSelected = selectedDate === item.date;
+                  if (!item.available) {
+                    return (
+                      <button 
+                        key={idx}
+                        disabled
+                        className="min-w-[56px] py-3 text-center text-black/30 cursor-not-allowed text-xs tracking-widest"
+                      >
+                        <div className="text-[10px] mb-1">{item.day}</div>
+                        <div className="text-base line-through">{item.date}</div>
+                      </button>
+                    );
+                  }
+                  return (
+                    <button 
+                      key={idx}
+                      onClick={() => setSelectedDate(item.date)}
+                      className={`min-w-[56px] py-3 text-center text-xs tracking-widest transition-all ${
+                        isSelected 
+                          ? 'border-b-2 border-black font-bold text-black' 
+                          : 'text-black/60 hover:text-black'
+                      }`}
+                    >
+                      <div className="text-[10px] mb-1">{item.day}</div>
+                      <div className="text-base font-semibold">{item.date}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Minimal Time Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                {TIME_SLOTS.map((slot, idx) => {
+                  const isSelected = selectedTime === slot.time;
+                  if (!slot.available) {
+                    return (
+                      <button 
+                        key={idx} 
+                        disabled 
+                        className="py-2.5 text-[10px] tracking-widest text-black/30 text-center cursor-not-allowed line-through border-b border-black/10"
+                      >
+                        {slot.time}
+                      </button>
+                    );
+                  }
+                  return (
+                    <button 
+                      key={idx}
+                      onClick={() => setSelectedTime(slot.time)}
+                      className={`py-2.5 text-[10px] tracking-widest text-center transition-all border-b ${
+                        isSelected 
+                          ? 'border-black font-bold text-black' 
+                          : 'border-black/10 text-black/60 hover:text-black hover:border-black'
+                      }`}
+                    >
+                      {slot.time}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
           </div>
 
-          {/* Time Grid */}
-          <div className="grid grid-cols-3 gap-4">
-            {TIME_SLOTS.map((slot, idx) => {
-              const isSelected = selectedTime === slot.time;
-              if (!slot.available) {
+          {/* Right-Side ZARA Minimalist Category Index Menu (lg:col-span-4) */}
+          <aside className="hidden lg:block lg:col-span-4 sticky top-24 space-y-6 pl-6 border-l border-black/10">
+            <div className="text-[10px] tracking-[0.3em] uppercase font-bold text-black pb-2 border-b border-black">
+              INDEX / CATEGORIES
+            </div>
+
+            <nav className="space-y-3">
+              {categories.map((cat, idx) => {
+                const isActive = activeCategory === cat.id;
+                const catNum = (idx + 1).toString().padStart(2, '0');
                 return (
                   <button 
-                    key={idx} 
-                    disabled 
-                    className="py-4 ghost-border font-body-md text-secondary text-center opacity-40 cursor-not-allowed strikethrough-diagonal"
+                    key={cat.id}
+                    onClick={() => scrollToCategory(cat.id)}
+                    className={`w-full text-left text-[11px] tracking-[0.15em] uppercase transition-all flex items-center justify-between group ${
+                      isActive 
+                        ? 'font-bold text-black border-l-2 border-black pl-3 -ml-3' 
+                        : 'text-black/50 hover:text-black'
+                    }`}
                   >
-                    {slot.time}
+                    <span className="truncate pr-2">| {catNum} | {cat.categoryName}</span>
+                    <span className="text-[9px] text-black/40 font-mono">
+                      [{cat.services.length}]
+                    </span>
                   </button>
                 );
-              }
-              return (
-                <button 
-                  key={idx}
-                  onClick={() => setSelectedTime(slot.time)}
-                  className={`py-4 font-body-md text-center transition-colors ${
-                    isSelected 
-                      ? 'solid-border font-medium text-on-primary bg-primary shadow-sm' 
-                      : 'ghost-border text-primary hover:bg-surface-container-low'
-                  }`}
-                >
-                  {slot.time}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+              })}
+            </nav>
+
+            <div className="pt-6 border-t border-black space-y-3">
+              <div className="flex justify-between text-[11px] tracking-[0.2em] uppercase font-bold">
+                <span>ESTIMATE</span>
+                <span>₹{calculateTotal().toLocaleString('en-IN')}</span>
+              </div>
+              <button 
+                onClick={() => setIsBagOpen(true)}
+                className="w-full bg-black text-white py-3 text-[11px] tracking-[0.2em] uppercase font-bold hover:bg-black/80 transition-colors"
+              >
+                VIEW SHOPPING BAG [ {selectedServices.length} ]
+              </button>
+            </div>
+          </aside>
+
+        </div>
 
       </main>
 
-      {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-surface-bright border-t ghost-border p-4 md:p-6 z-40 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
-        <div className="flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto text-center md:text-left">
-          <span className="font-label-caps text-label-caps text-secondary uppercase font-semibold">
-            {selectedServices.length} {selectedServices.length === 1 ? 'Service' : 'Services'} Selected
-          </span>
-          <span className="hidden md:inline text-secondary opacity-40">|</span>
-          <span className="font-headline-sm text-headline-sm text-primary font-bold">
-            Total: ₹{calculateTotal().toLocaleString('en-IN')}
-          </span>
-        </div>
-        <button 
-          onClick={handleWhatsAppBooking}
-          className="w-full md:w-auto bg-primary text-on-primary px-8 py-4 font-button-text text-button-text uppercase tracking-widest hover:bg-on-surface-variant transition-colors flex items-center justify-center gap-2 shadow-md active:scale-98"
-        >
-          CONFIRM & BOOK VIA WHATSAPP
-          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-        </button>
-      </div>
-    </motion.div>
+      {/* ZARA Slide-Out Shopping Bag Drawer */}
+      <AnimatePresence>
+        {isBagOpen && (
+          <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.4 }}
+              className="bg-white w-full max-w-md h-full flex flex-col justify-between p-8 border-l border-black shadow-2xl"
+            >
+              {/* Bag Header */}
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b border-black pb-4">
+                  <h3 className="text-xs tracking-[0.3em] uppercase font-bold text-black">
+                    SHOPPING BAG [ {selectedServices.length} ]
+                  </h3>
+                  <button 
+                    onClick={() => setIsBagOpen(false)}
+                    className="text-xs tracking-widest uppercase font-bold hover:opacity-50"
+                  >
+                    CLOSE [ X ]
+                  </button>
+                </div>
+
+                {/* Selected Items List */}
+                <div className="space-y-4 max-h-[50vh] overflow-y-auto no-scrollbar">
+                  {getSelectedServiceItems().length === 0 ? (
+                    <p className="text-xs tracking-[0.2em] uppercase text-black/50 text-center py-10">
+                      YOUR BAG IS CURRENTLY EMPTY
+                    </p>
+                  ) : (
+                    getSelectedServiceItems().map((item) => {
+                      const price = pricingMode === 'HOME_VISIT' ? item.homePrice : item.inSalonPrice;
+                      return (
+                        <div key={item.id} className="flex justify-between items-start border-b border-black/10 pb-4">
+                          <div>
+                            <h4 className="text-xs tracking-widest uppercase font-bold">{item.name}</h4>
+                            <p className="text-[10px] text-black/50 tracking-wider uppercase mt-0.5">{item.duration}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs font-bold">₹{price.toLocaleString('en-IN')}</div>
+                            <button 
+                              onClick={() => toggleService(item.id)}
+                              className="text-[9px] tracking-widest uppercase text-black/40 hover:text-black underline mt-1"
+                            >
+                              REMOVE
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Bag Checkout Summary */}
+              <div className="border-t border-black pt-6 space-y-4">
+                <div className="flex justify-between text-xs tracking-[0.2em] uppercase font-semibold">
+                  <span>LOCATION MODE</span>
+                  <span>{pricingMode === 'HOME_VISIT' ? 'HOME VISIT' : 'IN-SALON'}</span>
+                </div>
+                <div className="flex justify-between text-xs tracking-[0.2em] uppercase font-semibold">
+                  <span>DATE & TIME</span>
+                  <span>{selectedDate} AUG | {selectedTime}</span>
+                </div>
+                <div className="flex justify-between text-sm tracking-[0.25em] uppercase font-bold border-t border-black/20 pt-4">
+                  <span>TOTAL ESTIMATE</span>
+                  <span>₹{calculateTotal().toLocaleString('en-IN')}</span>
+                </div>
+
+                <button 
+                  onClick={handleWhatsAppBooking}
+                  disabled={selectedServices.length === 0}
+                  className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors disabled:opacity-40"
+                >
+                  CONFIRM VIA WHATSAPP →
+                </button>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+    </div>
   );
 }
