@@ -1,116 +1,240 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Login() {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
-
-  const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/[^0-9]/g, '');
-    setPhone(value);
-  };
-
-  const isFormValid = phone.length === 10;
+  const [role, setRole] = useState('CLIENT'); // 'CLIENT' | 'PROVIDER'
+  const [step, setStep] = useState('PHONE'); // 'PHONE' | 'OTP'
+  const [countryCode, setCountryCode] = useState('+91');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const [errorNotice, setErrorNotice] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSendOtp = () => {
-    if (isFormValid) {
-      navigate('/otp');
+    if (!phoneNumber || phoneNumber.length < 8) {
+      setErrorNotice('Please enter a valid phone number.');
+      return;
+    }
+    setErrorNotice('');
+    setStep('OTP');
+  };
+
+  const handleOtpChange = (index, value) => {
+    if (value.length > 1) value = value[value.length - 1];
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto focus next input
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`otp-input-${index + 1}`);
+      if (nextInput) nextInput.focus();
     }
   };
 
-  return (
-    <motion.main 
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="w-full max-w-[480px] mx-auto px-container-margin py-6 min-h-screen flex flex-col bg-surface relative shadow-sm border-x border-outline-variant/30"
-    >
-      {/* TopAppBar */}
-      <header className="w-full mb-8">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors duration-200"
-          >
-            <ArrowLeft className="text-on-surface" size={24} />
-          </button>
-          <h1 className="text-xl font-semibold text-on-surface">Login</h1>
-        </div>
-      </header>
+  const handleVerifyOtp = () => {
+    const code = otp.join('');
+    if (code.length < 4) {
+      setErrorNotice('Please enter 4-digit OTP.');
+      return;
+    }
+    setIsVerifying(true);
+    setTimeout(() => {
+      setIsVerifying(false);
+      if (role === 'PROVIDER') {
+        navigate('/provider');
+      } else {
+        navigate('/home');
+      }
+    }, 600);
+  };
 
-      {/* Main Content */}
-      <div className="flex-grow flex flex-col justify-between">
-        <div className="space-y-8">
-          {/* Branding Section */}
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-on-surface tracking-tight">Welcome Back</h2>
-            <p className="text-sm text-on-surface/70">Sign in to book your next session with the local experts you trust.</p>
+  return (
+    <div className="bg-surface h-screen w-full relative overflow-hidden font-body-md text-on-surface antialiased">
+      {/* Mock Background Content (Blurred/Dimmed by Scrim) */}
+      <div 
+        className="w-full h-full absolute inset-0 -z-10 bg-cover bg-center transition-all duration-700 filter brightness-90" 
+        style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCdVC1j6EEOBGLeDVJeedRgKoO505w1lmnr_UY01V7tGVyHrPQrcZ1rOdqB5nDCDHwWwcMs4lEjHs90X7ytF2cCfp72pZEnYPAiqVxHtzdBtO1V8uyBmtXqTCj25JQ9KvZKfjajOFPk-6UxbptMMWBiz32BfQVYTgXeMcKAyWd3EE6RnZNgH8gj2wOUa_daGpx7GaGuBottipVjO1k7Z2lB7iOVmGzq1ybUvRLxMrVKKRCYOxf2fhph')" }}
+      >
+      </div>
+
+      {/* Scrim Overlay */}
+      <div className="fixed inset-0 scrim-bg z-40 flex flex-col justify-end p-0 md:p-6">
+        
+        {/* Bottom Sheet Modal */}
+        <motion.div 
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="bg-on-primary w-full md:w-[480px] md:mx-auto rounded-t-sheet md:rounded-b-sheet border-t border-primary md:border slide-up min-h-[460px] flex flex-col z-50 shadow-2xl overflow-hidden"
+        >
+          {/* Top Drag Handle (Mobile) */}
+          <div className="w-full flex justify-center py-3 bg-surface-container-low">
+            <div className="w-12 h-1 bg-surface-variant rounded-full md:hidden"></div>
           </div>
 
-          {/* Login Form */}
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-on-surface/60 uppercase tracking-wider">Phone Number</label>
-              <div className="flex items-center border-b-2 border-outline-variant focus-within:border-accent-orange transition-colors duration-300 py-2">
-                <span className="text-lg font-semibold text-on-surface mr-3">+91</span>
-                <input 
-                  className="flex-grow bg-transparent border-none p-0 focus:ring-0 text-lg font-semibold text-on-surface placeholder:text-on-surface/30 outline-none" 
-                  maxLength={10} 
-                  placeholder="98765 43210" 
-                  type="tel"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                />
-              </div>
-            </div>
-
+          {/* Persona Role Switcher Header */}
+          <div className="flex border-b border-surface-variant bg-surface-container-low text-xs">
             <button 
-              onClick={handleSendOtp}
-              disabled={!isFormValid}
-              className={`w-full h-14 rounded-lg text-lg font-semibold transition-all duration-150 shadow-sm ${
-                isFormValid 
-                  ? 'bg-primary text-white active:scale-[0.98]' 
-                  : 'bg-primary/60 text-white cursor-not-allowed'
+              onClick={() => setRole('CLIENT')}
+              className={`flex-1 py-3 font-label-caps text-center transition-colors flex items-center justify-center gap-1.5 ${
+                role === 'CLIENT' 
+                  ? 'border-b-2 border-primary text-primary font-bold bg-white' 
+                  : 'text-secondary hover:text-primary'
               }`}
             >
-              Send OTP
+              <span className="material-symbols-outlined text-[16px]">person</span>
+              Client (Book Services)
             </button>
-
-            {/* Divider */}
-            <div className="relative flex items-center py-4">
-              <div className="flex-grow border-t border-outline-variant"></div>
-              <span className="flex-shrink mx-4 text-xs font-medium text-on-surface/60">OR</span>
-              <div className="flex-grow border-t border-outline-variant"></div>
-            </div>
-
-            {/* Social Login */}
-            <button className="w-full bg-transparent border border-accent-moss text-primary h-14 rounded-lg flex items-center justify-center gap-3 active:bg-accent-moss/10 transition-colors duration-200">
-              <svg className="w-5 h-5 fill-primary" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"></path>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
-              </svg>
-              <span className="text-lg font-semibold">Continue with Google</span>
+            <button 
+              onClick={() => setRole('PROVIDER')}
+              className={`flex-1 py-3 font-label-caps text-center transition-colors flex items-center justify-center gap-1.5 ${
+                role === 'PROVIDER' 
+                  ? 'border-b-2 border-primary text-primary font-bold bg-white' 
+                  : 'text-secondary hover:text-primary'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">storefront</span>
+              Provider Partner (SaaS)
             </button>
           </div>
-        </div>
 
-        {/* Footer */}
-        <footer className="py-8 text-center">
-          <p className="text-sm text-on-surface/70">
-            New to Kumari & Co.?{' '}
-            <button
-              onClick={() => navigate('/create-account')}
-              className="text-accent-orange font-bold ml-1 hover:underline decoration-2 underline-offset-4"
-            >
-              Create Account
-            </button>
-          </p>
-        </footer>
+          {/* Content Container */}
+          <div className="px-margin-mobile md:px-margin-desktop py-6 flex-grow flex flex-col">
+            
+            {errorNotice && (
+              <div className="mb-4 p-2 bg-error-container text-on-error-container text-xs text-center rounded">
+                {errorNotice}
+              </div>
+            )}
+
+            <AnimatePresence mode="wait">
+              {step === 'PHONE' ? (
+                <motion.div 
+                  key="phone-step"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="flex-grow flex flex-col"
+                >
+                  {/* Header */}
+                  <div className="mb-stack-md text-center">
+                    <h2 className="font-headline-sm text-headline-sm text-primary mb-2 font-medium">
+                      {role === 'PROVIDER' ? 'Provider Partner Access' : 'Verify Your Number'}
+                    </h2>
+                    <p className="font-body-md text-body-md text-secondary">
+                      {role === 'PROVIDER' 
+                        ? 'Enter phone number to access studio manager & subscription.' 
+                        : 'Enter phone number to receive instant booking updates.'}
+                    </p>
+                  </div>
+
+                  {/* Input Group */}
+                  <div className="mb-stack-xl flex-grow">
+                    <div className="flex items-center border-b border-primary py-2 group focus-within:border-primary transition-colors">
+                      <div className="flex items-center pr-3 border-r border-surface-variant text-primary font-body-lg text-body-lg">
+                        <select 
+                          value={countryCode}
+                          onChange={(e) => setCountryCode(e.target.value)}
+                          className="bg-transparent border-none focus:ring-0 cursor-pointer font-medium text-primary text-sm pr-1"
+                        >
+                          <option value="+91">+91</option>
+                          <option value="+1">+1</option>
+                          <option value="+44">+44</option>
+                          <option value="+971">+971</option>
+                        </select>
+                      </div>
+                      <input 
+                        type="tel"
+                        autoComplete="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="w-full pl-3 bg-transparent border-none focus:ring-0 font-body-lg text-body-lg text-primary placeholder:text-secondary-fixed-dim outline-none" 
+                        placeholder="98765 43210" 
+                      />
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="mt-auto">
+                    <button 
+                      onClick={handleSendOtp}
+                      className="w-full bg-primary text-on-primary font-button-text text-button-text py-4 flex items-center justify-center tracking-widest hover:bg-surface-tint transition-colors duration-200 mb-6 font-semibold uppercase"
+                    >
+                      SEND OTP
+                    </button>
+
+                    {/* Footer */}
+                    <p className="text-center text-[11px] text-secondary font-body-md leading-tight">
+                      By continuing, you agree to At Ease's <br className="md:hidden"/>
+                      <a className="underline hover:text-primary transition-colors" href="#">Terms</a> &amp; 
+                      <a className="underline hover:text-primary transition-colors ml-1" href="#">Privacy Policy</a>.
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="otp-step"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="flex-grow flex flex-col"
+                >
+                  {/* Header */}
+                  <div className="mb-stack-md text-center">
+                    <button 
+                      onClick={() => setStep('PHONE')}
+                      className="text-xs text-secondary hover:text-primary mb-2 flex items-center justify-center gap-1 mx-auto"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">arrow_back</span> Edit Number ({countryCode} {phoneNumber})
+                    </button>
+                    <h2 className="font-headline-sm text-headline-sm text-primary mb-2 font-medium">Enter 4-Digit OTP</h2>
+                    <p className="font-body-md text-body-md text-secondary">
+                      Sent via SMS to <span className="text-primary font-medium">{countryCode} {phoneNumber}</span>
+                    </p>
+                  </div>
+
+                  {/* OTP Inputs */}
+                  <div className="mb-stack-xl flex justify-center gap-3">
+                    {otp.map((digit, idx) => (
+                      <input 
+                        key={idx}
+                        id={`otp-input-${idx}`}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(idx, e.target.value)}
+                        className="w-12 h-14 text-center text-xl font-bold border-b-2 border-primary focus:border-black bg-surface-container-low outline-none transition-colors"
+                      />
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <div className="mt-auto">
+                    <button 
+                      onClick={handleVerifyOtp}
+                      disabled={isVerifying}
+                      className="w-full bg-primary text-on-primary font-button-text text-button-text py-4 flex items-center justify-center tracking-widest hover:bg-surface-tint transition-colors duration-200 mb-4 font-semibold uppercase disabled:opacity-50"
+                    >
+                      {isVerifying ? 'VERIFYING...' : `LOG IN AS ${role}`}
+                    </button>
+
+                    <button 
+                      onClick={() => setStep('PHONE')}
+                      className="w-full text-center text-xs text-secondary hover:text-primary py-1"
+                    >
+                      Resend Code in 00:24
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+          </div>
+        </motion.div>
       </div>
-    </motion.main>
+    </div>
   );
 }
