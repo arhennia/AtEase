@@ -1,335 +1,117 @@
-# Aura
+# 💅 At Ease — Beauty Booking & Provider SaaS Platform
 
-**AI-powered SaaS platform for independent beauty professionals, helping solo beauty businesses manage appointments, customers, operations, and business growth from a single platform.**
+**At Ease** is an AI-enhanced, dual-persona SaaS platform crafted for independent beauty professionals, boutique studio owners, home salon specialists, and their clients.
 
-> MVP built for **Kumari & Co.** · Bhubaneswar, India
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Problem Statement](#problem-statement)
-- [Solution](#solution)
-- [Current MVP](#current-mvp)
-- [Vision](#vision)
-- [Features](#features)
-- [AI Roadmap](#ai-roadmap)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Development Roadmap](#development-roadmap)
-- [Long-Term Goal](#long-term-goal)
-- [License](#license)
+> Re-architected from design systems in `stitch_at_ease_beauty_booking (3)`, `(4)`, and `(5)`.
 
 ---
 
-# Overview
+## 🌟 Key Personas & User Journeys
 
-Aura is an AI-powered Software-as-a-Service (SaaS) platform designed for independent beauty professionals such as home salon owners, freelance makeup artists, hairstylists, nail technicians, beauticians, and other solo service providers.
+At Ease distinguishes clearly between the **Client** and **Provider (SaaS Partner)** journeys:
 
-Small beauty businesses often manage appointments through WhatsApp, phone calls, notebooks, or spreadsheets. While these methods work initially, they become difficult to manage as the customer base grows, leading to scheduling conflicts, missed appointments, poor customer tracking, and limited business insights.
-
-Aura aims to provide an affordable, modern, and intelligent platform that helps independent beauty professionals run their business more efficiently while delivering a seamless booking experience for their customers.
-
-The current implementation serves as the Minimum Viable Product (MVP) for **Kumari & Co.**, validating the customer booking workflow before expanding into a scalable multi-tenant SaaS platform.
-
----
-
-# Problem Statement
-
-Independent beauty professionals commonly face operational challenges such as:
-
-- Managing appointments through WhatsApp and phone calls
-- Double bookings and scheduling conflicts
-- Lack of customer history and records
-- Manual appointment reminders
-- No centralized business dashboard
-- Difficulty tracking revenue and bookings
-- Limited digital presence
-- Expensive software designed primarily for large salons
-
-Most existing salon software targets established businesses with multiple employees, leaving solo professionals with tools that are either too expensive or unnecessarily complex.
-
----
-
-# Solution
-
-Aura provides a centralized platform that enables beauty professionals to manage their business from one place.
-
-The platform is designed to simplify daily operations by providing:
-
-- Online appointment booking
-- Customer management
-- Appointment scheduling
-- Business insights
-- Marketing support
-- AI-powered automation
-- Business analytics
-
-Instead of building software for a single salon, Aura is designed as a scalable SaaS platform where each business receives its own secure workspace.
-
----
-
-# Current MVP
-
-The current version focuses on validating the customer booking experience through a complete mobile-first booking flow.
-
-Implemented features include:
-
-- Splash screen
-- Phone number authentication
-- OTP verification
-- Service catalogue
-- Service details
-- Appointment scheduling
-- Date and time selection
-- Home service address collection
-- Booking review
-- Booking confirmation
-- Responsive interface
-- Smooth page transitions
-
-The MVP is currently customized for **Kumari & Co.**, serving as the foundation for the larger Aura platform.
-
----
-
-# Vision
-
-Aura aims to become an operating system for independent beauty professionals.
-
-Rather than solving only appointment booking, the platform will eventually provide complete business management capabilities including scheduling, customer management, analytics, AI assistance, marketing, and financial insights.
-
-The goal is to help solo beauty professionals spend less time managing their business and more time serving their customers.
-
----
-
-# Features
-
-## Customer Features
-
-- Secure phone authentication
-- Browse available services
-- View service details
-- Select preferred appointment date and time
-- Book home services
-- Appointment review
-- Booking confirmation
-- Booking history *(planned)*
-- Online payments *(planned)*
-
----
-
-## Business Owner Features
-
-- Appointment management
-- Calendar view *(planned)*
-- Customer management *(planned)*
-- Revenue tracking *(planned)*
-- Service management *(planned)*
-- Business dashboard *(planned)*
-- Marketing tools *(planned)*
-- Notification management *(planned)*
-
----
-
-# AI Roadmap
-
-Artificial Intelligence will become a core part of Aura in future releases.
-
-## Smart Appointment Scheduling
-
-Automatically optimize appointment schedules by minimizing idle time, reducing conflicts, and improving daily planning.
-
----
-
-## AI Marketing Assistant
-
-Generate promotional content including:
-
-- Instagram captions
-- WhatsApp promotions
-- Festival campaigns
-- Service advertisements
-
-based on current services and seasonal trends.
-
----
-
-## Intelligent Service Recommendations
-
-Recommend additional services based on customer history and previous appointments.
-
----
-
-## AI Business Insights
-
-Generate intelligent summaries including:
-
-- Best-performing services
-- Customer retention trends
-- Monthly business performance
-- Revenue growth
-- Seasonal demand forecasting
-
----
-
-## Dynamic Pricing Suggestions
-
-Recommend pricing adjustments during peak demand periods based on historical booking trends.
-
----
-
-# Tech Stack
-
-| Layer | Technology |
-|--------|------------|
-| Frontend | React 19 |
-| Build Tool | Vite |
-| Routing | React Router |
-| Styling | Tailwind CSS |
-| Animation | Framer Motion |
-| Icons | Lucide React |
-| Authentication | OTP Authentication (Backend Planned) |
-| Backend | Planned |
-| Database | Planned |
-| AI Integration | Planned |
-
----
-
-# Architecture
-
-```text
-                   Customer
-                       │
-                       ▼
-               React Frontend
-                       │
-                       ▼
-             REST API (Future Backend)
-                       │
-      ┌────────────────────────────────┐
-      │ Authentication                 │
-      │ Booking Management             │
-      │ Customer Management            │
-      │ Analytics Engine               │
-      │ AI Recommendation Engine       │
-      └────────────────────────────────┘
-                       │
-                       ▼
-                  Database
+```
+                          ┌────────────────────────┐
+                          │   AT EASE PLATFORM     │
+                          └───────────┬────────────┘
+                                      │
+              ┌───────────────────────┴───────────────────────┐
+              ▼                                               ▼
+   CLIENT BOOKING PERSONA                          PROVIDER SAAS PERSONA
+   (Bespoke Service Booking)                       (Business & Catalog Portal)
+   • Specialist Profile & Rating                   • Pro Subscription (₹999/mo)
+   • In-Salon vs Home Visit Switch                 • Daily Revenue & Booking Stats
+   • Service Catalog & Products                    • Fast-Action Tools (Marketing, Block Slot)
+   • Date & Time Picker Grid                       • Live Pricing & Policy Controls
+   • Sticky WhatsApp Confirmation                  • Today's Schedule & Client Delays
 ```
 
 ---
 
-# Project Structure
+## 📱 Interactive Screen Implementations
 
-```text
-aura/
-├── app/
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── data/
-│   │   ├── screens/
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── index.html
-│   ├── tailwind.config.js
-│   ├── vite.config.js
-│   ├── postcss.config.js
-│   └── package.json
-├── design/
-├── LICENSE
-└── README.md
-```
+### 1. Client Booking Experience (`/home`) — *Stitch (3)*
+- **Specialist Profile**: Artist header showcasing 15+ years experience, 4.9⭐ rating (128 reviews), and service area tags (*Patia & Boutique Studio*).
+- **Dynamic Pricing Mode Switch**: Toggle between **In-Salon / Studio** and **Home Visit** rates. All service costs and total calculations update in real-time.
+- **Service Catalog**: Expandable cards for Hair Treatments and Facial Care featuring treatment descriptions, images, and curated product lists (Olaplex, Kerastase, Skinceuticals, L'Oréal).
+- **Date & Time Picker**: Interactive date strip (Sun 23 - Sat 29) and slot selection grid with availability indicators.
+- **Sticky WhatsApp Booking Footer**: Real-time service counter and calculated total with direct pre-filled WhatsApp confirmation messaging.
+
+### 2. Authentication & Persona Switcher (`/login`) — *Stitch (4)*
+- **Dual Role Selector**: Top tab toggles between **Client (Book Services)** and **Provider Partner (SaaS)**.
+- **Ambient Bottom Sheet Modal**: Slide-up sheet (`scrim-bg`) over tranquil retreat backdrop.
+- **Phone & OTP Verification**: Phone input with country code selector (`+91`, `+1`, `+44`, `+971`), 4-digit auto-advancing OTP input, and automated role-based routing.
+
+### 3. Provider SaaS Business Portal (`/provider`) — *Stitch (5)*
+- **Pro Monthly Subscription Tier**: Prominent plan badge (`PRO TIER - ₹999/mo`) with an interactive **Subscription Benefits Modal** detailing plan features (Unlimited WhatsApp bookings, Marketing Generator, Multi-tier Pricing, Priority Support).
+- **Operational Metrics**: "Good Morning, Aisha" greeting displaying daily schedule metrics (*3 Bookings Today • ₹5,400 Estimated Revenue*).
+- **Fast-Action Grid**:
+  - ➕ **Add / Edit Service**: Modal form to add treatments with separate in-salon & home visit rates.
+  - 🎨 **Generate Festival Marketing Graphic**: Generates promotional WhatsApp status banners with one-click download & WhatsApp share.
+  - 🔗 **Share Public Booking Link**: One-click link copier with toast feedback (`atease.beauty/luxe-studio-aisha`).
+  - 🚫 **Quick Block Slot**: Blocks time slots for walk-in offline clients or breaks.
+- **Service Catalog & Policy Controls**: Live pricing edits for In-Salon & Home Visit rates, toggle for Home Visit availability, toggle for required consultation, and duration editors.
+- **Live Schedule & Client Delay**: Today's appointment feed with segment filter (*TODAY*, *TOMORROW*, *THIS WEEK*), delay controller (+15m / +30m notification trigger), and direct Google Maps directions link.
 
 ---
 
-# Getting Started
+## 🛠 Tech Stack
 
-## Prerequisites
+| Component     | Technology |
+| ------------- | ---------- |
+| **Framework** | [React 19](https://react.dev) |
+| **Bundler**   | [Vite 8](https://vite.dev) |
+| **Routing**   | [React Router v7](https://reactrouter.com) |
+| **Styling**   | [Tailwind CSS v3](https://tailwindcss.com) + Custom At Ease Design System |
+| **Animation** | [Framer Motion](https://www.framer.com/motion/) |
+| **Typography**| Playfair Display (Headlines) & Inter (Body & Controls) |
+| **Icons**      | Material Symbols Outlined |
 
-- Node.js 18+
-- npm 9+
+---
 
-## Installation
+## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/byarti/aura.git
+# 1. Navigate to web application directory
+cd app
 
-cd aura/app
-
+# 2. Install dependencies
 npm install
 
+# 3. Start local development server
 npm run dev
-```
 
-The application will be available at:
-
-```
-http://localhost:5173
+# 4. Build production bundle
+npm run build
 ```
 
 ---
 
-# Development Roadmap
+## 📁 Workspace Structure
 
-## Phase 1 - MVP
-
-- Customer booking flow
-- Authentication
-- Service catalogue
-- Appointment scheduling
-- Responsive UI
-
----
-
-## Phase 2
-
-- Backend API
-- Database integration
-- Payment gateway
-- Push notifications
-- Owner dashboard
-
----
-
-## Phase 3
-
-- Multi-tenant SaaS architecture
-- Customer management
-- Revenue dashboard
-- Analytics
-- Subscription plans
+```
+AtEase/
+├── app/                                 # React + Vite application
+│   ├── src/
+│   │   ├── screens/
+│   │   │   ├── Home.jsx                 # Client Bespoke Beauty Booking View (Stitch 3)
+│   │   │   ├── Login.jsx                # Phone Auth & Persona Switcher Modal (Stitch 4)
+│   │   │   ├── ProviderDashboard.jsx    # Provider SaaS Portal & Catalog/Schedule (Stitch 5)
+│   │   │   └── OtpVerification.jsx      # Standalone OTP sheet handler
+│   │   ├── App.jsx                      # Route definitions (/home, /login, /provider)
+│   │   ├── index.css                    # Design system tokens & utility classes
+│   │   └── main.jsx                     # Entry point
+│   ├── index.html                       # Google fonts setup
+│   ├── tailwind.config.js               # At Ease typography, color, & spacing tokens
+│   └── package.json
+├── stitch_at_ease_beauty_booking (3)/   # Client View Design Source HTML
+├── stitch_at_ease_beauty_booking (4)/   # Authentication Sheet Design Source HTML
+├── stitch_at_ease_beauty_booking (5)/   # Provider Dashboard Design Source HTML
+└── README.md                            # Project documentation
+```
 
 ---
 
-## Phase 4
+## 📄 License
 
-- AI Appointment Scheduling
-- AI Marketing Assistant
-- AI Business Insights
-- Recommendation Engine
-- Dynamic Pricing
-- Business Forecasting
-
----
-
-# Long-Term Goal
-
-Aura aims to become an affordable AI-powered business operating platform built specifically for independent beauty professionals.
-
-The platform is designed to simplify business operations, improve customer experience, automate repetitive tasks, and provide actionable business insights, enabling solo entrepreneurs to grow their business without relying on multiple disconnected tools.
-
----
-
-# License
-
-This project is licensed under the **MIT License**.
-
-© 2026 arhennia
+MIT License. Designed and developed for **At Ease** Beauty SaaS.
