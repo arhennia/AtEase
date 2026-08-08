@@ -87,7 +87,7 @@ npm run build
 
 ---
 
-## 📁 Workspace Structure
+##  Workspace Structure
 
 ```
 AtEase/
@@ -112,6 +112,6 @@ AtEase/
 
 ---
 
-## 📄 License
+##  License
 
 MIT License. Designed and developed for **At Ease** Beauty SaaS.
