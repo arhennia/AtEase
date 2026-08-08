@@ -55,7 +55,7 @@ At Ease distinguishes clearly between the **Client** and **Provider (SaaS Partne
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 | Component     | Technology |
 | ------------- | ---------- |
