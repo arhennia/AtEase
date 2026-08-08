@@ -1,4 +1,4 @@
-# 💅 At Ease — Beauty Booking & Provider SaaS Platform
+#  AtEase — Beauty Booking & Provider SaaS Platform
 
 **At Ease** is an AI-enhanced, dual-persona SaaS platform crafted for independent beauty professionals, boutique studio owners, home salon specialists, and their clients.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## 🌟 Key Personas & User Journeys
+##  Key Personas & User Journeys
 
 At Ease distinguishes clearly between the **Client** and **Provider (SaaS Partner)** journeys:
 
@@ -28,7 +28,7 @@ At Ease distinguishes clearly between the **Client** and **Provider (SaaS Partne
 
 ---
 
-## 📱 Interactive Screen Implementations
+##  Interactive Screen Implementations
 
 ### 1. Client Booking Experience (`/home`) — *Stitch (3)*
 - **Specialist Profile**: Artist header showcasing 15+ years experience, 4.9⭐ rating (128 reviews), and service area tags (*Patia & Boutique Studio*).
@@ -46,10 +46,10 @@ At Ease distinguishes clearly between the **Client** and **Provider (SaaS Partne
 - **Pro Monthly Subscription Tier**: Prominent plan badge (`PRO TIER - ₹999/mo`) with an interactive **Subscription Benefits Modal** detailing plan features (Unlimited WhatsApp bookings, Marketing Generator, Multi-tier Pricing, Priority Support).
 - **Operational Metrics**: "Good Morning, Aisha" greeting displaying daily schedule metrics (*3 Bookings Today • ₹5,400 Estimated Revenue*).
 - **Fast-Action Grid**:
-  - ➕ **Add / Edit Service**: Modal form to add treatments with separate in-salon & home visit rates.
-  - 🎨 **Generate Festival Marketing Graphic**: Generates promotional WhatsApp status banners with one-click download & WhatsApp share.
-  - 🔗 **Share Public Booking Link**: One-click link copier with toast feedback (`atease.beauty/luxe-studio-aisha`).
-  - 🚫 **Quick Block Slot**: Blocks time slots for walk-in offline clients or breaks.
+  - **Add / Edit Service**: Modal form to add treatments with separate in-salon & home visit rates.
+  - **Generate Festival Marketing Graphic**: Generates promotional WhatsApp status banners with one-click download & WhatsApp share.
+  - **Share Public Booking Link**: One-click link copier with toast feedback (`atease.beauty/luxe-studio-aisha`).
+  - **Quick Block Slot**: Blocks time slots for walk-in offline clients or breaks.
 - **Service Catalog & Policy Controls**: Live pricing edits for In-Salon & Home Visit rates, toggle for Home Visit availability, toggle for required consultation, and duration editors.
 - **Live Schedule & Client Delay**: Today's appointment feed with segment filter (*TODAY*, *TOMORROW*, *THIS WEEK*), delay controller (+15m / +30m notification trigger), and direct Google Maps directions link.
 
@@ -69,7 +69,7 @@ At Ease distinguishes clearly between the **Client** and **Provider (SaaS Partne
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ```bash
 # 1. Navigate to web application directory
