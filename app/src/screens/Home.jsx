@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
+import { createAppointmentRecord, isSupabaseConfigured } from '../lib/supabase';
 
 const DATES = [
   { day: 'SUN', date: '23', available: true },
@@ -36,6 +37,8 @@ export function Home() {
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id);
   const [bookingNotice, setBookingNotice] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Track active scroll category
   useEffect(() => {
@@ -98,25 +101,41 @@ export function Home() {
     return selectedServices.map(id => allServices.find(s => s.id === id)).filter(Boolean);
   };
 
-  const handleWhatsAppBooking = () => {
+  const handleWhatsAppBooking = async () => {
     const selectedItems = getSelectedServiceItems();
     const selectedNames = selectedItems.map(s => s.name).join(', ');
     const total = calculateTotal();
     const modeText = pricingMode === 'HOME_VISIT' ? 'Home Visit' : 'In-Salon / Studio';
-    
-    const message = encodeURIComponent(
-      `Hello Rajkumari Beauty & Aesthetics, I would like to book a ${modeText} appointment!\n\n` +
-      `Services: ${selectedNames || 'None selected'}\n` +
-      `Date: ${selectedDate} Aug | Time: ${selectedTime}\n` +
-      `Total: ₹${total.toLocaleString('en-IN')}\n\n` +
-      `Please confirm my booking slot.`
-    );
 
-    setBookingNotice(`Opening WhatsApp with your booking details for ₹${total.toLocaleString('en-IN')}!`);
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    const bookingPayload = {
+      clientName: 'Priya Menon',
+      clientPhone: '+91 98765 43210',
+      serviceName: selectedNames || 'Beauty Treatment',
+      date: `${selectedDate} Aug 2026`,
+      time: selectedTime,
+      location: `${modeText} (${provider.locationTag || 'Bhubaneswar, Odisha'})`,
+      status: 'confirmed',
+      amount: total
+    };
+
+    if (isSupabaseConfigured) {
+      const result = await createAppointmentRecord(bookingPayload);
+      if (!result.success) {
+        setErrorMessage(result.error || 'Failed to create appointment in database');
+        setIsSubmitting(false);
+        return;
+      }
+    } else {
+      console.warn('Supabase credentials not configured in .env.local, completing local demo flow');
+      await new Promise(res => setTimeout(res, 800));
+    }
+
+    setIsSubmitting(false);
     setIsBagOpen(false);
-    setTimeout(() => {
-      window.open(`https://wa.me/${provider.whatsappNumber}?text=${message}`, '_blank');
-    }, 800);
+    navigate('/success');
   };
 
   return (
@@ -526,12 +545,29 @@ export function Home() {
                   <span>₹{calculateTotal().toLocaleString('en-IN')}</span>
                 </div>
 
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 text-red-800 border border-red-200 text-xs font-semibold uppercase tracking-wider space-y-1">
+                    <div className="font-bold text-red-900">⚠ BOOKING ERROR</div>
+                    <div className="normal-case font-normal">{errorMessage}</div>
+                  </div>
+                )}
+
                 <button 
                   onClick={handleWhatsAppBooking}
-                  disabled={selectedServices.length === 0}
-                  className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors disabled:opacity-40"
+                  disabled={selectedServices.length === 0 || isSubmitting}
+                  className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
                 >
-                  CONFIRM VIA WHATSAPP →
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>CREATING APPOINTMENT IN SUPABASE...</span>
+                    </>
+                  ) : (
+                    <span>CONFIRM & CREATE BOOKING →</span>
+                  )}
                 </button>
               </div>
 
