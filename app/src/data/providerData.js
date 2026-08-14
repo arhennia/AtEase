@@ -1,3 +1,26 @@
+export const PROVIDERS = [
+  {
+    id: "rajkumari-beauty",
+    slug: "rajkumari-beauty",
+    name: "Rajkumari Beauty & Aesthetics",
+    title: "Master Hair & Skin Specialist",
+    rating: "4.9",
+    reviewCount: "120+",
+    location: "Home Services • Bhubaneswar & Surrounding Areas",
+    description: "Bespoke, high-end beauty and bridal care delivered to your doorstep.",
+    imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
+    coverUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200",
+    tags: ["Hair Care", "Facials & Skin", "Bridal Makeup", "Home Visit"],
+    categories: ["Beauty", "Hair", "Skin", "Nails", "Makeup", "Wellness"],
+    serviceCount: 30,
+    storefrontRoute: "/storefront/rajkumari-beauty"
+  }
+];
+
+export function getProviderBySlug(slug) {
+  return PROVIDERS.find(p => p.slug === slug || p.id === slug) || PROVIDERS[0];
+}
+
 export const RAJKUMARI_PROVIDER_DATA = {
   provider: {
     id: "provider_001",
