@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Home, Briefcase, Info, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export function AddressScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedAddress, setSelectedAddress] = useState('home');
 
   const handleReview = () => {
-    navigate('/review');
+    const addressStr = selectedAddress === 'home' 
+      ? 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar, Odisha' 
+      : selectedAddress === 'work'
+        ? 'DLF Cyber City, Tower B, 4th Floor, Bhubaneswar, Odisha'
+        : 'Plot No. 42, Unit-III, Bhubaneswar, Odisha';
+
+    navigate('/review', {
+      state: {
+        ...(location.state || {}),
+        location: addressStr,
+        selectedAddressType: selectedAddress
+      }
+    });
   };
 
   return (
