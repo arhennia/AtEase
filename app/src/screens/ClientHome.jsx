@@ -42,7 +42,7 @@ export function ClientHome() {
           <div className="flex items-center gap-6">
             <h1 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="font-serif text-xl tracking-[0.15em] uppercase font-bold cursor-pointer"
+              className="font-serif text-xl tracking-[0.15em] font-bold cursor-pointer"
             >
               AtEase
             </h1>
@@ -279,7 +279,7 @@ export function ClientHome() {
 
       {/* Footer */}
       <footer className="border-t border-black bg-white py-10 px-6 md:px-10 text-center space-y-3">
-        <h2 className="font-serif text-lg tracking-[0.2em] uppercase font-bold">AtEase</h2>
+        <h2 className="font-serif text-lg tracking-[0.2em] font-bold">AtEase</h2>
         <p className="text-[10px] tracking-[0.2em] uppercase text-black/50">
           LUXURY BEAUTY &amp; WELLNESS DIRECTORY • BHUBANESWAR, ODISHA
         </p>
