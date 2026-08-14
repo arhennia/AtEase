@@ -157,15 +157,24 @@ export function Login() {
                   <div>
                     <button 
                       onClick={handleSendOtp}
-                      className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors mb-4"
+                      className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors mb-3"
                     >
                       SEND OTP
                     </button>
 
+                    <div className="text-center mb-3">
+                      <button
+                        onClick={() => navigate('/create-account')}
+                        className="text-[10px] tracking-[0.2em] uppercase font-bold text-black border-b border-black pb-0.5 hover:opacity-60"
+                      >
+                        NEW TO AT EASE? CREATE ACCOUNT →
+                      </button>
+                    </div>
+
                     <p className="text-center text-[10px] tracking-[0.15em] text-black/50 uppercase leading-relaxed">
                       BY CONTINUING YOU AGREE TO AT EASE <br/>
-                      <a className="underline hover:text-black font-semibold" href="#">TERMS</a> &amp; 
-                      <a className="underline hover:text-black font-semibold ml-1" href="#">PRIVACY POLICY</a>.
+                      <span className="underline font-semibold">TERMS</span> &amp; 
+                      <span className="underline font-semibold ml-1">PRIVACY POLICY</span>.
                     </p>
                   </div>
                 </motion.div>
