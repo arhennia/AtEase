@@ -116,7 +116,7 @@ export function ProviderStorefront() {
             </button>
             <h1 
               onClick={() => navigate('/')}
-              className="font-serif text-xl tracking-[0.15em] uppercase font-bold cursor-pointer hidden sm:block"
+              className="font-serif text-xl tracking-[0.15em] font-bold cursor-pointer hidden sm:block"
             >
               AtEase
             </h1>
