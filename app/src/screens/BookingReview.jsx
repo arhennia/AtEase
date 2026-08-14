@@ -1,17 +1,44 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CalendarDays, Clock, ArrowRight, Sparkles, Verified } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock, ArrowRight, Sparkles, Verified, AlertCircle } from 'lucide-react';
+import { createAppointmentRecord, isSupabaseConfigured } from '../lib/supabase';
 
 export function BookingReview() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleRequest = () => {
+  const handleRequest = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      navigate('/success');
-    }, 1500);
+    setErrorMessage('');
+
+    const bookingPayload = {
+      clientName: 'Priya Menon',
+      clientPhone: '+91 98765 43210',
+      serviceName: 'Hair Spa & Scalp Massage',
+      date: 'Oct 24, 2023',
+      time: '11:30 AM',
+      location: 'Plot No. 42, Unit-III, Bhubaneswar, Odisha',
+      status: 'confirmed',  
+      amount: 1350
+    };
+
+    if (isSupabaseConfigured) {
+      const result = await createAppointmentRecord(bookingPayload);
+      if (!result.success) {
+        setErrorMessage(result.error || 'Failed to submit appointment to database');
+        setIsProcessing(false);
+        return;
+      }
+    } else {
+      // Gentle warning logged if environment is missing keys, but allows demo flow
+      console.warn('Supabase not configured in .env.local, proceeding with local flow');
+      await new Promise(res => setTimeout(res, 800));
+    }
+
+    setIsProcessing(false);
+    navigate('/success');
   };
 
   return (
@@ -107,6 +134,16 @@ export function BookingReview() {
             </div>
           </div>
         </div>
+
+        {errorMessage && (
+          <div className="flex items-start gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-xs font-medium">
+            <AlertCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+            <div className="flex-1">
+              <span className="font-bold">Booking Request Failed: </span>
+              {errorMessage}
+            </div>
+          </div>
+        )}
 
         {/* Professional Policy Note */}
         <div className="flex items-start gap-3 p-4 bg-surface-container-low rounded-xl border-l-4 border-accent-orange/50">
