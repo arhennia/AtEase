@@ -17,8 +17,10 @@ export function BookingReview() {
       clientName: 'Priya Menon',
       clientPhone: '+91 98765 43210',
       serviceName: 'Hair Spa & Scalp Massage',
+      serviceId: 's2',
       date: 'Oct 24, 2023',
       time: '11:30 AM',
+      bookingTime: '2023-10-24T11:30:00Z',
       location: 'Plot No. 42, Unit-III, Bhubaneswar, Odisha',
       status: 'confirmed',  
       amount: 1350
