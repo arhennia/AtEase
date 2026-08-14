@@ -72,7 +72,7 @@ export function Login() {
         >
           {/* Top Brand Title */}
           <div className="text-center border-b border-black pb-4">
-            <h1 className="font-serif text-2xl tracking-[0.2em] uppercase font-normal text-black">
+            <h1 className="font-serif text-2xl tracking-[0.2em] font-normal text-black">
               AtEase
             </h1>
             <p className="text-[10px] tracking-[0.3em] uppercase text-black/50 mt-1">
