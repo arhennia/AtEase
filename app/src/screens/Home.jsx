@@ -110,6 +110,12 @@ export function Home() {
     setIsSubmitting(true);
     setErrorMessage('');
 
+    if (!isSupabaseConfigured) {
+      setErrorMessage('Supabase is not configured. Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const bookingPayload = {
       clientName: 'Priya Menon',
       clientPhone: '+91 98765 43210',
@@ -121,16 +127,11 @@ export function Home() {
       amount: total
     };
 
-    if (isSupabaseConfigured) {
-      const result = await createAppointmentRecord(bookingPayload);
-      if (!result.success) {
-        setErrorMessage(result.error || 'Failed to create appointment in database');
-        setIsSubmitting(false);
-        return;
-      }
-    } else {
-      console.warn('Supabase credentials not configured in .env.local, completing local demo flow');
-      await new Promise(res => setTimeout(res, 800));
+    const result = await createAppointmentRecord(bookingPayload);
+    if (!result || !result.success) {
+      setErrorMessage(result?.error || 'Failed to create appointment in database');
+      setIsSubmitting(false);
+      return;
     }
 
     setIsSubmitting(false);
