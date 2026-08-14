@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
 
 const supabaseUrl = 
   import.meta.env?.NEXT_PUBLIC_SUPABASE_URL ||
@@ -23,17 +24,57 @@ export const supabase = isSupabaseConfigured
  */
 export function normalizeAppointment(record) {
   if (!record) return null;
+
+  let serviceName = record.service_name || record.service_title || record.service;
+  let amount = record.amount || record.price || record.total_price;
+
+  if (record.service_id && RAJKUMARI_PROVIDER_DATA?.serviceCategories) {
+    const allServices = RAJKUMARI_PROVIDER_DATA.serviceCategories.flatMap(c => c.services || []);
+    const foundService = allServices.find(s => s.id === record.service_id);
+    if (foundService) {
+      if (!serviceName) serviceName = foundService.name;
+      if (!amount) amount = foundService.homePrice || foundService.inSalonPrice;
+    }
+  }
+
+  if (!serviceName) serviceName = 'Hair Spa & Scalp Massage';
+  if (!amount) amount = 1350;
+
+  let dateStr = record.date || record.booking_date;
+  let timeStr = record.time || record.appointment_time;
+
+  if (record.booking_time) {
+    const bt = String(record.booking_time).trim();
+    const d = new Date(bt);
+    if (!isNaN(d.getTime())) {
+      if (!dateStr) {
+        dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      if (!timeStr) {
+        timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      }
+    } else if (bt.includes(' ')) {
+      const parts = bt.split(' ');
+      if (!dateStr) dateStr = parts[0];
+      if (!timeStr && parts.length > 1) timeStr = parts.slice(1).join(' ');
+    }
+  }
+
+  if (!dateStr) dateStr = 'Today';
+  if (!timeStr) timeStr = '11:30 AM';
+
   return {
     id: record.id || `app-${Math.random().toString(36).substr(2, 9)}`,
     clientName: record.client_name || record.customer_name || record.name || record.client || 'Guest Client',
     clientPhone: record.client_phone || record.customer_phone || record.phone || '+91 98765 43210',
-    serviceName: record.service_name || record.service_title || record.service || 'Beauty & Wellness Service',
-    date: record.date || record.booking_date || (record.booking_time ? record.booking_time.split(' ')[0] : 'Today'),
-    time: record.time || record.appointment_time || (record.booking_time ? record.booking_time.split(' ').slice(1).join(' ') : '11:30 AM'),
-    bookingTime: record.booking_time || `${record.date || ''} ${record.time || ''}`.trim(),
+    serviceName: serviceName,
+    serviceId: record.service_id || null,
+    date: dateStr,
+    time: timeStr,
+    bookingTime: record.booking_time || `${dateStr} ${timeStr}`.trim(),
     location: record.location || record.address || record.service_location || 'Plot No. 42, Unit-III, Bhubaneswar, Odisha',
     status: record.status || 'confirmed',
-    amount: Number(record.amount || record.price || record.total_price || 1350),
+    amount: Number(amount),
     createdAt: record.created_at || record.createdAt || new Date().toISOString()
   };
 }
@@ -50,10 +91,11 @@ export async function createAppointmentRecord(bookingData) {
   let payload = {
     client_name: bookingData.clientName || 'Priya Menon',
     client_phone: bookingData.clientPhone || '+91 98765 43210',
+    service_id: bookingData.serviceId || bookingData.service_id || null,
     service_name: bookingData.serviceName || 'Hair Spa & Scalp Massage',
     date: bookingData.date || 'Oct 24, 2023',
     time: bookingData.time || '11:30 AM',
-    booking_time: `${bookingData.date || 'Oct 24, 2023'} ${bookingData.time || '11:30 AM'}`,
+    booking_time: bookingData.bookingTime || `${bookingData.date || 'Oct 24, 2023'} ${bookingData.time || '11:30 AM'}`,
     location: bookingData.location || 'Plot No. 42, Unit-III, Bhubaneswar, Odisha',
     status: bookingData.status || 'confirmed',
     amount: Number(bookingData.amount || 1350),
