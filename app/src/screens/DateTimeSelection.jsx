@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Sun, Sunrise, Moon } from 'lucide-react';
 
 export function DateTimeSelection() {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [selectedDate, setSelectedDate] = useState(0); // index 0 is today
   const [selectedTime, setSelectedTime] = useState(null);
@@ -23,16 +24,43 @@ export function DateTimeSelection() {
   });
 
   const timeSlots = {
-    morning: ['09:00', '10:30', '11:45', '12:15'],
-    afternoon: ['01:00', '02:30', '04:00', '05:15'],
-    evening: ['06:30', '07:45', '08:30 (Full)', '09:00 (Full)']
-  };
-
-  const handleConfirm = () => {
-    navigate('/address');
+    morning: ['09:00 AM', '10:30 AM', '11:45 AM', '12:15 PM'],
+    afternoon: ['01:00 PM', '02:30 PM', '04:00 PM', '05:15 PM'],
+    evening: ['06:30 PM', '07:45 PM', '08:30 PM (Full)', '09:00 PM (Full)']
   };
 
   const activeDateObj = dates[selectedDate];
+
+  const handleConfirm = () => {
+    if (!selectedTime) return;
+    const cleanTime = selectedTime.replace(' (Full)', '');
+    const formattedDate = `${activeDateObj.month} ${activeDateObj.dateNum}, ${activeDateObj.full.getFullYear()}`;
+
+    let isoTime = activeDateObj.full.toISOString();
+    try {
+      const parts = cleanTime.split(' ');
+      const [hoursStr, minsStr] = parts[0].split(':');
+      let hours = parseInt(hoursStr, 10);
+      const mins = parseInt(minsStr, 10);
+      if (parts[1] === 'PM' && hours < 12) hours += 12;
+      if (parts[1] === 'AM' && hours === 12) hours = 0;
+      const d = new Date(activeDateObj.full);
+      d.setHours(hours, mins, 0, 0);
+      isoTime = d.toISOString();
+    } catch (e) {}
+
+    navigate('/address', {
+      state: {
+        ...(location.state || {}),
+        date: formattedDate,
+        time: cleanTime,
+        bookingTime: isoTime,
+        serviceName: location.state?.serviceName || 'Hair Spa & Scalp Massage',
+        amount: location.state?.amount || 1350,
+        serviceId: location.state?.serviceId || 's2'
+      }
+    });
+  };
 
   return (
     <motion.main 
