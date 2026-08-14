@@ -44,7 +44,7 @@ export function ClientHome() {
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="font-serif text-xl tracking-[0.15em] uppercase font-bold cursor-pointer"
             >
-              AT EASE
+              AtEase
             </h1>
             <button 
               onClick={() => navigate('/provider')}
@@ -148,7 +148,7 @@ export function ClientHome() {
               FEATURED PROVIDERS ({filteredProviders.length})
             </h3>
             <span className="text-[10px] tracking-[0.2em] text-black/50 uppercase font-semibold">
-              VERIFIED AT EASE PARTNERS
+              VERIFIED AtEase PARTNERS
             </span>
           </div>
 
@@ -279,7 +279,7 @@ export function ClientHome() {
 
       {/* Footer */}
       <footer className="border-t border-black bg-white py-10 px-6 md:px-10 text-center space-y-3">
-        <h2 className="font-serif text-lg tracking-[0.2em] uppercase font-bold">AT EASE</h2>
+        <h2 className="font-serif text-lg tracking-[0.2em] uppercase font-bold">AtEase</h2>
         <p className="text-[10px] tracking-[0.2em] uppercase text-black/50">
           LUXURY BEAUTY &amp; WELLNESS DIRECTORY • BHUBANESWAR, ODISHA
         </p>
