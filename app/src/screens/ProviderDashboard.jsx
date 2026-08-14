@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
+import { supabase, isSupabaseConfigured, normalizeAppointment } from '../lib/supabase';
 
 export function ProviderDashboard() {
   const navigate = useNavigate();
@@ -19,14 +20,105 @@ export function ProviderDashboard() {
   const [appointmentTime, setAppointmentTime] = useState('11:30 AM');
   const [delayedCount, setDelayedCount] = useState(0);
 
+  // Supabase Live Appointments state
+  const [appointments, setAppointments] = useState([]);
+  const [isLoadingAppointments, setIsLoadingAppointments] = useState(true);
+  const [appointmentsError, setAppointmentsError] = useState('');
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
+
   // Catalog item state
   const [categoriesData, setCategoriesData] = useState(RAJKUMARI_PROVIDER_DATA.serviceCategories);
   const [selectedCategoryTab, setSelectedCategoryTab] = useState(RAJKUMARI_PROVIDER_DATA.serviceCategories[0].id);
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
+    setTimeout(() => setToastMessage(''), 3500);
   };
+
+  const fetchSupabaseAppointments = async () => {
+    setIsLoadingAppointments(true);
+    setAppointmentsError('');
+
+    if (!isSupabaseConfigured) {
+      // Fallback demo appointment if Supabase environment variables are missing
+      setIsLoadingAppointments(false);
+      setAppointments([
+        {
+          id: 'demo-1',
+          clientName: 'Priya Menon',
+          clientPhone: '+91 98765 43210',
+          serviceName: 'Hair Spa & Scalp Massage, Custom Organic Glow Facial',
+          date: 'Oct 24, 2023',
+          time: appointmentTime,
+          location: 'Plot No. 42, Unit-III, Bhubaneswar, Odisha',
+          status: 'confirmed',
+          amount: 4300,
+          createdAt: new Date().toISOString()
+        }
+      ]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        setAppointmentsError(error.message || 'Failed to load live appointments from Supabase');
+        setIsLoadingAppointments(false);
+        return;
+      }
+
+      const normalized = (data || []).map(normalizeAppointment);
+      setAppointments(normalized);
+    } catch (err) {
+      console.error('Unexpected fetch error:', err);
+      setAppointmentsError(err.message || 'Connection error querying Supabase appointments');
+    } finally {
+      setIsLoadingAppointments(false);
+    }
+  };
+
+  // Fetch on mount & set up real-time postgres subscription
+  useEffect(() => {
+    fetchSupabaseAppointments();
+
+    if (isSupabaseConfigured) {
+      const channel = supabase
+        .channel('public:appointments')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'appointments' },
+          (payload) => {
+            console.log('Realtime postgres change received:', payload);
+            setIsRealtimeActive(true);
+            showToast('⚡ LIVE UPDATE: New appointment event synced from Supabase!');
+
+            if (payload.eventType === 'INSERT' && payload.new) {
+              const newAppt = normalizeAppointment(payload.new);
+              setAppointments((prev) => [newAppt, ...prev.filter(a => a.id !== newAppt.id)]);
+            } else if (payload.eventType === 'UPDATE' && payload.new) {
+              const updatedAppt = normalizeAppointment(payload.new);
+              setAppointments((prev) => prev.map(a => a.id === updatedAppt.id ? updatedAppt : a));
+            } else if (payload.eventType === 'DELETE' && payload.old) {
+              setAppointments((prev) => prev.filter(a => a.id !== payload.old.id));
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            setIsRealtimeActive(true);
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, []);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText('https://atease.beauty/rajkumari-beauty-aesthetics');
@@ -139,11 +231,11 @@ export function ProviderDashboard() {
           <div className="flex items-center gap-8 text-[11px] tracking-[0.2em] uppercase font-semibold border-t md:border-t-0 md:border-l border-black/20 pt-4 md:pt-0 md:pl-8 w-full md:w-auto">
             <div>
               <div className="text-black/40 text-[9px] mb-0.5 font-bold">TODAY'S BOOKINGS</div>
-              <div className="text-lg font-bold">3 APPOINTMENTS</div>
+              <div className="text-lg font-bold">{appointments.length} {appointments.length === 1 ? 'APPOINTMENT' : 'APPOINTMENTS'}</div>
             </div>
             <div className="border-l border-black/20 pl-8">
               <div className="text-black/40 text-[9px] mb-0.5 font-bold">ESTIMATED REVENUE</div>
-              <div className="text-lg font-bold">₹5,400</div>
+              <div className="text-lg font-bold">₹{appointments.reduce((sum, a) => sum + (Number(a.amount) || 0), 0).toLocaleString()}</div>
             </div>
           </div>
         </section>
@@ -271,11 +363,30 @@ export function ProviderDashboard() {
         {/* Section 4: Live Schedule */}
         <section className="space-y-6 pt-4">
           <div className="border-b border-black pb-3 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <h3 className="text-xs md:text-sm tracking-[0.25em] uppercase font-bold text-black">
-              TODAY'S SCHEDULE
-            </h3>
+            <div className="flex items-center gap-3">
+              <h3 className="text-xs md:text-sm tracking-[0.25em] uppercase font-bold text-black">
+                LIVE APPOINTMENTS ({appointments.length})
+              </h3>
+              {isSupabaseConfigured ? (
+                <span className="text-[9px] tracking-[0.15em] bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 uppercase font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping inline-block"></span>
+                  SUPABASE REALTIME LIVE
+                </span>
+              ) : (
+                <span className="text-[9px] tracking-[0.15em] bg-amber-50 text-amber-800 border border-amber-300 px-2 py-0.5 uppercase font-bold">
+                  LOCAL DEMO MODE
+                </span>
+              )}
+            </div>
 
-            <div className="flex gap-6 text-[10px] tracking-[0.2em] uppercase font-semibold">
+            <div className="flex gap-4 items-center text-[10px] tracking-[0.2em] uppercase font-semibold">
+              <button 
+                onClick={fetchSupabaseAppointments}
+                className="text-black underline underline-offset-4 hover:opacity-60 transition-opacity"
+              >
+                ↻ REFRESH
+              </button>
+              <div className="h-3 w-px bg-black/20"></div>
               <button 
                 onClick={() => setTimeFilter('TODAY')}
                 className={`transition-all ${timeFilter === 'TODAY' ? 'font-bold border-b-2 border-black text-black pb-1' : 'text-black/40 hover:text-black'}`}
@@ -297,38 +408,102 @@ export function ProviderDashboard() {
             </div>
           </div>
 
-          <div className="border-b border-black/10 pb-6 flex flex-col md:flex-row gap-6 md:items-center justify-between">
-            <div className="space-y-1 md:w-1/4">
-              <div className="font-mono text-2xl font-bold">{appointmentTime}</div>
-              <span className="text-[9px] tracking-[0.2em] uppercase font-bold text-black border border-black px-2 py-0.5 inline-block">
-                HOME VISIT
-              </span>
+          {/* Loading Skeleton State */}
+          {isLoadingAppointments && (
+            <div className="space-y-4 py-4 animate-pulse">
+              {[1, 2].map((i) => (
+                <div key={i} className="border border-black/10 p-6 flex flex-col md:flex-row justify-between gap-4 bg-black/[0.02]">
+                  <div className="space-y-2 md:w-1/4">
+                    <div className="h-6 bg-black/10 w-24 rounded"></div>
+                    <div className="h-4 bg-black/10 w-20 rounded"></div>
+                  </div>
+                  <div className="space-y-2 md:w-1/2">
+                    <div className="h-5 bg-black/10 w-40 rounded"></div>
+                    <div className="h-4 bg-black/10 w-32 rounded"></div>
+                    <div className="h-4 bg-black/10 w-64 rounded"></div>
+                  </div>
+                  <div className="h-9 bg-black/10 w-28 rounded self-start md:self-end"></div>
+                </div>
+              ))}
             </div>
+          )}
 
-            <div className="space-y-0.5 md:w-1/2">
-              <h4 className="text-base font-bold tracking-wider">Priya Menon</h4>
-              <p className="text-xs text-black/60 font-mono">+91 98765 43210</p>
-              <p className="text-xs font-medium pt-1">Keratin Smoothing Treatment, Custom Organic Glow Facial</p>
-              <p className="text-sm font-mono font-bold pt-0.5">₹4,300</p>
+          {/* Error State with Retry */}
+          {!isLoadingAppointments && appointmentsError && (
+            <div className="border-2 border-black p-6 bg-red-50 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-red-900">
+                <span>⚠ SUPABASE API ERROR</span>
+              </div>
+              <p className="text-xs text-red-800 font-mono">{appointmentsError}</p>
+              <button
+                onClick={fetchSupabaseAppointments}
+                className="bg-black text-white px-4 py-2 text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-black/80 transition-colors"
+              >
+                RETRY FETCHING APPOINTMENTS
+              </button>
             </div>
+          )}
 
-            <div className="flex flex-col items-start md:items-end gap-2 md:w-1/4">
+          {/* Empty State */}
+          {!isLoadingAppointments && !appointmentsError && appointments.length === 0 && (
+            <div className="border border-dashed border-black/30 p-12 text-center space-y-4 my-4">
+              <div className="text-2xl">📅</div>
+              <div className="space-y-1">
+                <h4 className="text-sm tracking-[0.2em] font-bold uppercase">NO APPOINTMENTS FOUND</h4>
+                <p className="text-xs text-black/60 max-w-md mx-auto font-light">
+                  No appointments are registered in the Supabase `appointments` table for this selection. Submitting a new booking from the Client View will instantly synchronize real-time entries here.
+                </p>
+              </div>
               <button 
-                onClick={handleDelayAppointment}
+                onClick={() => navigate('/home')}
                 className="bg-black text-white px-5 py-2.5 text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-black/80 transition-colors"
               >
-                DELAY 15M
+                BOOK TEST APPOINTMENT →
               </button>
-              <a 
-                className="text-[10px] tracking-[0.2em] uppercase font-semibold underline underline-offset-4 hover:opacity-60" 
-                href="https://maps.google.com" 
-                target="_blank" 
-                rel="noreferrer"
-              >
-                DIRECTIONS / MAP →
-              </a>
             </div>
-          </div>
+          )}
+
+          {/* Live Appointments List */}
+          {!isLoadingAppointments && !appointmentsError && appointments.length > 0 && (
+            <div className="space-y-4 divide-y divide-black/10">
+              {appointments.map((appt) => (
+                <div key={appt.id} className="pt-4 pb-6 flex flex-col md:flex-row gap-6 md:items-center justify-between">
+                  <div className="space-y-1 md:w-1/4">
+                    <div className="font-mono text-2xl font-bold">{appt.time || '11:30 AM'}</div>
+                    <div className="text-[10px] font-semibold text-black/60 uppercase">{appt.date}</div>
+                    <span className="text-[9px] tracking-[0.2em] uppercase font-bold text-black border border-black px-2 py-0.5 inline-block">
+                      {appt.status?.toUpperCase() || 'CONFIRMED'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 md:w-1/2">
+                    <h4 className="text-base font-bold tracking-wider text-black">{appt.clientName}</h4>
+                    <p className="text-xs text-black/60 font-mono">{appt.clientPhone}</p>
+                    <p className="text-xs font-medium pt-1 text-black/90">{appt.serviceName}</p>
+                    <p className="text-xs text-black/50 font-light truncate">{appt.location}</p>
+                    <p className="text-sm font-mono font-bold pt-1">₹{(Number(appt.amount) || 0).toLocaleString()}</p>
+                  </div>
+
+                  <div className="flex flex-col items-start md:items-end gap-2 md:w-1/4">
+                    <button 
+                      onClick={handleDelayAppointment}
+                      className="bg-black text-white px-5 py-2.5 text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-black/80 transition-colors"
+                    >
+                      DELAY 15M
+                    </button>
+                    <a 
+                      className="text-[10px] tracking-[0.2em] uppercase font-semibold underline underline-offset-4 hover:opacity-60" 
+                      href="https://maps.google.com" 
+                      target="_blank" 
+                      rel="noreferrer"
+                    >
+                      DIRECTIONS / MAP →
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
       </main>
