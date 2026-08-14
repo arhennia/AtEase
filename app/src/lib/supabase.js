@@ -47,7 +47,7 @@ export async function createAppointmentRecord(bookingData) {
     return { success: false, error: 'Supabase environment variables missing. Please check .env.local' };
   }
 
-  const primaryPayload = {
+  let payload = {
     client_name: bookingData.clientName || 'Priya Menon',
     client_phone: bookingData.clientPhone || '+91 98765 43210',
     service_name: bookingData.serviceName || 'Hair Spa & Scalp Massage',
@@ -60,46 +60,71 @@ export async function createAppointmentRecord(bookingData) {
     created_at: new Date().toISOString()
   };
 
-  // Attempt 1: Full payload
-  let { data, error } = await supabase.from('appointments').insert([primaryPayload]).select();
+  const originalPayload = { ...payload };
+  const removedKeys = new Set();
+  let lastErrorMsg = '';
 
-  if (!error && data) {
-    return { success: true, data: data[0] ? normalizeAppointment(data[0]) : primaryPayload };
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert([payload])
+      .select();
+
+    if (!error) {
+      const dbRecord = (data && data.length > 0) ? data[0] : {};
+      const mergedRecord = { ...originalPayload, ...dbRecord };
+      return { success: true, data: normalizeAppointment(mergedRecord) };
+    }
+
+    lastErrorMsg = error?.message || '';
+    console.warn(`Attempt ${attempt + 1} insert failed:`, lastErrorMsg);
+
+    // Extract column name from standard Supabase/PostgREST error messages
+    // E.g.: "Could not find the 'amount' column of 'appointments' in the schema cache"
+    // or 'column "amount" of relation "appointments" does not exist'
+    const colMatch =
+      lastErrorMsg.match(/Could not find the '([^']+)' column/i) ||
+      lastErrorMsg.match(/column ["']([^"']+)["']/i) ||
+      lastErrorMsg.match(/'([^']+)' column/i);
+
+    if (colMatch && colMatch[1] && payload.hasOwnProperty(colMatch[1])) {
+      const missingCol = colMatch[1];
+      console.warn(`Removing unknown column '${missingCol}' from payload and retrying...`);
+      delete payload[missingCol];
+      removedKeys.add(missingCol);
+      continue;
+    }
+
+    // Secondary fallback removals if error string couldn't be parsed directly
+    if (!removedKeys.has('amount') && payload.hasOwnProperty('amount')) {
+      delete payload.amount;
+      removedKeys.add('amount');
+      continue;
+    }
+    if (!removedKeys.has('service_name') && payload.hasOwnProperty('service_name')) {
+      delete payload.service_name;
+      removedKeys.add('service_name');
+      continue;
+    }
+    if (!removedKeys.has('location') && payload.hasOwnProperty('location')) {
+      delete payload.location;
+      removedKeys.add('location');
+      continue;
+    }
+    if (!removedKeys.has('date') && payload.hasOwnProperty('date')) {
+      delete payload.date;
+      removedKeys.add('date');
+      continue;
+    }
+    if (!removedKeys.has('time') && payload.hasOwnProperty('time')) {
+      delete payload.time;
+      removedKeys.add('time');
+      continue;
+    }
+
+    // Break loop if no column could be removed
+    break;
   }
 
-  console.warn('Primary insert failed, attempting schema adaptation:', error?.message);
-
-  // If column error occurs (e.g. unknown column), construct dynamic fallback payload
-  const fallbackPayload = {
-    client_name: bookingData.clientName || 'Priya Menon',
-    client_phone: bookingData.clientPhone || '+91 98765 43210',
-    booking_time: `${bookingData.date || 'Oct 24, 2023'} ${bookingData.time || '11:30 AM'}`,
-    status: bookingData.status || 'confirmed',
-    amount: Number(bookingData.amount || 1350)
-  };
-
-  // If specific column error mentioned date/time/service_name/location/amount
-  if (error?.message?.includes('service_name') || error?.message?.includes('location')) {
-    delete fallbackPayload.service_name;
-    delete fallbackPayload.location;
-  }
-
-  const fallbackResult = await supabase.from('appointments').insert([fallbackPayload]).select();
-
-  if (!fallbackResult.error && fallbackResult.data) {
-    return { success: true, data: normalizeAppointment(fallbackResult.data[0]) };
-  }
-
-  // Attempt 3: Try minimal payload (name, status)
-  const minimalPayload = {
-    client_name: bookingData.clientName || 'Priya Menon',
-    status: bookingData.status || 'confirmed'
-  };
-
-  const minimalResult = await supabase.from('appointments').insert([minimalPayload]).select();
-  if (!minimalResult.error && minimalResult.data) {
-    return { success: true, data: normalizeAppointment(minimalResult.data[0]) };
-  }
-
-  return { success: false, error: error?.message || fallbackResult.error?.message || minimalResult.error?.message || 'Database error inserting appointment' };
+  return { success: false, error: lastErrorMsg || 'Database error inserting appointment' };
 }
