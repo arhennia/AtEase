@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
+import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData.js';
 
 const supabaseUrl = 
   import.meta.env?.NEXT_PUBLIC_SUPABASE_URL ||
