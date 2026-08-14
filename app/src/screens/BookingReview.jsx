@@ -1,29 +1,59 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CalendarDays, Clock, ArrowRight, Sparkles, Verified, AlertCircle } from 'lucide-react';
 import { createAppointmentRecord, isSupabaseConfigured } from '../lib/supabase';
 
 export function BookingReview() {
   const navigate = useNavigate();
+  const locationState = useLocation();
+  const state = locationState.state || {};
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const clientName = state.clientName || 'Priya Menon';
+  const clientPhone = state.clientPhone || '+91 98765 43210';
+  const serviceName = state.serviceName || 'Hair Spa & Scalp Massage';
+  const serviceId = state.serviceId || 's2';
+  
+  const now = new Date();
+  const defaultDateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const date = state.date || defaultDateStr;
+  const time = state.time || '11:30 AM';
+  const address = state.location || 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar, Odisha';
+  const amount = Number(state.amount) || 1350;
+
+  // Build proper ISO timestamp for Supabase DB
+  let bookingTimeIso = state.bookingTime;
+  if (!bookingTimeIso) {
+    try {
+      const parsed = new Date(`${date} ${time}`);
+      if (!isNaN(parsed.getTime())) {
+        bookingTimeIso = parsed.toISOString();
+      } else {
+        bookingTimeIso = now.toISOString();
+      }
+    } catch(e) {
+      bookingTimeIso = now.toISOString();
+    }
+  }
 
   const handleRequest = async () => {
     setIsProcessing(true);
     setErrorMessage('');
 
     const bookingPayload = {
-      clientName: 'Priya Menon',
-      clientPhone: '+91 98765 43210',
-      serviceName: 'Hair Spa & Scalp Massage',
-      serviceId: 's2',
-      date: 'Oct 24, 2023',
-      time: '11:30 AM',
-      bookingTime: '2023-10-24T11:30:00Z',
-      location: 'Plot No. 42, Unit-III, Bhubaneswar, Odisha',
+      clientName,
+      clientPhone,
+      serviceName,
+      serviceId,
+      date,
+      time,
+      bookingTime: bookingTimeIso,
+      location: address,
       status: 'confirmed',  
-      amount: 1350
+      amount
     };
 
     if (isSupabaseConfigured) {
@@ -34,7 +64,6 @@ export function BookingReview() {
         return;
       }
     } else {
-      // Gentle warning logged if environment is missing keys, but allows demo flow
       console.warn('Supabase not configured in .env.local, proceeding with local flow');
       await new Promise(res => setTimeout(res, 800));
     }
@@ -80,7 +109,7 @@ export function BookingReview() {
           <div className="p-4 flex gap-4 items-center bg-surface-container-low border-b border-outline-variant">
             <img alt="Service Image" className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV15xjZxG2DQ7iYDIz7upkMuM3UlOlVF4tGn7JdBlxhgITZWFEVvGwWQzUQCJA4iHyqpr0SgLxn7V8eoA32rj6t17WOVQeTj56PQA1x9xHer22VID9DghttvpNeedfkwGXLKnL_yzgLKMYYsg58IqNCl1krzvneYXrYSpYSdumtYjSJAcnSWsU1Z74NJpQGxGELcPvA7Ld8z5cYw0YIK--HCyFOv2jSNEhfq6F0y3KYI60pSADGC_nuIijgei7G_UMzYef6bmB6g" />
             <div>
-              <h3 className="text-[18px] font-semibold text-primary leading-tight">Hair Spa & Scalp Massage</h3>
+              <h3 className="text-[18px] font-semibold text-primary leading-tight">{serviceName}</h3>
               <p className="text-[14px] text-on-surface-variant mt-1">60 min • Professional Care</p>
             </div>
           </div>
@@ -92,14 +121,14 @@ export function BookingReview() {
                 <p className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Date</p>
                 <div className="flex items-center gap-2">
                   <CalendarDays size={18} className="text-accent-moss" />
-                  <span className="text-[16px] text-on-surface font-semibold">Oct 24, 2023</span>
+                  <span className="text-[16px] text-on-surface font-semibold">{date}</span>
                 </div>
               </div>
               <div className="space-y-1.5">
                 <p className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Time</p>
                 <div className="flex items-center gap-2">
                   <Clock size={18} className="text-accent-moss" />
-                  <span className="text-[16px] text-on-surface font-semibold">11:30 AM</span>
+                  <span className="text-[16px] text-on-surface font-semibold">{time}</span>
                 </div>
               </div>
             </div>
@@ -109,10 +138,9 @@ export function BookingReview() {
               <p className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Service Location</p>
               <div className="flex gap-4 items-start">
                 <div className="flex-1">
-                  <p className="text-[16px] text-on-surface font-semibold leading-tight">Plot No. 42, Unit-III</p>
-                  <p className="text-[14px] text-on-surface-variant mt-1">Bhubaneswar, Odisha</p>
+                  <p className="text-[15px] text-on-surface font-semibold leading-tight">{address}</p>
                 </div>
-                <div className="w-20 h-20 rounded-lg overflow-hidden grayscale border border-outline-variant shrink-0">
+                <div className="w-16 h-16 rounded-lg overflow-hidden grayscale border border-outline-variant shrink-0">
                   <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDdVgGfXCUqTwq1F703dGrR77M6YDBoERdqmrE5srjSt8aLLUU-CYeWzywu0tSoJ1lMOfIrBCGydDAWuoeE2qdvwdw0F0eOee9V3d1fZw1in8neGcI1YrCrYmWwOyhIx0ZLZ4hIFfimwMQ7fBkhTQdFGGRSQdGO-CCAKtMLEXT8CP-ezIGh2RknzH5X-CCCrkHLn5Fwk9kC7R4gkQcakBXhG6qZ6gL5SrBdspTCgKsbAcq_m5Cv7C91Vnp9qhicKCC2TJQ1dFdgwg')" }}></div>
                 </div>
               </div>
@@ -121,17 +149,13 @@ export function BookingReview() {
             {/* Billing Breakdown */}
             <div className="pt-4 mt-4 border-t border-dashed border-outline-variant space-y-2">
               <div className="flex justify-between items-center text-[14px]">
-                <span className="text-on-surface-variant">Service Fee</span>
-                <span className="text-on-surface font-medium">₹1,200.00</span>
-              </div>
-              <div className="flex justify-between items-center text-[14px]">
-                <span className="text-on-surface-variant">Travel Fee</span>
-                <span className="text-on-surface font-medium">₹150.00</span>
+                <span className="text-on-surface-variant">Service Total</span>
+                <span className="text-on-surface font-medium">₹{amount.toLocaleString()}</span>
               </div>
               
               <div className="pt-4 mt-3 flex justify-between items-center bg-[image:linear-gradient(to_right,#c1c9be_50%,transparent_50%)] bg-[length:8px_1px] bg-repeat-x bg-top">
                 <span className="text-[18px] font-semibold text-on-surface">Amount Due</span>
-                <span className="text-[18px] font-bold text-primary">₹1,350.00</span>
+                <span className="text-[18px] font-bold text-primary">₹{amount.toLocaleString()}</span>
               </div>
             </div>
           </div>
