@@ -12,6 +12,7 @@ import { AddressScreen } from './screens/AddressScreen';
 import { BookingReview } from './screens/BookingReview';
 import { BookingSuccess } from './screens/BookingSuccess';
 import { CreateAccount } from './screens/CreateAccount';
+import { Splash } from './screens/Splash';
 
 function App() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function App() {
         {/* Client Discovery Discovery Platform */}
         <Route path="/" element={<ClientHome />} />
         <Route path="/home" element={<ClientHome />} />
+        <Route path="/splash" element={<Splash />} />
         
         {/* Provider Storefront Experience */}
         <Route path="/storefront" element={<ProviderStorefront />} />
