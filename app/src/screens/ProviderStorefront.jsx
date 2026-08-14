@@ -3,38 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RAJKUMARI_PROVIDER_DATA, getProviderBySlug } from '../data/providerData';
 
-const DATES = [
-  { day: 'SUN', date: '23', available: true },
-  { day: 'MON', date: '24', available: true },
-  { day: 'TUE', date: '25', available: true },
-  { day: 'WED', date: '26', available: true },
-  { day: 'THU', date: '27', available: true },
-  { day: 'FRI', date: '28', available: true },
-  { day: 'SAT', date: '29', available: false },
-];
-
-const TIME_SLOTS = [
-  { time: '09:00 AM', available: true },
-  { time: '10:30 AM', available: true },
-  { time: '12:00 PM', available: false },
-  { time: '01:30 PM', available: false },
-  { time: '03:00 PM', available: true },
-  { time: '04:30 PM', available: true },
-];
-
 export function ProviderStorefront() {
   const navigate = useNavigate();
   const { providerId } = useParams();
   
-  const providerMeta = getProviderBySlug(providerId || 'rajkumari-beauty');
+  const providerObj = getProviderBySlug(providerId || 'rajkumari-beauty');
   const provider = RAJKUMARI_PROVIDER_DATA.provider;
   const categories = RAJKUMARI_PROVIDER_DATA.serviceCategories;
 
   const [pricingMode, setPricingMode] = useState('HOME_VISIT'); // 'IN_SALON' | 'HOME_VISIT'
   const [selectedServices, setSelectedServices] = useState(['s1', 's10']);
   const [expandedServices, setExpandedServices] = useState(['s1']);
-  const [selectedDate, setSelectedDate] = useState('24');
-  const [selectedTime, setSelectedTime] = useState('03:00 PM');
   const [searchQuery, setSearchQuery] = useState('');
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id);
