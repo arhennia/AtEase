@@ -1,7 +1,8 @@
 import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { Home } from './screens/Home';
+import { ClientHome } from './screens/ClientHome';
+import { ProviderStorefront } from './screens/ProviderStorefront';
 import { Login } from './screens/Login';
 import { OtpVerification } from './screens/OtpVerification';
 import { ProviderDashboard } from './screens/ProviderDashboard';
@@ -18,10 +19,14 @@ function App() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Default route points directly to Client Booking Experience */}
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
+        {/* Client Discovery Discovery Platform */}
+        <Route path="/" element={<ClientHome />} />
+        <Route path="/home" element={<ClientHome />} />
         
+        {/* Provider Storefront Experience */}
+        <Route path="/storefront" element={<ProviderStorefront />} />
+        <Route path="/storefront/:providerId" element={<ProviderStorefront />} />
+
         {/* Authentication Sheet (Dual Role Client & Provider Login) */}
         <Route path="/login" element={<Login />} />
         <Route path="/otp" element={<OtpVerification />} />
