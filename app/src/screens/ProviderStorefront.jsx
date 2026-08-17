@@ -1,438 +1,289 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RAJKUMARI_PROVIDER_DATA, getProviderBySlug } from '../data/providerData';
+import { useAppStore } from '../store/useAppStore';
+import { Header } from '../components/common/Header';
+import { MOCK_PROVIDERS } from '../data/mockProviders';
+import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
+import { 
+  MapPin, 
+  Star, 
+  ArrowLeft, 
+  ShoppingBag, 
+  Clock, 
+  Plus, 
+  Check, 
+  Home, 
+  Building2, 
+  ShieldCheck, 
+  Phone, 
+  Calendar,
+  Sparkles
+} from 'lucide-react';
 
 export function ProviderStorefront() {
   const navigate = useNavigate();
   const { providerId } = useParams();
-  
-  const providerObj = getProviderBySlug(providerId || 'rajkumari-beauty');
-  const provider = RAJKUMARI_PROVIDER_DATA.provider;
+
+  const providerObj = MOCK_PROVIDERS.find((p) => p.slug === providerId || p.id === providerId) || MOCK_PROVIDERS[0];
   const categories = RAJKUMARI_PROVIDER_DATA.serviceCategories;
 
-  const [pricingMode, setPricingMode] = useState('HOME_VISIT'); // 'IN_SALON' | 'HOME_VISIT'
-  const [selectedServices, setSelectedServices] = useState(['s1', 's10']);
-  const [expandedServices, setExpandedServices] = useState(['s1']);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isBagOpen, setIsBagOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(categories[0]?.id);
+  const pricingMode = useAppStore((state) => state.pricingMode);
+  const setPricingMode = useAppStore((state) => state.setPricingMode);
+  const cart = useAppStore((state) => state.cart);
+  const addToCart = useAppStore((state) => state.addToCart);
+  const openBookingModal = useAppStore((state) => state.openBookingModal);
+  const setCartDrawerOpen = useAppStore((state) => state.setCartDrawerOpen);
 
-  // Track active scroll category
-  useEffect(() => {
-    const handleScroll = () => {
-      const categoryElements = categories.map(cat => document.getElementById(`cat-sec-${cat.id}`));
-      const scrollPosition = window.scrollY + 160;
+  const [activeCategory, setActiveCategory] = useState(categories[0].id);
 
-      for (let i = categoryElements.length - 1; i >= 0; i--) {
-        const el = categoryElements[i];
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveCategory(categories[i].id);
-          break;
-        }
-      }
-    };
+  const isCartItem = (serviceId) => cart.some((c) => c.id === serviceId);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [categories]);
-
-  const scrollToCategory = (catId) => {
-    setActiveCategory(catId);
-    const element = document.getElementById(`cat-sec-${catId}`);
-    if (element) {
-      const offsetTop = element.offsetTop - 80;
-      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
-    }
-  };
-
-  const toggleService = (id) => {
-    if (selectedServices.includes(id)) {
-      setSelectedServices(selectedServices.filter(s => s !== id));
-    } else {
-      setSelectedServices([...selectedServices, id]);
-    }
-  };
-
-  const toggleExpand = (id) => {
-    if (expandedServices.includes(id)) {
-      setExpandedServices(expandedServices.filter(e => e !== id));
-    } else {
-      setExpandedServices([...expandedServices, id]);
-    }
-  };
-
-  const calculateTotal = () => {
-    let total = 0;
-    categories.forEach(cat => {
-      cat.services.forEach(service => {
-        if (selectedServices.includes(service.id)) {
-          total += pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
-        }
-      });
-    });
-    return total;
-  };
-
-  const getSelectedServiceItems = () => {
-    const allServices = categories.flatMap(c => c.services);
-    return selectedServices.map(id => allServices.find(s => s.id === id)).filter(Boolean);
-  };
-
-  const handleProceedToBooking = () => {
-    const selectedItems = getSelectedServiceItems();
-    if (selectedItems.length === 0) return;
-    const selectedNames = selectedItems.map(s => s.name).join(', ');
-    const total = calculateTotal();
-
-    setIsBagOpen(false);
-
-    navigate('/date-time', {
-      state: {
-        serviceName: selectedNames || 'Beauty Treatment',
-        amount: total,
-        serviceId: selectedServices[0] || 's2',
-        selectedServices,
-        pricingMode,
-        providerName: provider.displayName
-      }
+  const handleBookSingle = (service) => {
+    const price = pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
+    openBookingModal({
+      provider: providerObj,
+      serviceName: service.name,
+      amount: price,
+      pricingMode
     });
   };
 
   return (
-    <div className="bg-white text-black font-sans antialiased min-h-screen selection:bg-black selection:text-white">
+    <div className="bg-[#FFFFFF] text-[#111111] font-sans antialiased min-h-screen selection:bg-[#111111] selection:text-white">
       
-      {/* Top Header Bar */}
-      <header className="sticky top-0 w-full z-40 bg-white/90 backdrop-blur-md border-b border-black/10">
-        <div className="max-w-[1300px] mx-auto px-6 md:px-10 h-16 flex items-center justify-between">
-          
-          {/* Back to Providers & Brand */}
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => navigate('/')}
-              className="text-[10px] tracking-[0.2em] uppercase font-bold text-black border border-black px-3 py-1.5 hover:bg-black hover:text-white transition-colors"
-            >
-              ← BACK TO PROVIDERS
-            </button>
-            <h1 
-              onClick={() => navigate('/')}
-              className="font-serif text-xl tracking-[0.15em] font-bold cursor-pointer hidden sm:block"
-            >
-              AtEase
-            </h1>
-          </div>
+      {/* Global Header */}
+      <Header />
 
-          {/* Center Minimal Search */}
-          <div className="hidden md:flex items-center relative w-64">
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="SEARCH CATALOG SERVICES..."
-              className="w-full bg-transparent border-b border-black/30 focus:border-black text-[10px] tracking-[0.2em] uppercase py-1 pr-6 focus:outline-none placeholder:text-black/40 text-black font-medium"
-            />
-            <span className="material-symbols-outlined text-xs absolute right-0 text-black/60 pointer-events-none">search</span>
-          </div>
+      {/* Storefront Hero Cover */}
+      <section className="relative w-full h-72 sm:h-96 bg-stone-900 overflow-hidden">
+        <img
+          src={providerObj.imageUrl}
+          alt={providerObj.name}
+          className="w-full h-full object-cover opacity-90"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-          {/* Right Navigation */}
-          <div className="flex items-center gap-6 text-[10px] tracking-[0.2em] uppercase font-medium">
-            <button 
-              onClick={() => navigate('/login')}
-              className="hover:opacity-60 transition-opacity hidden sm:block"
-            >
-              ACCOUNT
-            </button>
-            <button 
-              onClick={() => setIsBagOpen(true)}
-              className="hover:opacity-60 transition-opacity flex items-center gap-1 border-b border-black pb-0.5 font-bold"
-            >
-              BAG [ {selectedServices.length} ]
-            </button>
-          </div>
-
+        <div className="absolute top-6 left-4 sm:left-10 z-10">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md text-[#111111] px-3.5 py-1.5 text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-white transition-colors"
+          >
+            <ArrowLeft size={13} />
+            <span>Back to Providers</span>
+          </button>
         </div>
-      </header>
 
-      {/* Main Editorial Canvas */}
-      <main className="max-w-[1300px] mx-auto px-6 md:px-10 pt-8 pb-32">
-
-        {/* Hero Provider Header Banner */}
-        <section className="mb-10 border-b border-black/10 pb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shrink-0 border border-black/20">
-              <img 
-                src={provider.avatarUrl} 
-                alt={provider.displayName} 
-                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-              />
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase text-black/60 font-semibold">
-                <span>VERIFIED PROVIDER</span>
-                <span>•</span>
-                <span>{provider.rating} ★ ({provider.reviewCount})</span>
-              </div>
-              <h2 className="font-serif text-xl md:text-2xl tracking-[0.05em] uppercase font-bold text-black">
-                {provider.displayName}
-              </h2>
-              <p className="text-[11px] tracking-[0.15em] uppercase font-medium text-black/70">
-                {provider.professionalTitle} — {provider.yearsOfExperience}
-              </p>
-              <p className="text-xs text-black/70 font-light italic">
-                "{provider.tagline}"
-              </p>
+        {/* Hero Title & Provider Meta on Banner */}
+        <div className="absolute bottom-6 sm:bottom-10 left-4 sm:left-10 right-4 sm:right-10 z-10 text-white space-y-2 max-w-3xl">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] tracking-[0.25em] uppercase font-bold bg-white/20 backdrop-blur-md px-2.5 py-1 border border-white/30">
+              {providerObj.typeLabel}
+            </span>
+            <div className="flex items-center gap-1 bg-white text-[#111111] px-2 py-0.5 text-[10px] font-mono font-bold">
+              <Star size={11} className="fill-[#111111] text-[#111111]" />
+              <span>{providerObj.rating} ({providerObj.reviewCount} reviews)</span>
             </div>
           </div>
 
-          <div className="text-right text-[10px] tracking-[0.2em] uppercase font-medium text-black/60 shrink-0 border-t md:border-t-0 md:border-l border-black/10 pt-4 md:pt-0 md:pl-6">
-            <div className="flex items-center gap-1 justify-end">
-              <span className="material-symbols-outlined text-xs">location_on</span>
-              {provider.locationTag}
+          <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl tracking-wide uppercase font-normal text-white">
+            {providerObj.name}
+          </h1>
+
+          <p className="text-xs sm:text-sm text-white/90 font-light max-w-2xl">
+            {providerObj.description}
+          </p>
+        </div>
+      </section>
+
+      {/* Main Container */}
+      <main className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-10">
+        
+        {/* Profile Info Strip & Mode Selector */}
+        <div className="p-6 border border-stone-200 bg-[#F9F9F9] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase text-stone-600">
+              <MapPin size={14} className="text-[#111111]" />
+              <span>{providerObj.location}</span>
             </div>
-          </div>
-        </section>
-
-        {/* Pricing Mode Toggle */}
-        <section className="mb-10 flex justify-center">
-          <div className="flex items-center gap-6 text-xs tracking-[0.2em] uppercase font-medium border-b border-black/20 pb-2">
-            <button 
-              onClick={() => setPricingMode('IN_SALON')}
-              className={`transition-all ${pricingMode === 'IN_SALON' ? 'font-bold border-b-2 border-black pb-2 -mb-2.5 text-black' : 'text-black/40 hover:text-black'}`}
-            >
-              IN-SALON / STUDIO
-            </button>
-            <span className="text-black/30 font-light">|</span>
-            <button 
-              onClick={() => setPricingMode('HOME_VISIT')}
-              className={`transition-all ${pricingMode === 'HOME_VISIT' ? 'font-bold border-b-2 border-black pb-2 -mb-2.5 text-black' : 'text-black/40 hover:text-black'}`}
-            >
-              HOME VISIT (INCLUDES SETUP)
-            </button>
-          </div>
-        </section>
-
-        {/* Layout: Main Catalog (Left) + Right-Side Category Index */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
-          {/* Main Service List Column */}
-          <div className="lg:col-span-8 space-y-16">
-            {categories.map((category, index) => {
-              const catIndex = (index + 1).toString().padStart(2, '0');
-              const filteredServices = category.services.filter(s => 
-                !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase()) || s.description.toLowerCase().includes(searchQuery.toLowerCase())
-              );
-
-              if (filteredServices.length === 0) return null;
-
-              return (
-                <section key={category.id} id={`cat-sec-${category.id}`} className="scroll-mt-24">
-                  
-                  {/* Category Header */}
-                  <div className="border-b border-black pb-3 mb-6 flex justify-between items-end">
-                    <h3 className="text-xs md:text-sm tracking-[0.25em] uppercase font-bold text-black flex items-center gap-2">
-                      <span>| {catIndex} |</span>
-                      <span>{category.categoryName}</span>
-                    </h3>
-                    <span className="text-[10px] tracking-[0.2em] text-black/50 font-semibold">
-                      {filteredServices.length} SERVICES
-                    </span>
-                  </div>
-
-                  {/* Service Items List */}
-                  <div className="space-y-6">
-                    {filteredServices.map((service) => {
-                      const isSelected = selectedServices.includes(service.id);
-                      const isExpanded = expandedServices.includes(service.id);
-                      const currentPrice = pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
-
-                      return (
-                        <div key={service.id} className="border-b border-black/10 pb-6 space-y-3">
-                          
-                          {/* Service Header Row */}
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="space-y-1">
-                              <h4 
-                                onClick={() => navigate('/service', { state: { service, pricingMode, providerName: provider.displayName } })}
-                                className="text-sm md:text-base tracking-[0.05em] font-bold text-black cursor-pointer hover:opacity-60 transition-opacity"
-                              >
-                                {service.name}
-                              </h4>
-                              <p className="text-[10px] tracking-[0.2em] uppercase text-black/50 font-medium">
-                                {service.duration}
-                              </p>
-                            </div>
-
-                            <div className="text-right space-y-1">
-                              <div className="text-sm md:text-base tracking-[0.05em] font-bold text-black">
-                                ₹{currentPrice.toLocaleString('en-IN')}
-                              </div>
-                              <button 
-                                onClick={() => toggleService(service.id)}
-                                className={`text-[10px] tracking-[0.2em] uppercase font-bold transition-all border-b ${
-                                  isSelected 
-                                    ? 'border-black text-black font-extrabold' 
-                                    : 'border-transparent text-black/60 hover:text-black hover:border-black'
-                                }`}
-                              >
-                                {isSelected ? '[ REMOVE ]' : '[ + ADD TO BAG ]'}
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Expandable Image & Description */}
-                          <div className="pt-1 space-y-3">
-                            <p className="text-xs leading-relaxed text-black/70 font-light">
-                              {service.description}
-                            </p>
-                            {isExpanded && service.imageUrl && (
-                              <div className="max-w-xs h-40 overflow-hidden rounded">
-                                <img 
-                                  src={service.imageUrl} 
-                                  alt={service.name} 
-                                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" 
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                </section>
-              );
-            })}
-
+            <p className="text-[11px] text-stone-500 font-light">
+              Coverage Radius: <strong>{providerObj.coverageRadiusKm} km</strong> from base • Direct client payment (Cash/UPI/Card)
+            </p>
           </div>
 
-          {/* Right-Side Category Index Menu */}
-          <aside className="hidden lg:block lg:col-span-4 sticky top-24 space-y-6 pl-6 border-l border-black/10">
-            <div className="text-[10px] tracking-[0.3em] uppercase font-bold text-black pb-2 border-b border-black">
-              INDEX / CATEGORIES
-            </div>
-
-            <nav className="space-y-3">
-              {categories.map((cat, idx) => {
-                const isActive = activeCategory === cat.id;
-                const catNum = (idx + 1).toString().padStart(2, '0');
-                return (
-                  <button 
-                    key={cat.id}
-                    onClick={() => scrollToCategory(cat.id)}
-                    className={`w-full text-left text-[11px] tracking-[0.15em] uppercase transition-all flex items-center justify-between group ${
-                      isActive 
-                        ? 'font-bold text-black border-l-2 border-black pl-3 -ml-3' 
-                        : 'text-black/50 hover:text-black'
-                    }`}
-                  >
-                    <span className="truncate pr-2">| {catNum} | {cat.categoryName}</span>
-                    <span className="text-[9px] text-black/40 font-mono">
-                      [{cat.services.length}]
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            <div className="pt-6 border-t border-black space-y-3">
-              <div className="flex justify-between text-[11px] tracking-[0.2em] uppercase font-bold">
-                <span>ESTIMATE</span>
-                <span>₹{calculateTotal().toLocaleString('en-IN')}</span>
-              </div>
-              <button 
-                onClick={() => setIsBagOpen(true)}
-                className="w-full bg-black text-white py-3 text-[11px] tracking-[0.2em] uppercase font-bold hover:bg-black/80 transition-colors"
+          {/* Treatment Mode Switcher */}
+          <div className="space-y-1.5 w-full md:w-auto">
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
+              Select Pricing Mode
+            </span>
+            <div className="flex p-1 bg-white border border-stone-200 rounded-sm text-[11px] tracking-wider uppercase font-semibold">
+              <button
+                type="button"
+                onClick={() => setPricingMode('HOME_VISIT')}
+                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${
+                  pricingMode === 'HOME_VISIT'
+                    ? 'bg-[#111111] text-white shadow-sm'
+                    : 'text-stone-600 hover:text-[#111111]'
+                }`}
               >
-                VIEW SHOPPING BAG [ {selectedServices.length} ]
+                <Home size={13} />
+                <span>At-Home Visit</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPricingMode('IN_SALON')}
+                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${
+                  pricingMode === 'IN_SALON'
+                    ? 'bg-[#111111] text-white shadow-sm'
+                    : 'text-stone-600 hover:text-[#111111]'
+                }`}
+              >
+                <Building2 size={13} />
+                <span>In-Studio</span>
               </button>
             </div>
-          </aside>
-
+          </div>
         </div>
+
+        {/* Category Navigation Pills */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar border-b border-stone-200 pb-3 sticky top-16 sm:top-20 bg-white z-30 pt-2">
+          {categories.map((cat) => {
+            const isSelected = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold transition-all whitespace-nowrap rounded-full border ${
+                  isSelected
+                    ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
+                    : 'bg-[#FFFFFF] text-stone-700 border-stone-200 hover:border-[#111111]'
+                }`}
+              >
+                {cat.categoryName.split('&')[0].trim()} ({cat.services.length})
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Services Grid for Active Category */}
+        {categories
+          .filter((cat) => cat.id === activeCategory)
+          .map((cat) => (
+            <section key={cat.id} className="space-y-6">
+              <div className="border-b border-stone-200 pb-2">
+                <h2 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+                  {cat.categoryName}
+                </h2>
+                <p className="text-xs text-stone-500 font-light mt-0.5">
+                  Pricing updated for: <strong>{pricingMode === 'HOME_VISIT' ? 'Mobile Home Visit' : 'In-Studio Service'}</strong>
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {cat.services.map((service) => {
+                  const currentPrice = pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
+                  const inCart = isCartItem(service.id);
+
+                  return (
+                    <div
+                      key={service.id}
+                      className="border border-stone-200 bg-[#FFFFFF] p-5 flex flex-col justify-between hover:border-stone-400 hover:shadow-md transition-all group"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[9px] tracking-[0.2em] uppercase font-semibold text-stone-500 flex items-center gap-1">
+                            <Clock size={11} />
+                            <span>{service.duration}</span>
+                          </span>
+                          <span className="font-mono text-base font-bold text-[#111111]">
+                            ₹{Number(currentPrice).toLocaleString()}
+                          </span>
+                        </div>
+
+                        <h3 className="font-serif text-base font-semibold tracking-wide text-[#111111]">
+                          {service.name}
+                        </h3>
+
+                        <p className="text-xs text-stone-600 font-light leading-relaxed">
+                          {service.description}
+                        </p>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="pt-5 border-t border-stone-100 flex gap-2">
+                        <button
+                          onClick={() => {
+                            addToCart({
+                              ...service,
+                              category: cat.categoryName,
+                              homePrice: service.homePrice,
+                              inSalonPrice: service.inSalonPrice
+                            });
+                          }}
+                          className={`flex-1 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold border transition-colors flex items-center justify-center gap-1 ${
+                            inCart
+                              ? 'bg-stone-100 border-stone-300 text-stone-800'
+                              : 'border-stone-300 text-[#111111] hover:border-black'
+                          }`}
+                        >
+                          {inCart ? (
+                            <>
+                              <Check size={12} />
+                              <span>In Bag</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus size={12} />
+                              <span>Add to Bag</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={() => handleBookSingle(service)}
+                          className="flex-1 bg-[#111111] text-white py-2 text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-black transition-colors"
+                        >
+                          Direct Book
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+
+        {/* Exact Payment Trust Notice */}
+        <section className="p-6 border border-stone-300 bg-[#F9F9F9] space-y-2">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#111111]">
+            <ShieldCheck size={16} />
+            <span>Direct Payment Notice</span>
+          </div>
+          <p className="text-xs text-stone-600 font-light leading-relaxed">
+            Pay directly to the service provider at the time of service via Cash, UPI, or Card. AtEase charges zero platform commission to independent providers.
+          </p>
+        </section>
 
       </main>
 
-      {/* Shopping Bag Drawer */}
-      <AnimatePresence>
-        {isBagOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm">
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.4 }}
-              className="bg-white w-full max-w-md h-full flex flex-col justify-between p-8 border-l border-black shadow-2xl"
-            >
-              {/* Bag Header */}
-              <div className="space-y-6">
-                <div className="flex justify-between items-center border-b border-black pb-4">
-                  <h3 className="text-xs tracking-[0.3em] uppercase font-bold text-black">
-                    SHOPPING BAG [ {selectedServices.length} ]
-                  </h3>
-                  <button 
-                    onClick={() => setIsBagOpen(false)}
-                    className="text-xs tracking-widest uppercase font-bold hover:opacity-50"
-                  >
-                    CLOSE [ X ]
-                  </button>
-                </div>
-
-                {/* Selected Items List */}
-                <div className="space-y-4 max-h-[50vh] overflow-y-auto no-scrollbar">
-                  {getSelectedServiceItems().length === 0 ? (
-                    <p className="text-xs tracking-[0.2em] uppercase text-black/50 text-center py-10">
-                      YOUR BAG IS CURRENTLY EMPTY
-                    </p>
-                  ) : (
-                    getSelectedServiceItems().map((item) => {
-                      const price = pricingMode === 'HOME_VISIT' ? item.homePrice : item.inSalonPrice;
-                      return (
-                        <div key={item.id} className="flex justify-between items-start border-b border-black/10 pb-4">
-                          <div>
-                            <h4 className="text-xs tracking-widest uppercase font-bold">{item.name}</h4>
-                            <p className="text-[10px] text-black/50 tracking-wider uppercase mt-0.5">{item.duration}</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-xs font-bold">₹{price.toLocaleString('en-IN')}</div>
-                            <button 
-                              onClick={() => toggleService(item.id)}
-                              className="text-[9px] tracking-widest uppercase text-black/40 hover:text-black underline mt-1"
-                            >
-                              REMOVE
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {/* Bag Checkout Summary */}
-              <div className="border-t border-black pt-6 space-y-4">
-                <div className="flex justify-between text-xs tracking-[0.2em] uppercase font-semibold">
-                  <span>LOCATION MODE</span>
-                  <span>{pricingMode === 'HOME_VISIT' ? 'HOME VISIT' : 'IN-SALON'}</span>
-                </div>
-                <div className="flex justify-between text-sm tracking-[0.25em] uppercase font-bold border-t border-black/20 pt-4">
-                  <span>TOTAL ESTIMATE</span>
-                  <span>₹{calculateTotal().toLocaleString('en-IN')}</span>
-                </div>
-
-                <button 
-                  onClick={handleProceedToBooking}
-                  disabled={selectedServices.length === 0}
-                  className="w-full bg-black text-white py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-black/80 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
-                >
-                  <span>PROCEED TO DATE &amp; TIME →</span>
-                </button>
-              </div>
-
-            </motion.div>
+      {/* Floating Bag Bar if cart has items */}
+      {cart.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-md bg-[#111111] text-white p-4 shadow-2xl border border-black flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
+          <div className="space-y-0.5">
+            <span className="text-[10px] tracking-[0.2em] uppercase opacity-70">
+              {cart.length} {cart.length === 1 ? 'Service' : 'Services'} Selected
+            </span>
+            <div className="text-xs font-mono font-bold">
+              Total: ₹{cart.reduce((sum, item) => sum + (pricingMode === 'HOME_VISIT' ? item.homePrice : item.inSalonPrice), 0).toLocaleString()}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+          <button
+            onClick={() => setCartDrawerOpen(true)}
+            className="bg-white text-[#111111] px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-stone-100 transition-colors"
+          >
+            Review Selection →
+          </button>
+        </div>
+      )}
 
     </div>
   );
