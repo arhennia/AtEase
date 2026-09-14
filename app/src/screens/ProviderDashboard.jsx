@@ -1,75 +1,103 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { Header } from '../components/common/Header';
-import { RoleSwitcher } from '../components/common/RoleSwitcher';
+import { PlatformHeader } from '../components/platform/PlatformHeader';
 import { ServiceCatalogManager } from '../components/provider/ServiceCatalogManager';
 import { CoverageRadiusEditor } from '../components/provider/CoverageRadiusEditor';
 import { AvailabilityEditor } from '../components/provider/AvailabilityEditor';
 import { BookingsList } from '../components/provider/BookingsList';
 import { 
-  Store, 
   Calendar, 
   Layers, 
   Navigation, 
   Clock, 
-  Share2, 
-  Sparkles, 
-  ShieldCheck, 
-  Check,
-  TrendingUp,
+  ExternalLink,
   X
 } from 'lucide-react';
-import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
+import { getPlanStatus, tenantPath, tenantSiteUrl } from '../lib/tenancy';
 
 export function ProviderDashboard() {
-  const navigate = useNavigate();
-  const provider = RAJKUMARI_PROVIDER_DATA.provider;
+  const partners = useAppStore((state) => state.partners);
+  const currentPartnerId = useAppStore((state) => state.currentPartnerId);
+  const partner = partners.find((p) => p.id === currentPartnerId);
+  const plan = getPlanStatus(partner);
 
-  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' | 'catalog' | 'radius' | 'availability'
+  const [activeTab, setActiveTab] = useState('bookings');
   const [showMarketingModal, setShowMarketingModal] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
 
-  const appointments = useAppStore((state) => state.appointments);
+  const allAppointments = useAppStore((state) => state.appointments);
   const coverageRadius = useAppStore((state) => state.coverageRadius);
   const showToast = useAppStore((state) => state.showToast);
-
+  const appointments = allAppointments.filter((a) => a.partnerId === partner?.id);
   const totalRevenue = appointments.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
 
+  if (!partner) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-stone-500">
+        No partner profile on this account.
+      </div>
+    );
+  }
+
+  const sitePath = tenantPath(partner.slug);
+  const siteUrl = tenantSiteUrl(partner.slug);
+
   const handleCopyLink = () => {
-    navigator.clipboard.writeText('https://atease.beauty/rajkumari-beauty-aesthetics');
-    showToast('Public Booking Link copied to clipboard!');
+    navigator.clipboard.writeText(siteUrl);
+    showToast('Your private client site link was copied.');
+  };
+
+  const handleViewSite = () => {
+    window.open(`${sitePath}?preview=1`, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <div className="bg-[#FFFFFF] text-[#111111] font-sans antialiased min-h-screen selection:bg-[#111111] selection:text-white">
-      
-      {/* Global Header (Provider View) */}
-      <Header isProviderView={true} />
+      <PlatformHeader />
 
-      {/* Dual Role Switcher Banner */}
-      <RoleSwitcher currentView="provider" />
+      {plan.status === 'trial' && (
+        <div className="bg-stone-900 text-white text-center py-2.5 px-4 text-[11px] tracking-wide">
+          {plan.daysLeft} day{plan.daysLeft === 1 ? '' : 's'} left on your free trial.{' '}
+          <button type="button" onClick={() => setShowProModal(true)} className="underline font-semibold">
+            Add payment to keep {partner.brandName} live
+          </button>
+        </div>
+      )}
 
-      {/* Main Container */}
       <main className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-10">
-        
-        {/* Provider Operational Header */}
         <section className="border-b border-stone-200 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-                Independent Provider SaaS Suite
+                Partner dashboard
               </span>
               <span className="text-[9px] tracking-wider uppercase font-bold text-black bg-stone-100 border border-stone-300 px-2 py-0.5">
-                Pro Tier Active
+                {plan.status === 'active' ? 'Paid plan' : `Trial • ${plan.daysLeft}d left`}
               </span>
             </div>
             <h1 className="font-serif text-2xl sm:text-4xl tracking-wide uppercase font-normal text-[#111111]">
-              {provider.displayName}
+              {partner.brandName}
             </h1>
             <p className="text-xs text-stone-600 font-light">
-              {provider.professionalTitle} • {provider.locationTag} • Coverage: {coverageRadius} km
+              {partner.professionalTitle} • {partner.location} • Coverage: {coverageRadius} km
             </p>
+            <div className="flex flex-wrap gap-2 pt-3">
+              <button
+                type="button"
+                onClick={handleViewSite}
+                className="inline-flex items-center gap-2 bg-[#111111] text-white px-4 py-2.5 text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-black"
+              >
+                <ExternalLink size={14} />
+                View my website
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-2 border border-stone-300 px-4 py-2.5 text-[11px] tracking-[0.15em] uppercase font-bold hover:border-black"
+              >
+                Copy client link
+              </button>
+            </div>
           </div>
 
           {/* Revenue & Booking KPI Cards */}
@@ -209,7 +237,7 @@ export function ProviderDashboard() {
 
         {/* Tab Content Section */}
         <section className="min-h-[400px]">
-          {activeTab === 'bookings' && <BookingsList />}
+          {activeTab === 'bookings' && <BookingsList partnerId={partner.id} />}
           {activeTab === 'catalog' && <ServiceCatalogManager />}
           {activeTab === 'radius' && <CoverageRadiusEditor />}
           {activeTab === 'availability' && <AvailabilityEditor />}
@@ -243,7 +271,7 @@ export function ProviderDashboard() {
                 Special Festive Offer
               </div>
               <h4 className="font-serif text-2xl tracking-[0.1em] uppercase font-normal">
-                {provider.displayName}
+                {partner.brandName}
               </h4>
               <p className="text-xs text-white/80 font-light tracking-wide">
                 Keratin Smoothing + Custom Organic Glow Facial Combo
@@ -309,7 +337,7 @@ export function ProviderDashboard() {
                 <li>Hyper-local mobile discovery within up to 35 km radius</li>
                 <li>Unlimited direct client appointment scheduling</li>
                 <li>Multi-tier In-Salon vs Mobile pricing management</li>
-                <li>Custom public storefront link (`atease.beauty/rajkumari-beauty`)</li>
+                <li>Private client site at {sitePath}</li>
                 <li>Instant schedule delay notifications via SMS &amp; WhatsApp</li>
               </ul>
             </div>
