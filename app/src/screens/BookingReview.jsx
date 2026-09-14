@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Clock, MapPin, ShieldCheck, Check, ArrowRight } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
@@ -8,6 +8,7 @@ import { createAppointmentRecord, isSupabaseConfigured } from '../lib/supabase';
 export function BookingReview() {
   const navigate = useNavigate();
   const locationState = useLocation();
+  const { partnerSlug } = useParams();
   const state = locationState.state || {};
 
   const addAppointment = useAppStore((state) => state.addAppointment);
@@ -34,6 +35,8 @@ export function BookingReview() {
       location: address,
       amount,
       providerName,
+      partnerId: state.partnerId,
+      partnerSlug: partnerSlug || state.partnerSlug,
       status: 'confirmed'
     };
 
@@ -48,7 +51,8 @@ export function BookingReview() {
     const created = addAppointment(bookingPayload);
     setIsProcessing(false);
 
-    navigate('/success', {
+    const slug = partnerSlug || state.partnerSlug;
+    navigate(slug ? `/p/${slug}/success` : '/', {
       state: {
         ...state,
         bookingId: created.id,
