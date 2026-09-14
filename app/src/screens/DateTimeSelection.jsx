@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Sun, Sunrise, Moon, Calendar, Clock, ShieldCheck } from 'lucide-react';
 
 export function DateTimeSelection() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { partnerSlug } = useParams();
   
   const [selectedDate, setSelectedDate] = useState(0); // index 0 is today
   const [selectedTime, setSelectedTime] = useState('11:30 AM');
@@ -35,14 +36,16 @@ export function DateTimeSelection() {
   const handleConfirm = () => {
     if (!selectedTime) return;
 
-    navigate('/address', {
+    navigate(partnerSlug ? `/p/${partnerSlug}/address` : '/', {
       state: {
         ...(location.state || {}),
         date: activeDateObj.formatted,
         time: selectedTime,
         serviceName: location.state?.serviceName || 'Keratin Smoothing & Hair Spa',
         amount: location.state?.amount || 2500,
-        providerName: location.state?.providerName || 'Rajkumari Beauty & Aesthetics'
+        providerName: location.state?.providerName || 'Studio',
+        partnerSlug,
+        partnerId: location.state?.partnerId
       }
     });
   };
