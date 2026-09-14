@@ -1,9 +1,10 @@
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate, useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
-// Screens
-import { ClientHome } from './screens/ClientHome';
+import { PlatformLanding } from './screens/PlatformLanding';
+import { Signup } from './screens/Signup';
+import { Onboarding } from './screens/Onboarding';
 import { ProviderStorefront } from './screens/ProviderStorefront';
 import { ProviderDashboard } from './screens/ProviderDashboard';
 import { Login } from './screens/Login';
@@ -11,49 +12,63 @@ import { BookingReview } from './screens/BookingReview';
 import { BookingSuccess } from './screens/BookingSuccess';
 import { DateTimeSelection } from './screens/DateTimeSelection';
 import { AddressScreen } from './screens/AddressScreen';
+import { RequirePartnerAuth } from './components/auth/RequirePartnerAuth';
+import { RequireActivePlan } from './components/auth/RequireActivePlan';
 
-// Global Modals & Notifications
 import { AuthModal } from './components/common/AuthModal';
 import { LocationModal } from './components/common/LocationModal';
 import { CartDrawer } from './components/common/CartDrawer';
 import { BookingModal } from './components/common/BookingModal';
 import { Toast } from './components/common/Toast';
 
+function LegacyStorefrontRedirect() {
+  const { providerId } = useParams();
+  return <Navigate to={`/p/${providerId}`} replace />;
+}
+
 function App() {
   const location = useLocation();
 
   return (
     <div className="bg-[#FFFFFF] min-h-screen text-[#111111] antialiased selection:bg-[#111111] selection:text-white">
-      {/* Central Global Modals and Notification Components */}
       <AuthModal />
       <LocationModal />
       <CartDrawer />
       <BookingModal />
       <Toast />
 
-      {/* Routes */}
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          {/* Client Discovery Layer */}
-          <Route path="/" element={<ClientHome />} />
-          <Route path="/home" element={<ClientHome />} />
-
-          {/* Provider Public Storefront Experience */}
-          <Route path="/storefront" element={<ProviderStorefront />} />
-          <Route path="/storefront/:providerId" element={<ProviderStorefront />} />
-
-          {/* Provider Turnkey SaaS Dashboard */}
-          <Route path="/provider" element={<ProviderDashboard />} />
-          <Route path="/dashboard" element={<ProviderDashboard />} />
-
-          {/* Authentication Route */}
+          <Route path="/" element={<PlatformLanding />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Booking & Review Secondary Routes */}
-          <Route path="/date-time" element={<DateTimeSelection />} />
-          <Route path="/address" element={<AddressScreen />} />
-          <Route path="/review" element={<BookingReview />} />
-          <Route path="/success" element={<BookingSuccess />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RequirePartnerAuth>
+                <RequireActivePlan>
+                  <ProviderDashboard />
+                </RequireActivePlan>
+              </RequirePartnerAuth>
+            }
+          />
+
+          <Route path="/p/:partnerSlug" element={<ProviderStorefront />} />
+          <Route path="/p/:partnerSlug/date-time" element={<DateTimeSelection />} />
+          <Route path="/p/:partnerSlug/address" element={<AddressScreen />} />
+          <Route path="/p/:partnerSlug/review" element={<BookingReview />} />
+          <Route path="/p/:partnerSlug/success" element={<BookingSuccess />} />
+
+          <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="/storefront" element={<Navigate to="/" replace />} />
+          <Route path="/storefront/:providerId" element={<LegacyStorefrontRedirect />} />
+          <Route path="/provider" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/date-time" element={<Navigate to="/" replace />} />
+          <Route path="/address" element={<Navigate to="/" replace />} />
+          <Route path="/review" element={<Navigate to="/" replace />} />
+          <Route path="/success" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
     </div>
