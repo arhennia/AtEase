@@ -1,31 +1,197 @@
 import { create } from 'zustand';
+import { createSeedPartners } from '../data/tenants';
+import {
+  addDaysIso,
+  getPlanStatus,
+  getTenantByEmail,
+  getTenantById,
+  getTenantBySlug,
+  slugify,
+  TRIAL_DAYS,
+} from '../lib/tenancy';
+
+const PERSIST_KEY = 'atease-whitelabel-v1';
+
+function loadPersisted() {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(PERSIST_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function persistSlice(state) {
+  if (typeof window === 'undefined') return;
+  const slice = {
+    isAuthenticated: state.isAuthenticated,
+    userRole: state.userRole,
+    userName: state.userName,
+    userEmail: state.userEmail,
+    currentPartnerId: state.currentPartnerId,
+    partners: state.partners,
+    appointments: state.appointments,
+  };
+  window.localStorage.setItem(PERSIST_KEY, JSON.stringify(slice));
+}
+
+const persisted = loadPersisted();
+const seedPartners = createSeedPartners();
 
 export const useAppStore = create((set, get) => ({
-  // Authentication & Role
-  userRole: null, // null | 'client' | 'provider'
-  isAuthenticated: false,
-  userName: 'Namita Mohanty',
+  userRole: persisted.userRole ?? null,
+  isAuthenticated: persisted.isAuthenticated ?? false,
+  userName: persisted.userName ?? 'Aisha',
+  userEmail: persisted.userEmail ?? '',
   userPhone: '+91 98765 43210',
-  
-  setUserRole: (role) => set({ userRole: role }),
-  
-  login: (role = 'client') => set({
-    isAuthenticated: true,
-    userRole: role,
-    authModalOpen: false,
-  }),
-  
-  logout: () => set({
-    isAuthenticated: false,
-    userRole: null,
-    cart: [],
-  }),
 
-  // Cart
+  partners: persisted.partners?.length ? persisted.partners : seedPartners,
+  currentPartnerId: persisted.currentPartnerId ?? null,
+
+  setUserRole: (role) => {
+    set({ userRole: role });
+    persistSlice(get());
+  },
+
+  login: (role = 'partner', extras = {}) => {
+    const next = {
+      isAuthenticated: true,
+      userRole: role === 'client' ? 'client' : 'partner',
+      authModalOpen: false,
+      ...extras,
+    };
+    set(next);
+    persistSlice(get());
+  },
+
+  loginPartner: ({ email, password, partnerId } = {}) => {
+    const partners = get().partners;
+    const partner =
+      getTenantById(partners, partnerId) ||
+      getTenantByEmail(partners, email) ||
+      getTenantByEmail(partners, 'aisha@rajkumari.studio');
+
+    if (!partner) {
+      return { ok: false, error: 'No partner account found for that email.' };
+    }
+
+    set({
+      isAuthenticated: true,
+      userRole: 'partner',
+      userName: partner.ownerName || partner.brandName,
+      userEmail: partner.ownerEmail,
+      currentPartnerId: partner.id,
+      authModalOpen: false,
+    });
+    persistSlice(get());
+    return { ok: true, partner };
+  },
+
+  signupPartner: ({ email, password, ownerName }) => {
+    const partners = get().partners;
+    if (getTenantByEmail(partners, email)) {
+      return { ok: false, error: 'An account already exists for this email.' };
+    }
+    set({
+      pendingSignup: {
+        email: email.trim().toLowerCase(),
+        password: password || '',
+        ownerName: ownerName?.trim() || email.split('@')[0],
+      },
+    });
+    return { ok: true };
+  },
+
+  completeOnboarding: ({ brandName, logoUrl, theme, servicesText, location, description }) => {
+    const pending = get().pendingSignup || {};
+    const baseSlug = slugify(brandName) || `studio-${Date.now().toString(36)}`;
+    let slug = baseSlug;
+    const partners = get().partners;
+    let n = 2;
+    while (getTenantBySlug(partners, slug)) {
+      slug = `${baseSlug}-${n++}`;
+    }
+
+    const catalog = (servicesText || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((name, idx) => ({
+        id: `custom-${idx}`,
+        name,
+        description: 'Added during brand onboarding.',
+        duration: '60 mins',
+        inSalonPrice: 1200,
+        homePrice: 1500,
+      }));
+
+    const partner = {
+      id: `partner_${Date.now()}`,
+      slug,
+      brandName: brandName.trim(),
+      professionalTitle: 'Independent Studio',
+      ownerEmail: pending.email,
+      ownerName: pending.ownerName,
+      logoUrl: logoUrl || '',
+      coverUrl: logoUrl || '',
+      theme: { accent: theme || '#111111', mode: 'light' },
+      location: location || '',
+      description: description || '',
+      typeLabel: 'Private Brand Site',
+      rating: '—',
+      reviewCount: '0',
+      coverageRadiusKm: 10,
+      trialEndsAt: addDaysIso(TRIAL_DAYS),
+      subscriptionStatus: 'trial',
+      catalog: catalog.length
+        ? [{ id: 'featured', categoryName: 'FEATURED SERVICES', services: catalog }]
+        : [],
+    };
+
+    set({
+      partners: [...partners, partner],
+      pendingSignup: null,
+      isAuthenticated: true,
+      userRole: 'partner',
+      userName: partner.ownerName,
+      userEmail: partner.ownerEmail,
+      currentPartnerId: partner.id,
+    });
+    persistSlice(get());
+    return { ok: true, partner };
+  },
+
+  activateSubscription: (partnerId) => {
+    const id = partnerId || get().currentPartnerId;
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id ? { ...p, subscriptionStatus: 'active' } : p
+      ),
+    });
+    persistSlice(get());
+    get().showToast('Subscription activated. Your brand site stays live.');
+  },
+
+  logout: () => {
+    set({
+      isAuthenticated: false,
+      userRole: null,
+      currentPartnerId: null,
+      cart: [],
+      userEmail: '',
+    });
+    persistSlice(get());
+  },
+
+  getCurrentPartner: () => getTenantById(get().partners, get().currentPartnerId),
+  getPartnerPlan: () => getPlanStatus(getTenantById(get().partners, get().currentPartnerId)),
+
+  pendingSignup: null,
+
   cart: [],
-  pricingMode: 'HOME_VISIT', // 'IN_SALON' | 'HOME_VISIT'
+  pricingMode: 'HOME_VISIT',
   setPricingMode: (mode) => set({ pricingMode: mode }),
-  
+
   addToCart: (item) => {
     const { cart } = get();
     const exists = cart.some((i) => i.id === item.id);
@@ -48,16 +214,16 @@ export const useAppStore = create((set, get) => ({
 
   clearCart: () => set({ cart: [] }),
 
-  // Discovery Filters & Search
   selectedLocation: 'Bhubaneswar, OD',
   selectedLocality: 'Patia & Chandrasekharpur',
-  setLocation: (location, locality) => set({ 
-    selectedLocation: location,
-    selectedLocality: locality || get().selectedLocality,
-    locationModalOpen: false 
-  }),
+  setLocation: (location, locality) =>
+    set({
+      selectedLocation: location,
+      selectedLocality: locality || get().selectedLocality,
+      locationModalOpen: false,
+    }),
 
-  activeFilter: 'all', // 'all' | 'at-home' | 'in-studio'
+  activeFilter: 'all',
   setActiveFilter: (filter) => set({ activeFilter: filter }),
 
   selectedCategory: 'ALL',
@@ -66,7 +232,6 @@ export const useAppStore = create((set, get) => ({
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
 
-  // Modals & Drawers
   authModalOpen: false,
   authModalRole: 'client',
   openAuthModal: (role = 'client') => set({ authModalOpen: true, authModalRole: role }),
@@ -81,15 +246,14 @@ export const useAppStore = create((set, get) => ({
   bookingModalOpen: false,
   bookingModalData: null,
   openBookingModal: (data = null) => {
-    set({ 
-      bookingModalOpen: true, 
+    set({
+      bookingModalOpen: true,
       bookingModalData: data,
-      cartDrawerOpen: false 
+      cartDrawerOpen: false,
     });
   },
   closeBookingModal: () => set({ bookingModalOpen: false, bookingModalData: null }),
 
-  // Global Toast Notifications
   toastMessage: null,
   showToast: (msg) => {
     set({ toastMessage: msg });
@@ -101,10 +265,9 @@ export const useAppStore = create((set, get) => ({
   },
   hideToast: () => set({ toastMessage: null }),
 
-  // Provider Settings & Business Tools
-  coverageRadius: 15, // km
+  coverageRadius: 15,
   setCoverageRadius: (radius) => set({ coverageRadius: radius }),
-  
+
   coverageAreas: [
     'Patia',
     'Chandrasekharpur',
@@ -113,7 +276,7 @@ export const useAppStore = create((set, get) => ({
     'Saheed Nagar',
     'Khandagiri',
     'Old Town',
-    'KIIT Square'
+    'KIIT Square',
   ],
   toggleCoverageArea: (area) => {
     const { coverageAreas } = get();
@@ -131,47 +294,54 @@ export const useAppStore = create((set, get) => ({
   },
   updateBusinessHours: (hours) => set({ businessHours: { ...get().businessHours, ...hours } }),
 
-  // Live Appointments
-  appointments: [
-    {
-      id: 'ATEASE-84920',
-      clientName: 'Priya Menon',
-      clientPhone: '+91 98765 43210',
-      serviceName: 'Keratin Smoothing Treatment, Organic Glow Facial',
-      date: 'Today',
-      time: '11:30 AM',
-      location: 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar',
-      serviceType: 'at-home',
-      status: 'confirmed',
-      amount: 4300,
-      paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'ATEASE-71829',
-      clientName: 'Ananya Pattnaik',
-      clientPhone: '+91 94370 12345',
-      serviceName: 'Luxury HD Bridal Makeover Trial',
-      date: 'Tomorrow',
-      time: '02:00 PM',
-      location: 'Flat 402, Royal Palms, Patia, Bhubaneswar',
-      serviceType: 'at-home',
-      status: 'confirmed',
-      amount: 5500,
-      paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-      createdAt: new Date().toISOString()
-    }
-  ],
+  appointments: persisted.appointments?.length
+    ? persisted.appointments
+    : [
+        {
+          id: 'ATEASE-84920',
+          partnerId: 'partner_rajkumari-beauty',
+          clientName: 'Priya Menon',
+          clientPhone: '+91 98765 43210',
+          serviceName: 'Keratin Smoothing Treatment, Organic Glow Facial',
+          date: 'Today',
+          time: '11:30 AM',
+          location: 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar',
+          serviceType: 'at-home',
+          status: 'confirmed',
+          amount: 4300,
+          paymentMethod: 'Direct Payment (Cash/UPI/Card)',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'ATEASE-71829',
+          partnerId: 'partner_rajkumari-beauty',
+          clientName: 'Ananya Pattnaik',
+          clientPhone: '+91 94370 12345',
+          serviceName: 'Luxury HD Bridal Makeover Trial',
+          date: 'Tomorrow',
+          time: '02:00 PM',
+          location: 'Flat 402, Royal Palms, Patia, Bhubaneswar',
+          serviceType: 'at-home',
+          status: 'confirmed',
+          amount: 5500,
+          paymentMethod: 'Direct Payment (Cash/UPI/Card)',
+          createdAt: new Date().toISOString(),
+        },
+      ],
 
   addAppointment: (newAppt) => {
+    const partnerId =
+      newAppt.partnerId || get().bookingModalData?.provider?.partnerId || get().currentPartnerId;
     const appt = {
       id: newAppt.id || `ATEASE-${Math.floor(10000 + Math.random() * 90000)}`,
       createdAt: new Date().toISOString(),
       status: 'confirmed',
       paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-      ...newAppt
+      ...newAppt,
+      partnerId,
     };
     set({ appointments: [appt, ...get().appointments] });
+    persistSlice(get());
     get().showToast('Booking confirmed! Direct payment details recorded.');
     return appt;
   },
@@ -182,12 +352,13 @@ export const useAppStore = create((set, get) => ({
         return {
           ...a,
           time: a.time.includes('Delayed') ? a.time : `${a.time} (+${minutes}m delayed)`,
-          isDelayed: true
+          isDelayed: true,
         };
       }
       return a;
     });
     set({ appointments: updated });
+    persistSlice(get());
     get().showToast(`Appointment delayed by ${minutes} mins. Client notified.`);
-  }
+  },
 }));
