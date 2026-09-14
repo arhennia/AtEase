@@ -3,10 +3,13 @@ import { useAppStore } from '../../store/useAppStore';
 import { Clock, Phone, MapPin, Navigation, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 import { isSupabaseConfigured } from '../../lib/supabase';
 
-export function BookingsList() {
-  const appointments = useAppStore((state) => state.appointments);
+export function BookingsList({ partnerId }) {
+  const allAppointments = useAppStore((state) => state.appointments);
   const delayAppointment = useAppStore((state) => state.delayAppointment);
   const showToast = useAppStore((state) => state.showToast);
+  const currentPartnerId = useAppStore((state) => state.currentPartnerId);
+  const scopeId = partnerId || currentPartnerId;
+  const appointments = allAppointments.filter((a) => a.partnerId === scopeId);
 
   const [filter, setFilter] = useState('ALL'); // 'ALL' | 'TODAY' | 'TOMORROW'
 
@@ -35,7 +38,7 @@ export function BookingsList() {
             )}
           </div>
           <p className="text-xs text-stone-500 font-light mt-0.5">
-            Real-time direct bookings received from AtEase client marketplace.
+            Bookings from your isolated client website only.
           </p>
         </div>
 
