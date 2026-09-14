@@ -1,23 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
-import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData.js';
 
-const supabaseUrl = 
-  import.meta.env?.NEXT_PUBLIC_SUPABASE_URL ||
-  import.meta.env?.VITE_SUPABASE_URL ||
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_URL) ||
-  '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabaseAnonKey = 
-  import.meta.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  import.meta.env?.VITE_SUPABASE_ANON_KEY ||
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
-  '';
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Supabase env vars missing! Check your .env.local file.');
+}
+
+// The single Supabase client — import this wherever you need DB/auth access
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
-
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : createClient('https://placeholder.supabase.co', 'placeholder-key');
 
 /**
  * Normalizes an appointment record from DB into a standard object format
