@@ -1,13 +1,14 @@
-# PRD: AtEase – Solo Service Discovery & Operating Platform
+# PRD: AtEase — Independent Brand Micro-Sites for Solo Service Professionals
 
 <div align="center">
 
 | Field | Value |
 | :--- | :--- |
 | **Product Title** | AtEase |
-| **Author** | Arti Reddy - Founder / Product Manager |
-| **Document Status** | Draft / Review |
-| **Target Audience** | Solo Service Providers (Freelancers, Home-based Businesses, Solo Creators) & End Clients |
+| **Author** | Arti Reddy — Founder / Product Manager |
+| **Document Status** | Active / In Development |
+| **Version** | 2.0 — Brand Enhancer Architecture |
+| **Target Users** | Non-tech-savvy, self-employed solo service providers & their clients |
 
 </div>
 
@@ -15,98 +16,285 @@
 
 ## 1. Problem Statement & Market Context
 
-### The Problem
-Independent micro-business owners and service providers face severe operational friction across key business areas:
+### Who We're Building For
 
-* **Fragmented Toolstack:** Providers use disparate software solutions for booking, communication, showcase, and payments, leading to high administrative overhead and poor user retention.
-* **Inconsistent Booking & Client Flow:** Managing appointments manual-by-manual via DM/chat leads to scheduling friction, double bookings, and zero automated deposit/cancellation safeguards.
-* **Unprofessional Showcase:** Lacking technical backgrounds, independent creators struggle to present their work professionally, which diminishes client trust and limits pricing power.
-* **Unstructured Monetization:** Clients face friction during booking and checkout, while providers lack modern options like flexible deposits, add-ons, or custom invoices.
+Independent service professionals — home salon owners, freelance makeup artists, solo nail technicians, private yoga instructors — run real businesses entirely through informal channels: WhatsApp groups, Instagram DMs, and word-of-mouth referrals.
 
----
+They are operationally capable and often creatively talented, but they are **not technical**. They don't build websites. They don't use CRMs. They manage bookings in their heads or in a notebook.
 
-## 2. User Personas & Target Audience
+### The Real Pain Points
 
-### Persona 1: The Independent Solo Service Provider
-* **Needs:** Simple setup, dynamic catalog management, seamless scheduling, integrated payments.
-* **Pain Points:** Too much time spent on administrative tasks; hard to manage bookings, track revenue, and collect upfront deposits.
-* **Goal:** Professionalize their online presence and increase operational efficiency to scale earnings.
+| Pain Point | Current Workaround | The Actual Cost |
+|:-----------|:-------------------|:----------------|
+| No professional booking system | WhatsApp messages, DM replies | Double bookings, missed appointments, no-shows |
+| No consistent pricing display | Screenshots of rate cards sent over chat | Clients haggle, brand looks unprofessional |
+| No client history or CRM | Memory, paper notes | Lost repeat clients, zero retention data |
+| No digital brand presence | A single Instagram grid | No booking link in bio, no standalone page |
+| Complex existing platforms | Avoid Fresha/Calendly (too complex) | Stay stuck with informal tools indefinitely |
 
-### Persona 2: The Client / Service Seeker (End-User)
-* **Needs:** A seamless, friction-free booking experience with transparent pricing and clear service schedules.
-* **Pain Points:** Slow responses over DM, lack of clarity on service availability, unsafe or fragmented payment options.
-* **Goal:** Quickly discover, schedule, and pay for services with complete confidence.
+### What Marketplaces Get Wrong
 
----
+Existing platforms like Urban Company, Sulekha, and Fresha solve some of these problems — but introduce a critical new one: **they commoditize the provider**.
 
-## 3. Product Vision & Value Proposition
+On a marketplace:
+- A client browsing for a facial sees 12 competing providers side-by-side
+- The platform suggests "cheaper alternatives" or runs paid promotions for competitors
+- The provider's brand identity is subordinate to the platform's brand
+- Client data is **owned by the platform**, not the provider
 
-> **AtEase** is an all-in-one operating system and discovery platform for independent solo service providers.
-
-### Value to the Provider
-* Operating system for solo businesses with zero tech setup required.
-* Streamlined scheduling, booking, client management, and instant payment workflows.
-
-### Value to the End-User
-* Effortless discovery, real-time booking availability, and secure payment processing.
+**The provider built their reputation. A marketplace extracts value from it.**
 
 ---
 
-## 4. Key Functional Features & Requirements
+## 2. Product Vision
 
-### Module 1: Provider Onboarding & Service Catalog
-* **Dynamic Catalog Management:** 
-  * Easy creation of service listings with photos, custom tags, pricing, and duration.
-  * Configurable service add-ons (e.g., custom consultations, premium upgrades).
-  * Flexible pricing models: fixed, starting-at, or hourly rate tiers.
+> **AtEase is a white-label SaaS platform that gives every solo service professional their own isolated, professional digital storefront — without writing a single line of code.**
 
-### Module 2: Smooth Appointment & Booking Engine
-* **Real-time Availability Engine:**
-  * Smart calendar syncing with configurable working hours and break slots.
-  * Buffer time management between bookings to avoid back-to-back overlaps.
-  * Automated confirmation, rescheduling, and cancellation rules with refund policies.
+AtEase is positioned **not** as a client-facing directory or marketplace, but as a **brand operating system** for the self-employed. The platform's value flows entirely to the provider and their existing client base.
 
-### Module 3: Client Experience & Checkout Flow
-* **Customizable Storefront / Booking Page:**
-  * Clean, mobile-first responsive landing page for client discovery.
-* **Seamless Checkout:**
-  * Instant slot selection with integrated deposit collection.
-  * Automatic invoice/receipt generation sent to client email/WhatsApp.
-  * Integrated review and feedback collection system post-service completion.
+### Positioning
 
-### Module 4: Provider Dashboard & Analytics
-* **Centralized Business Hub:**
-  * Overview of upcoming bookings, revenue metrics, and client interaction history.
-* **Financial Oversight:**
-  * Summary of total earnings, pending payouts, and transaction history.
-  * Direct payout integration to linked bank accounts/UPI.
+```
+[ High Complexity / Enterprise ]  ──→  Mindbody, Fresha, Calendly
+[ Commoditizes the Brand ]        ──→  Urban Company, Sulekha, Housejoy
+[ Unstructured / Manual ]         ──→  Instagram DMs, WhatsApp Chat
+[ AtEase Sweet Spot ]             ──→  White-label, branded, zero-tech, solo-first
+```
 
 ---
 
-## 5. Real-World Edge Cases & Handling
+## 3. Core Architecture: The Isolated Brand Micro-Site Model
 
-| Edge Case Scenario | System Action / Resolution |
-| :--- | :--- |
-| **Provider Cancels Session** | Instant automated full refund issued to client; schedule slot opened immediately; automated apology notification sent. |
-| **Client No-Show / Late Cancellation** | Deposit retained based on provider's non-refundable deposit policy setting; provider notified immediately. |
-| **Overlapping Bookings** | Concurrency safety via DB locking mechanisms during checkout processing to prevent double-booking. |
+This is the foundational design decision that separates AtEase from every competitor.
+
+### 3.1 One URL. One Brand. No Distractions.
+
+Each provider on AtEase receives a unique, permanent URL:
+
+```
+atease.com/beautybyarti       → Arti's storefront, exclusively
+atease.com/glowbymeena        → Meena's storefront, exclusively
+atease.com/navya-nails        → Navya's storefront, exclusively
+```
+
+When a client opens one of these URLs:
+- They see **only** that provider's services, photos, pricing, and booking form
+- There is **no platform navigation** leading them elsewhere
+- There is **no "explore similar providers" section**
+- There is **no AtEase branding** competing for attention with the provider's brand
+
+### 3.2 Two Completely Separate Route Domains
+
+| Route | Audience | Purpose |
+|:------|:---------|:--------|
+| `/` (main site) | Potential providers | Sells the AtEase SaaS product: features, pricing, onboarding CTA |
+| `/[brandSlug]` | Provider's clients | The provider's isolated booking storefront — no platform context |
+
+The main marketing homepage has **zero overlap** with any brand page. A client who lands on `atease.com/beautybyarti` has no way to accidentally discover `atease.com/glowbymeena`.
+
+### 3.3 Cross-Tenant Data Isolation
+
+All database access is governed by Supabase Row Level Security (RLS):
+
+- A provider can only ever read or write their **own** `brand_owners`, `services`, `clients`, and `bookings` rows
+- Public clients can read a provider's active services and submit a booking — nothing more
+- The platform never builds or exposes a cross-provider client pool
+- **Clients belong to the brand owner who brought them in, permanently**
 
 ---
 
-## 6. Key Performance Indicators (KPIs) for Success
+## 4. User Personas
 
-* **Primary Metric:** Booking Completion Rate (Target: **> 85%** conversion from slot selection to checkout).
-* **Provider Retention:** Monthly Active Providers (**MAU**) creating or managing listings.
-* **Customer Satisfaction:** Average client review rating across completed services (**Target: > 4.5 / 5**).
+### Persona 1: The Solo Service Professional (Provider)
+
+**Who she is:** Meena, 31, runs a home-based beauty salon in Patia, Bhubaneswar. She has 80+ regular clients, earns ₹40,000–₹70,000/month, and manages everything via WhatsApp. She has an Instagram page with 2,400 followers but no website. She has never used Calendly, Notion, or any SaaS tool.
+
+**Her Goals:**
+- Look professional and trustworthy to new clients
+- Stop spending 2 hours/day managing bookings over chat
+- Collect advance deposits to reduce no-shows
+- Track which clients are regulars
+
+**Her Blockers:**
+- "I'm not good with tech" — she needs zero-config setup
+- "I don't want to pay for a website" — she needs low cost/high value
+- "I already have my regulars" — she doesn't need a marketplace to find clients
+
+**What AtEase gives her:**
+- A personal booking page she sets up in under 10 minutes
+- A shareable link she puts in her Instagram bio and WhatsApp status
+- Automated booking notifications so she stops tracking appointments in her head
+- A client CRM that builds itself from booking history
 
 ---
 
-## 7. Competitive Landscape & Differentiation
+### Persona 2: The Client / End-User
 
-### Market Positioning
-AtEase fills the gap between overly complex enterprise software (e.g., Mindbody, Fresha) and unstructured informal social media sales (e.g., Instagram DMs).
+**Who they are:** Priya, 27, found Meena through Instagram. Meena sends her the AtEase link.
 
-```text
-[ High Complexity / Enterprise ] ──> Mindbody, Fresha, Calendly
-[ Unstructured / Manual ]        ──> Instagram DMs, WhatsApp Chat
-[ AtEase Sweet Spot ]            ──> Simple, Mobile-First, All-in-One Solo Platform
+**Her Goals:**
+- Book an appointment quickly without calling or waiting for a DM reply
+- See clear service prices and time slots upfront
+- Get a confirmation she can refer back to
+
+**What AtEase gives her:**
+- A clean, mobile-first booking page that loads instantly
+- Service catalog with pricing, duration, and photos
+- Available time slot selection
+- Instant WhatsApp confirmation
+
+Priya never sees any other provider on the platform. She never creates an "AtEase account." She just books with Meena.
+
+---
+
+## 5. Key Features & Functional Requirements
+
+### Module 1: Provider Onboarding (Zero-Code Setup)
+
+The entire setup experience must be completable by a non-technical user in under 10 minutes on a mobile phone.
+
+**Onboarding Steps:**
+1. Sign up with phone number + OTP (no email, no password)
+2. Enter brand name, owner name, and short bio
+3. Upload logo and cover photo (optional but encouraged)
+4. Add services — name, description, price, duration, photo
+5. Set working hours and service area (locality selection)
+6. Add WhatsApp number for booking confirmations
+7. Receive unique booking URL → copy and share instantly
+
+**Design Constraint:** Every screen must be operable with one thumb on a mid-range Android phone. Zero jargon. No form should have more than 4–5 fields.
+
+---
+
+### Module 2: Public Brand Storefront (Client-Facing)
+
+The provider's public page at `/[brandSlug]`:
+
+- **Header:** Brand logo, cover image, owner name, professional title, star rating, service area tags
+- **About section:** Short bio + WhatsApp contact button
+- **Service catalog:** Category-grouped cards with image, name, price (home/salon toggle if applicable), and duration
+- **Booking flow:** Select service → pick date → pick time slot → enter name + phone + notes → confirm
+- **Confirmation:** On-screen summary + WhatsApp message sent to provider
+
+**Critical constraint:** The storefront has no AtEase navigation, no "explore other providers" links, and no platform branding beyond a subtle footer credit.
+
+---
+
+### Module 3: Provider SaaS Dashboard (Private, Auth-Gated)
+
+The provider's management portal at `/dashboard`:
+
+- **Appointments feed:** Upcoming, today's, and past bookings with status management (pending → confirm / decline → complete)
+- **Client list:** Auto-populated from booking history. Shows visit count, total spend, last visited date, and private notes field
+- **Service management:** Add, edit, hide, or delete service listings with live preview of how they appear on the public storefront
+- **Business settings:** Update working hours, service area, WhatsApp number, brand profile
+- **Analytics overview:** Total bookings this month, revenue estimate, top services
+
+---
+
+### Module 4: Booking Engine & Notifications
+
+- **Conflict prevention:** A slot cannot be double-booked; concurrent submissions are handled safely at the database level
+- **Status workflow:** `pending` → `confirmed` or `declined` by provider → `completed` or `no_show` or `cancelled`
+- **WhatsApp notifications:** Booking confirmation sent to both client and provider via pre-filled WhatsApp deep link (Phase 1) or Twilio API (Phase 2)
+- **Advance deposit:** Provider can enable a deposit requirement (Phase 2 feature, noted for scope)
+
+---
+
+## 6. What AtEase Is NOT
+
+Being explicit about what AtEase avoids is as important as what it builds:
+
+| ❌ AtEase Does NOT | Why |
+|:---|:---|
+| Show competing providers on a client's storefront visit | Protects provider brand and client loyalty |
+| Own or share client data across providers | Clients belong to the brand owner |
+| Require the provider to build or maintain a website | Platform handles all tech |
+| Send marketing emails to a provider's clients about other providers | Data ethics + trust |
+| Act as a payment gateway or financial intermediary (Phase 1) | Keep scope small and compliant |
+| List providers in a public searchable directory | This is a SaaS tool, not a marketplace |
+
+---
+
+## 7. Technical Architecture
+
+### Route Structure
+```
+/                          → Main marketing homepage (sell to providers)
+/pricing                   → SaaS pricing and plan comparison
+/onboarding                → Provider sign-up and setup flow
+/dashboard                 → Provider management portal (auth-gated)
+/[brandSlug]               → Public booking storefront (client-facing)
+/[brandSlug]/book          → Booking form for that specific brand
+```
+
+### Database Schema (Supabase)
+
+**`brand_owners`** — Provider profile, location, working hours, WhatsApp number, slug, subscription status
+
+**`services`** — Service listings linked to a brand owner (title, description, price, duration, image_url, is_active)
+
+**`clients`** — Repeat client records per provider (client_name, client_phone, total_bookings, total_spent, last_visited)
+
+**`bookings`** — Appointment records (client_name, client_phone, service_id, booking_time, status, amount)
+
+### RLS Policy Summary
+- Providers: full CRUD on their own rows only (`owner_id = auth.uid()`)
+- Public: read active services for any brand by slug; insert bookings
+- No cross-tenant reads possible at the database level
+
+### Storage
+- `service-images` bucket — public read, provider-only upload
+- `portfolio` bucket — public read, provider-only upload
+- Files namespaced under `{user_id}/` to enforce ownership
+
+---
+
+## 8. Success Metrics (KPIs)
+
+| Metric | Target | Measurement |
+|:-------|:-------|:------------|
+| Onboarding completion rate | > 70% of signups complete storefront setup | Funnel analytics |
+| Booking conversion rate | > 60% of storefront visitors who click "Book" complete a booking | Event tracking |
+| Provider 30-day retention | > 50% of providers log in within 30 days of signup | Auth events |
+| Client repeat booking rate | > 40% of clients make a second booking within 90 days | Bookings table |
+| Avg. provider setup time | < 10 minutes from signup to shareable link | Session recording |
+
+---
+
+## 9. Edge Cases & Handling
+
+| Scenario | Resolution |
+|:---------|:-----------|
+| Slot booked simultaneously by two clients | DB-level uniqueness constraint + PostgREST concurrency handling prevents double-booking |
+| Provider cancels an appointment | Status updated to `cancelled`; client notified via WhatsApp message |
+| Client no-show | Provider marks as `no_show`; noted in client record for future reference |
+| Provider changes working hours mid-day | New hours apply from next calendar day; existing bookings unaffected |
+| Provider wants to block a slot (walk-in) | Quick Block Slot tool creates a `blocked` booking entry for that time |
+
+---
+
+## 10. Phased Rollout Plan
+
+### Phase 1 — Foundation (Current)
+- [x] Supabase schema: `brand_owners`, `services`, `clients`, `bookings`
+- [x] RLS policies + storage buckets
+- [ ] Phone OTP auth wired to Supabase Auth
+- [ ] Provider onboarding flow (signup → profile → services → link)
+- [ ] Public storefront rendering from live DB data
+- [ ] Basic booking form → inserts to `bookings` table
+- [ ] Provider dashboard: appointments + status management
+
+### Phase 2 — Growth
+- [ ] Twilio SMS notifications (replace WhatsApp deep links)
+- [ ] Advance deposit collection (Razorpay integration)
+- [ ] Client-facing booking confirmation page at `/booking/[id]`
+- [ ] Service portfolio/gallery section on storefronts
+- [ ] Provider analytics dashboard (revenue charts, top services)
+
+### Phase 3 — Scale
+- [ ] Custom domain support (`bookwithmeena.com` → powered by AtEase)
+- [ ] Multi-staff support (add team members under one brand)
+- [ ] Add-on services and package bundles
+- [ ] Automated review/feedback collection post-completion
+- [ ] WhatsApp Business API integration for automated reminders
