@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, Home, Building2, MapPin, Check, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export function AddressScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { partnerSlug } = useParams();
   const state = location.state || {};
 
   const [addressType, setAddressType] = useState('home');
@@ -13,13 +14,15 @@ export function AddressScreen() {
   const [clientPhone, setClientPhone] = useState('+91 98765 43210');
 
   const handleProceed = () => {
-    navigate('/review', {
+    navigate(partnerSlug ? `/p/${partnerSlug}/review` : '/', {
       state: {
         ...state,
         clientName,
         clientPhone,
         location: customAddress,
-        addressType
+        addressType,
+        partnerSlug,
+        partnerId: state.partnerId
       }
     });
   };
