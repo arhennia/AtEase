@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { ArrowRight, Loader2, ArrowLeft, Store } from 'lucide-react';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
+import { PlatformFooter } from '../components/platform/PlatformFooter';
 import { AuthMethods } from '../components/auth/AuthMethods';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -54,17 +55,17 @@ export function Login() {
   };
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen w-full font-sans text-[#111111] antialiased">
+    <div className="bg-[#FFFFFF] min-h-screen w-full font-sans text-[#111111] antialiased flex flex-col">
       <PlatformHeader />
 
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <div className="bg-[#FFFFFF] w-full max-w-md border border-stone-200 p-8 sm:p-10 space-y-6 shadow-lg">
           <div className="text-center space-y-1.5 border-b border-stone-200 pb-5">
             <Store size={18} className="mx-auto" />
-            <span className="font-serif text-2xl tracking-[0.18em] font-normal uppercase text-[#111111] block">
+            <span className="font-serif text-2xl tracking-tight font-normal text-[#111111] block">
               Partner login
             </span>
-            <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-stone-500">
+            <p className="text-sm text-stone-500 font-light">
               Google or phone OTP
             </p>
           </div>
@@ -126,6 +127,7 @@ export function Login() {
           </button>
         </div>
       </main>
+      <PlatformFooter />
     </div>
   );
 }
