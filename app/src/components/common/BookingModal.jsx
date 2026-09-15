@@ -28,7 +28,10 @@ export function BookingModal() {
   const clearCart = useAppStore((state) => state.clearCart);
   const showToast = useAppStore((state) => state.showToast);
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
+  const userRole = useAppStore((state) => state.userRole);
   const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const userName = useAppStore((state) => state.userName);
+  const userPhone = useAppStore((state) => state.userPhone);
 
   // Scheduler Steps: 1: Service/Mode, 2: Date, 3: Time, 4: Confirm, 5: Success
   const [step, setStep] = useState(1);
@@ -91,11 +94,17 @@ export function BookingModal() {
   const activeDate = dates[selectedDateIdx];
 
   const handleFinalBooking = async () => {
+    if (!isAuthenticated || userRole === 'partner') {
+      openAuthModal('client');
+      showToast('Sign in with Google or phone to confirm this booking.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     const bookingPayload = {
-      clientName: clientName.trim() || 'Guest Client',
-      clientPhone: clientPhone.trim() || '+91 98765 43210',
+      clientName: clientName.trim() || userName || 'Guest Client',
+      clientPhone: clientPhone.trim() || userPhone || '',
       serviceName,
       date: activeDate.formatted,
       time: selectedTime,
@@ -103,24 +112,27 @@ export function BookingModal() {
       serviceType,
       amount,
       providerName: activeProvider.name,
-      status: 'confirmed'
+      ownerId: bookingModalData?.partnerId || bookingModalData?.provider?.partnerId,
+      salonId: bookingModalData?.salonId || bookingModalData?.provider?.salonId,
+      serviceId: bookingModalData?.serviceId,
+      status: 'confirmed',
     };
 
-    // 1. Sync with Supabase if live credentials exist
     if (isSupabaseConfigured) {
-      try {
-        await createAppointmentRecord(bookingPayload);
-      } catch (err) {
-        console.warn('Supabase sync notice:', err);
+      const result = await createAppointmentRecord(bookingPayload);
+      if (!result.success) {
+        setIsSubmitting(false);
+        showToast(result.error || 'Could not save booking.');
+        return;
       }
+      bookingPayload.id = result.data?.id;
     }
 
-    // 2. Add to Zustand store live appointments
     const created = addAppointment(bookingPayload);
     setConfirmedBooking(created);
     clearCart();
     setIsSubmitting(false);
-    setStep(5); // Success confirmation step
+    setStep(5);
   };
 
   return (
