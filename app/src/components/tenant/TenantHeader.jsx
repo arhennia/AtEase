@@ -9,12 +9,12 @@ export function TenantHeader({ partner }) {
 
   return (
     <header className="sticky top-0 w-full z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-stone-200">
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 h-16 sm:h-20 flex items-center justify-between gap-4">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           {partner?.logoUrl ? (
             <img src={partner.logoUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
           ) : null}
-          <span className="font-serif text-lg sm:text-xl tracking-[0.12em] uppercase truncate">
+          <span className="font-serif text-lg sm:text-xl tracking-tight truncate">
             {partner?.brandName || 'Studio'}
           </span>
         </div>
