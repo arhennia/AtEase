@@ -7,8 +7,8 @@ export function TopNav() {
     <header className="w-full sticky top-0 z-50 bg-white/95 backdrop-blur-md flex items-center justify-between px-container-margin h-14 border-b border-outline-variant/50">
       {/* Brand Logo (Text for now) */}
       <div className="flex items-center">
-        <h1 className="text-xl font-serif font-bold text-primary tracking-tight">
-          Kumari & Co.
+        <h1 className="text-xl noto-serif-grantha-regular text-primary tracking-tight">
+          AtEase
         </h1>
       </div>
 
