@@ -6,7 +6,7 @@ export function TenantNotFound() {
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="max-w-md text-center space-y-4">
         <p className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">Unknown brand site</p>
-        <h1 className="font-serif text-3xl uppercase tracking-wide text-[#111111]">This page is private</h1>
+        <h1 className="font-serif text-3xl tracking-tight text-[#111111]">This page is private</h1>
         <p className="text-sm text-stone-600 font-light">
           There is no booking site at this address. Ask your specialist for their personal booking link.
         </p>
@@ -20,7 +20,7 @@ export function TenantOffline({ brandName, isOwnerPreview }) {
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="max-w-md text-center space-y-4">
         <p className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">Site paused</p>
-        <h1 className="font-serif text-3xl uppercase tracking-wide text-[#111111]">
+        <h1 className="font-serif text-3xl tracking-tight text-[#111111]">
           {brandName || 'This studio'} is temporarily offline
         </h1>
         <p className="text-sm text-stone-600 font-light">
