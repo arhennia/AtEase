@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Trash2, ArrowRight, Home, Building2, ShieldCheck, Clock } from 'lucide-react';
+import { formatUptoPrice, serviceUptoPrice } from '../../data/onboardingQuiz';
 
 export function CartDrawer() {
   const cartDrawerOpen = useAppStore((state) => state.cartDrawerOpen);
@@ -17,10 +18,7 @@ export function CartDrawer() {
 
   if (!cartDrawerOpen) return null;
 
-  const totalAmount = cart.reduce((sum, item) => {
-    const price = pricingMode === 'HOME_VISIT' ? (item.homePrice || item.price) : (item.inSalonPrice || item.price);
-    return sum + Number(price || 0);
-  }, 0);
+  const totalAmount = cart.reduce((sum, item) => sum + serviceUptoPrice(item), 0);
 
   const handleProceed = () => {
     if (cart.length === 0) return;
@@ -58,7 +56,7 @@ export function CartDrawer() {
           <div className="p-6 border-b border-stone-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShoppingBag size={18} className="text-[#111111]" />
-              <h2 className="font-serif text-lg tracking-wider uppercase font-normal text-[#111111]">
+              <h2 className="font-serif text-lg tracking-tight font-normal text-[#111111]">
                 Your Selection ({cart.length})
               </h2>
             </div>
@@ -126,9 +124,7 @@ export function CartDrawer() {
               </div>
             ) : (
               cart.map((item) => {
-                const itemPrice = pricingMode === 'HOME_VISIT' 
-                  ? (item.homePrice || item.price) 
-                  : (item.inSalonPrice || item.price);
+                const itemPrice = serviceUptoPrice(item);
 
                 return (
                   <div 
@@ -159,7 +155,7 @@ export function CartDrawer() {
                         <span>{item.duration || '60 mins'}</span>
                       </div>
                       <div className="font-mono font-bold text-[#111111]">
-                        ₹{Number(itemPrice).toLocaleString()}
+                        {formatUptoPrice(itemPrice)}
                       </div>
                     </div>
                   </div>
@@ -179,8 +175,8 @@ export function CartDrawer() {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm tracking-wider uppercase font-bold text-[#111111]">
-                  <span>Total Estimated Price:</span>
-                  <span className="font-mono text-base">₹{totalAmount.toLocaleString()}</span>
+                  <span>Upto</span>
+                  <span className="font-mono text-base">{formatUptoPrice(totalAmount)}</span>
                 </div>
               </div>
 
