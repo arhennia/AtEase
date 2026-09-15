@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
+import { PlatformFooter } from '../components/platform/PlatformFooter';
 import { AuthMethods } from '../components/auth/AuthMethods';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -48,9 +49,9 @@ export function Signup() {
   };
 
   return (
-    <div className="bg-white min-h-screen text-[#111111]">
+    <div className="bg-white min-h-screen text-[#111111] flex flex-col">
       <PlatformHeader />
-      <main className="max-w-md mx-auto px-4 py-16">
+      <main className="flex-1 max-w-md mx-auto w-full px-4 py-16">
         <button
           type="button"
           onClick={() => navigate('/')}
@@ -58,9 +59,9 @@ export function Signup() {
         >
           <ArrowLeft size={13} /> Back
         </button>
-        <h1 className="font-serif text-3xl uppercase tracking-wide mb-2">Start your trial</h1>
+        <h1 className="font-serif text-3xl tracking-tight mb-2">Start your trial</h1>
         <p className="text-sm text-stone-600 font-light mb-8">
-          Brand owners sign in with Google or phone. End-clients never sign up here — they log in on your private site to book.
+          After this, a short quiz builds your website and dashboard.
         </p>
 
         {isSupabaseConfigured ? (
@@ -117,6 +118,7 @@ export function Signup() {
           Already a partner? <Link to="/login" className="underline text-[#111111]">Log in</Link>
         </p>
       </main>
+      <PlatformFooter />
     </div>
   );
 }
