@@ -12,8 +12,9 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null) {
       duration: s.duration || `${s.duration_mins || 60} mins`,
       inSalonPrice: Number(s.price_salon || s.price_fixed || 0),
       homePrice: Number(s.price_home || s.price_fixed || 0),
+      uptoPrice: Number(s.price_fixed || s.price_home || s.price_salon || 0),
       imageUrl: s.image_url || '',
-      pricingModel: s.pricing_model || s.price_model || 'dual',
+      pricingModel: s.pricing_model || s.price_model || 'starting_at',
     });
   }
 
