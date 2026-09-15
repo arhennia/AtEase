@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Sun, Sunrise, Moon, Calendar, Clock, ShieldCheck } from 'lucide-react';
+import { AtEaseLogo } from '../components/platform/AtEaseLogo';
 
 export function DateTimeSelection() {
   const navigate = useNavigate();
@@ -61,9 +62,7 @@ export function DateTimeSelection() {
           <ArrowLeft size={13} />
           <span>Back</span>
         </button>
-        <span className="font-serif text-lg tracking-[0.18em] font-normal uppercase text-[#111111]">
-          AtEase
-        </span>
+        <AtEaseLogo className="text-xl" />
         <div className="w-16" />
       </header>
 
@@ -75,7 +74,7 @@ export function DateTimeSelection() {
             <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
               Schedule Step
             </span>
-            <h1 className="font-serif text-2xl tracking-wide uppercase font-normal text-[#111111]">
+            <h1 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
               Select Date &amp; Time
             </h1>
             <p className="text-xs text-stone-500 font-light">
