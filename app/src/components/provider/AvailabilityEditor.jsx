@@ -55,12 +55,8 @@ export function AvailabilityEditor() {
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b border-stone-200 pb-4">
-        <h3 className="font-serif text-lg tracking-wide uppercase font-normal text-[#111111]">
-          Opening Hours &amp; Booking Availability
-        </h3>
-        <p className="text-xs text-stone-500 font-light mt-0.5">
-          Manage your operational hours, available days, and block emergency time slots.
-        </p>
+        <h3 className="font-serif text-xl tracking-tight">Hours</h3>
+        <p className="text-sm text-stone-500 font-light mt-1">Days and times clients can book.</p>
       </div>
 
       {/* Days Selector */}
@@ -168,7 +164,7 @@ export function AvailabilityEditor() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white w-full max-w-sm border border-stone-200 p-6 space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h4 className="font-serif text-base uppercase font-bold">Block Slot</h4>
+              <h4 className="font-serif text-base tracking-tight">Block Slot</h4>
               <button onClick={() => setShowBlockModal(false)}>✕</button>
             </div>
 
