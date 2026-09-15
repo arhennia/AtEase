@@ -37,7 +37,7 @@ function App() {
   }, [syncAuthSession]);
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen text-[#111111] antialiased selection:bg-[#111111] selection:text-white">
+    <div className="bg-[#FFFFFF] min-h-screen text-[#111111] antialiased font-sans selection:bg-[#111111] selection:text-white">
       <AuthModal />
       <LocationModal />
       <CartDrawer />
