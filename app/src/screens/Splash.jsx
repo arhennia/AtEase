@@ -46,8 +46,8 @@ export function Splash() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
         >
-          <h1 className="text-4xl font-serif font-bold text-primary tracking-tight mb-2">
-            Kumari & Co.
+          <h1 className="text-4xl noto-serif-grantha-regular text-primary tracking-tight mb-2">
+            AtEase
           </h1>
           <p className="text-xs font-sans text-on-surface tracking-widest uppercase opacity-60">
             Bhubaneswar • Estd. 2024
