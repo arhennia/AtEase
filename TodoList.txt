@@ -1,0 +1,327 @@
+ATEASE — PROJECT TODO LIST
+Last updated: 16 Sep 2026
+Owner: Arti Reddy
+First live brand: Mom (home-visit beauty, Bhubaneswar area — no salon storefront required)
+
+HOW TO READ THIS FILE
+- Check a box when the item is actually working for a real person, not just in UI.
+- Do Phase 0 → 1 → 2 in order. Later phases can overlap after the first brand is live.
+- Goal of Phases 0–3: one owner, one site, real bookings, maps that work for home service.
+- Goal of Phases 4–6: make that one brand easy to run and easy to market.
+- Goal of Phase 7+: real SaaS for more owners. Do not start this until Mom’s site is in daily use.
+
+
+========================================================================
+WHERE THE PROJECT STANDS (honest snapshot)
+========================================================================
+
+Overall: the product shell is real. A new owner can sign up, take a quiz, get a
+dashboard and a private /p/[slug] site, and a client can book through a modal
+if Supabase + Google/phone auth are configured.
+
+What is NOT ready for a paying customer yet: real hours, real coverage, maps,
+WhatsApp, alerts, payments, SEO, custom domain, and a clean “this is only
+Mom’s brand” setup (demo Rajkumari data still lives in the app).
+
+DONE (works today)
+[x] B2B home page, signup, login, onboarding quiz (tap options, upto prices, photos)
+[x] Owner dashboard shell: bookings, menu, hours UI, area UI
+[x] Isolated client site at /p/[slug] — no marketplace of other studios
+[x] Menu CRUD + service images (Supabase when keys are set)
+[x] Booking modal: pick service → slot → address → client login → save booking
+[x] Google + phone OTP + email auth (code is in; providers must be configured)
+[x] Supabase tables: profiles, brand_owners, salons, services, bookings, clients,
+    business_analytics + RLS + storage buckets
+[x] Trial banner / pause site when trial ends (demo “activate plan” button, no payment)
+
+PARTIAL / MOCK (looks done, is not production)
+[ ] Hours and blocked slots — local only, not saved to Supabase
+[ ] Coverage radius and localities — local only, Bhubaneswar demo list
+[ ] Time slots on the client site ignore owner hours and existing bookings
+[ ] Dashboard bookings do not auto-refresh after a new booking
+[ ] Clients + analytics tables fill via DB trigger, but there is no UI
+[ ] WhatsApp number exists in the database, never collected or shown
+[ ] Seed demo brands (Rajkumari, Maison) still load into localStorage
+[ ] Default fake client “Priya Menon” / Patia addresses in booking forms
+[ ] Page booking flow (/p/slug/date-time → address → review) is disconnected
+    and BookingReview is broken if used
+[ ] Subscription is a fake activate button — no Razorpay/UPI checkout
+
+NOT STARTED (needed for one real brand + marketing)
+[ ] Google Maps: service area (home visits), no salon pin required
+[ ] Address autocomplete + “is this client inside the service area?”
+[ ] WhatsApp booking link, owner alert, client confirmation
+[ ] SMS / email reminders
+[ ] Google Business Profile as a SERVICE-AREA business (not a storefront)
+[ ] Share kit: Instagram bio link, WhatsApp status, QR, OG preview image
+[ ] Per-brand SEO (title, description, preview card when the link is shared)
+[ ] Production deploy on a real HTTPS domain
+[ ] Remove leftover marketplace screens (ClientHome, Splash, etc.)
+
+
+========================================================================
+PHASE 0 — CLEAN THE DECK (1–2 days)
+Make the app tell the truth. No demo ghosts when testing Mom’s brand.
+========================================================================
+
+[ ] 0.1 Confirm .env.local has working VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
+[ ] 0.2 Confirm 000_master_setup.sql is the only schema that was run (it was)
+[ ] 0.3 In Supabase Auth: enable Google. Add localhost + future production URLs
+[ ] 0.4 In Supabase Auth: enable Phone OTP (or decide Google-only for first test)
+[ ] 0.5 Clear browser localStorage key atease-whitelabel-v1 before the first
+        real signup (otherwise Rajkumari seed data mixes in)
+[ ] 0.6 Stop loading seed partners (rajkumari-beauty, maison-curls) for new users
+[ ] 0.7 Remove Rajkumari catalog fallback in tenancy.js
+[ ] 0.8 Remove fake default names/addresses (Priya Menon, Plot 42, DLF Patia)
+        from BookingModal, AddressScreen, BookingReview
+[ ] 0.9 Hide or delete unused marketplace files so they cannot confuse testing:
+        ClientHome, Splash, CreateAccount, OtpVerification, ServiceDetails,
+        RoleSwitcher, TopNav, old Header
+[ ] 0.10 Fix or remove the dead page-route booking path. Keep ONE booking flow
+         (the modal is the live one). Fix BookingReview imports if that path stays
+[ ] 0.11 Write a 10-minute “first brand” checklist on paper: signup → quiz →
+         copy link → book as a client on a second browser/phone
+
+
+========================================================================
+PHASE 1 — MOM’S BRAND LIVE (the first real owner)
+Brand type: home service. She travels to the client. No salon required.
+========================================================================
+
+BRAND SETUP (product + content)
+[ ] 1.1 Collect brand facts (do this with her, not from guesswork)
+        - Brand / working name she wants on the site
+        - Her photo or a simple logo
+        - Services she actually does (hair / skin / makeup / bridal / etc.)
+        - Typical “upto” price per service
+        - Photos of work (even WhatsApp photos are fine)
+        - Cities / areas she will travel to
+        - Working days and hours
+        - Phone + WhatsApp number (likely the same)
+        - Languages she is comfortable with on the site (English / Odia mix?)
+[ ] 1.2 Create her owner account (Google or phone) — not the demo email
+[ ] 1.3 Complete onboarding quiz with HER data only
+[ ] 1.4 Confirm slug and public URL: /p/[her-slug]
+[ ] 1.5 Upload real service photos on the Menu tab
+[ ] 1.6 Set visit type to home (or both, only if she also does studio)
+[ ] 1.7 Write a 1–2 line brand description that clients understand
+        Example shape: “Home beauty services in Bhubaneswar. You book. She comes to you.”
+[ ] 1.8 Preview the site on phone (most clients will open WhatsApp links on mobile)
+[ ] 1.9 Book a test appointment from a second Google/phone account
+[ ] 1.10 Confirm that booking appears on her dashboard
+
+HOME-SERVICE SITE COPY (the site must not look like a salon)
+[ ] 1.11 Hero / type label should say she visits the client, not “visit the salon”
+[ ] 1.12 Hide “in-studio vs at-home” price toggle if she only does home visits
+[ ] 1.13 Address step: ask for the CLIENT’s house / flat, not a salon address
+[ ] 1.14 Show her coverage in plain language: “Travels across ______ (upto __ km)”
+[ ] 1.15 Show WhatsApp button: “Message before you book” (wa.me/91XXXXXXXXXX)
+[ ] 1.16 Payment line stays honest: pay her in cash / UPI at the visit
+
+DATA THAT MUST SAVE (currently dashboard hours/area do not persist)
+[ ] 1.17 Save working_hours to brand_owners.working_hours
+[ ] 1.18 Save coverage_radius_km and service_area to brand_owners
+[ ] 1.19 Save whatsapp_number from onboarding or dashboard
+[ ] 1.20 After login, load hours + area from Supabase, not leftover local state
+
+
+========================================================================
+PHASE 2 — GOOGLE MAPS FOR A HOME-SERVICE BRAND
+She has no shop pin. Google should treat this as a SERVICE AREA, not a store.
+========================================================================
+
+PRODUCT (inside AtEase)
+[ ] 2.1 Owner can set a home base (her house / a landmark) that is PRIVATE
+        — never shown as “the salon” on the public site unless she wants it
+[ ] 2.2 Owner draws or picks a service area: city chips + radius OR polygon
+        First version: city + radius in km is enough
+[ ] 2.3 Client address uses Google Places autocomplete (flat, society, locality)
+[ ] 2.4 On book: geocode the client address and check it is inside her area
+[ ] 2.5 If outside area: say so clearly, still offer WhatsApp to ask
+[ ] 2.6 On a new booking, dashboard shows a “Open in Google Maps” link to the
+        CLIENT address (directions from her, not to a fake salon)
+[ ] 2.7 Store lat/lng on the booking row (add columns if needed: client_lat,
+        client_lng, client_place_id)
+[ ] 2.8 Do not require a salon row with a public street address
+[ ] 2.9 Google Maps API key in env (Places + Geocoding + Maps JavaScript)
+        Restrict the key to the production domain + localhost
+
+GOOGLE BUSINESS PROFILE (outside the app, still required for “there’s a
+salon that does this” discovery)
+[ ] 2.10 Create a Google Business Profile as a Service-area business
+         Category examples: Makeup artist / Hairdresser / Beauty salon
+         (service area — hide the home address from the public)
+[ ] 2.11 Set service areas: Bhubaneswar (and nearby towns she actually covers)
+[ ] 2.12 Add website = her AtEase URL (https://domain/p/slug)
+[ ] 2.13 Add WhatsApp / phone
+[ ] 2.14 Add 10+ real photos of her work
+[ ] 2.15 Add services + “upto” price range matching the site
+[ ] 2.16 Ask 5 real clients for Google reviews
+[ ] 2.17 Optional later: embed a “serves these areas” map on her AtEase page
+         (area highlight, not a shop marker)
+
+
+========================================================================
+PHASE 3 — BOOKING THAT HOLDS UP IN REAL LIFE
+If this fails, the site is a brochure. Make it a working appointment book.
+========================================================================
+
+[ ] 3.1 Time slots generated from saved hours, not a hardcoded list
+[ ] 3.2 Hide slots that already have a booking (no double book)
+[ ] 3.3 Buffer time between home visits (travel), owner-configurable (e.g. 30 min)
+[ ] 3.4 Owner can confirm / decline / delay a booking
+[ ] 3.5 Client sees status: requested / confirmed / on the way / done / cancelled
+[ ] 3.6 Collect a real client phone even if they signed in with Google
+[ ] 3.7 Collect a usable address (autocomplete) + optional landmark / gate code
+[ ] 3.8 Multi-service cart: either book as one visit or block enough time
+[ ] 3.9 Dashboard bookings list refreshes from Supabase (not only on login)
+[ ] 3.10 Optional: owner can add a walk-in / WhatsApp booking manually
+[ ] 3.11 Fix date/time parsing so “16 Sep 2026 11:30 AM” always stores correctly
+[ ] 3.12 Test the full loop on a real phone: link → book → she sees it → she
+         opens Maps to the house
+
+
+========================================================================
+PHASE 4 — OWNER OPS (so she does not need you sitting next to the laptop)
+========================================================================
+
+WHATSAPP (highest leverage for this brand)
+[ ] 4.1 Store her WhatsApp number
+[ ] 4.2 Site CTA: Chat on WhatsApp (pre-filled: “Hi, I want to book [service]”)
+[ ] 4.3 After a booking: open/send her a WhatsApp message with client name,
+        phone, service, time, address, Maps link
+        First version: wa.me click from dashboard is enough
+        Later: WhatsApp Cloud API auto-message
+[ ] 4.4 After confirm: client gets a WhatsApp/SMS with the same details
+[ ] 4.5 Reminder: T-24h and T-2h (SMS or WhatsApp)
+
+DASHBOARD
+[ ] 4.6 Today / upcoming / past filters that actually work
+[ ] 4.7 Tap-to-call and tap-to-WhatsApp on each booking
+[ ] 4.8 Simple client list (the `clients` table is already filled by a trigger)
+[ ] 4.9 Simple this-month count (the `business_analytics` table is already filled)
+[ ] 4.10 She can pause the public site for holidays without deleting the brand
+
+PAYMENTS (keep it simple for v1)
+[ ] 4.11 Stay cash / UPI at the visit for the first brand
+[ ] 4.12 Optional: UPI QR on the success screen and on the site footer
+[ ] 4.13 Do NOT build Razorpay/Stripe until she asks to take advance online
+
+
+========================================================================
+PHASE 5 — MARKETING FOR ONE BRAND
+The product is the booking page. Marketing is how people receive the link.
+Do this only after /p/[slug] looks right on a phone.
+========================================================================
+
+SHARE ASSETS
+[ ] 5.1 One-line pitch she can paste in WhatsApp
+[ ] 5.2 Instagram bio link = her AtEase URL (or a short redirect)
+[ ] 5.3 QR code (print for her kit bag / visiting card)
+[ ] 5.4 Open Graph image so WhatsApp/Instagram previews show brand + photo
+[ ] 5.5 Page title + description unique to her brand (not “AtEase”)
+[ ] 5.6 WhatsApp status / story image (brand name + “Book home service” + QR)
+[ ] 5.7 5 Google reviews plan (Phase 2) — this is the real local SEO
+
+CHANNELS (in order, for one person)
+[ ] 5.8 Existing WhatsApp clients — send the link first (warmest audience)
+[ ] 5.9 Instagram / Facebook profile link
+[ ] 5.10 Google Business Profile (Phase 2) — this is “people search makeup
+         near me / home service”
+[ ] 5.11 Visiting card with QR
+[ ] 5.12 Do NOT run paid ads until 10 real bookings have completed on the site
+
+MEASURE (keep it tiny)
+[ ] 5.13 Count: link taps, bookings started, bookings completed
+[ ] 5.14 Ask every booked client: “How did you find this page?”
+
+
+========================================================================
+PHASE 6 — INTEGRATIONS (only what one brand needs)
+Do not integrate for the sake of a SaaS slide. Integrate to save her time.
+========================================================================
+
+MUST HAVE FOR FIRST BRAND
+[ ] 6.1 Google Auth (owners + clients)
+[ ] 6.2 Phone OTP (clients who will not use Google)
+[ ] 6.3 Google Maps Places + Geocoding (Phase 2)
+[ ] 6.4 Supabase Storage for photos (already started)
+[ ] 6.5 WhatsApp deep links (Phase 4)
+[ ] 6.6 Production host (Vercel / Netlify / Cloudflare Pages) + HTTPS
+
+SHOULD HAVE SOON
+[ ] 6.7 WhatsApp Cloud API or a simple notify function (new booking → her phone)
+[ ] 6.8 Transactional SMS (booking confirmed / reminder) via Twilio or MSG91
+[ ] 6.9 Google Calendar: optional “add this visit to my calendar” for her
+[ ] 6.10 UPI QR / payment note on the booking success screen
+
+LATER (after the first brand is stable)
+[ ] 6.11 Razorpay for trial → ₹999/mo (platform billing, not client checkout)
+[ ] 6.12 Custom domain: hername.com pointing at the tenant
+[ ] 6.13 Meta Pixel / Google Analytics only if ads are actually running
+[ ] 6.14 Email (Resend / SES) for owner weekly summary
+[ ] 6.15 Instagram media embed / portfolio gallery from the unused `portfolio` bucket
+
+
+========================================================================
+PHASE 7 — PLATFORM / MULTI-OWNER (after Mom’s site is in daily use)
+Do not expand until one brand has completed real jobs through the site.
+========================================================================
+
+[ ] 7.1 Real subscription checkout (Razorpay) and webhooks
+[ ] 7.2 Trial expiry that she understands (SMS: “your site pauses in 3 days”)
+[ ] 7.3 Onboarding quiz polish from what we learned setting up her brand
+[ ] 7.4 Hours, maps, WhatsApp as default for every new owner — not special-cased
+[ ] 7.5 Remove remaining demo data and marketplace leftovers from the repo
+[ ] 7.6 Per-tenant SEO template
+[ ] 7.7 Admin view for you: list of owners, which sites are live
+[ ] 7.8 Legal: terms, privacy, “pay the professional directly” disclosure
+[ ] 7.9 Second owner only after the first has used it for 2–4 weeks
+
+
+========================================================================
+FIRST-BRAND LAUNCH ORDER (do this sequence, ignore the rest until it works)
+========================================================================
+
+Week 1  Phase 0 + 1     Clean demo data. Create her account. Real menu. Test book.
+Week 2  Phase 2 + 3     Maps + real slots. Book from a phone. She opens Maps.
+Week 3  Phase 4 + 5     WhatsApp button + share the link with existing clients.
+Week 4  Watch           5–10 real bookings. Write down every confusion she has.
+Then    Phase 6–7       Only the integrations those confusions demand.
+
+
+========================================================================
+DEFINITION OF “PHASE 1 DONE”
+========================================================================
+
+A stranger with her WhatsApp link can:
+  1. Open /p/[her-slug] on a phone
+  2. Understand she comes to their home
+  3. Pick a service with an “upto” price and a photo
+  4. Book a time
+  5. Type / pick their address
+  6. Sign in with Google or phone
+  7. See a confirmation
+
+And she can:
+  8. Open the dashboard on a phone
+  9. See that booking
+ 10. Tap to call / WhatsApp the client
+ 11. Open Google Maps to their house
+
+If those 11 things work, the website is real enough to test with her business.
+Everything else is extra until then.
+
+
+========================================================================
+NOTES / DECISIONS TO KEEP
+========================================================================
+
+- AtEase is not a marketplace. Her clients never see another studio.
+- Prices stay “upto ₹X/-”, not a fake fixed menu.
+- She is a service-area professional. Google Maps must not force a salon pin.
+- Payments at the visit (cash/UPI) are correct for v1.
+- WhatsApp is how her business already runs. The site should feed WhatsApp,
+  not replace it on day one.
+- One brand first. Multi-tenant SaaS second.
+)
