@@ -1,30 +1,35 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
-import { ArrowRight, LogOut, User } from 'lucide-react';
+import { ArrowRight, LogOut } from 'lucide-react';
+import { AtEaseLogo } from './AtEaseLogo';
 
 export function PlatformHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const userRole = useAppStore((s) => s.userRole);
   const logout = useAppStore((s) => s.logout);
+  const onHome = location.pathname === '/';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200">
-      <div className="max-w-[1120px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
-        <button type="button" onClick={() => navigate('/')} className="font-serif text-xl tracking-[0.18em] uppercase">
-          AtEase
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+        <button type="button" onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
+          <AtEaseLogo />
         </button>
         <nav className="flex items-center gap-4 sm:gap-6">
-          <a href="#pricing" className="hidden sm:inline text-[11px] tracking-[0.15em] uppercase text-stone-600 hover:text-black">
-            Pricing
-          </a>
+          {onHome && (
+            <a href="#how-it-works" className="hidden sm:inline text-sm text-stone-600 hover:text-black">
+              How it works
+            </a>
+          )}
           {isAuthenticated && userRole === 'partner' ? (
             <>
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="text-[11px] tracking-[0.15em] uppercase font-medium text-stone-700 hover:text-black"
+                className="text-sm text-stone-700 hover:text-black"
               >
                 Dashboard
               </button>
@@ -34,7 +39,7 @@ export function PlatformHeader() {
                   logout();
                   navigate('/');
                 }}
-                className="flex items-center gap-1.5 text-[11px] tracking-[0.15em] uppercase text-stone-500"
+                className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-black"
               >
                 <LogOut size={13} />
                 Logout
@@ -45,17 +50,16 @@ export function PlatformHeader() {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="flex items-center gap-1.5 text-[11px] tracking-[0.15em] uppercase text-stone-600 hover:text-black"
+                className="text-sm text-stone-600 hover:text-black"
               >
-                <User size={13} />
-                Partner login
+                Login
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/signup')}
-                className="bg-[#111111] text-white px-4 py-2 text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-black flex items-center gap-1.5"
+                className="bg-[#111111] text-white px-4 py-2 text-sm font-medium hover:bg-black flex items-center gap-1.5"
               >
-                Start 14-day trial
+                Get started
                 <ArrowRight size={13} />
               </button>
             </>
