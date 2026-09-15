@@ -23,9 +23,10 @@ export {
 } from './brandOwners';
 
 export { fetchPrimarySalon, createSalonRecord } from './salons';
-export { fetchServicesByOwnerId, createServicesRecords } from './services';
+export { fetchServicesByOwnerId, createServicesRecords, updateServiceRecord, deleteServiceRecord } from './services';
 export { fetchAppointmentsByOwnerId, createAppointmentRecord } from './appointments';
 export { fetchClientsByOwnerId, fetchAnalyticsByOwnerId } from './clients';
+export { uploadOwnerImage } from './storage';
 
 /** @deprecated Use signUpWithEmail */
 export { signUpWithEmail as signUpProvider } from './auth';
