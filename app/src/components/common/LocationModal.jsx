@@ -55,7 +55,7 @@ export function LocationModal() {
                 Hyper-Local Discovery
               </span>
             </div>
-            <h3 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+            <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
               Select Service Locality
             </h3>
             <p className="text-xs text-stone-500 font-light">
