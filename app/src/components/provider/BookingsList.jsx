@@ -27,8 +27,8 @@ export function BookingsList({ partnerId }) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-200 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-serif text-lg tracking-wide uppercase font-normal text-[#111111]">
-              Live Client Appointments ({appointments.length})
+            <h3 className="font-serif text-lg tracking-tight font-normal text-[#111111]">
+              Live client appointments ({appointments.length})
             </h3>
             {isSupabaseConfigured && (
               <span className="text-[9px] tracking-wider uppercase font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 border border-emerald-200 flex items-center gap-1">
