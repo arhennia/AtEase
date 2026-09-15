@@ -15,6 +15,7 @@ import {
   Building2,
   ShieldCheck
 } from 'lucide-react';
+import { formatUptoPrice, serviceUptoPrice } from '../data/onboardingQuiz';
 
 export function ProviderStorefront() {
   const { partnerSlug } = useParams();
@@ -80,8 +81,12 @@ export function ProviderStorefront() {
 
   const isCartItem = (serviceId) => cart.some((c) => c.id === serviceId);
 
+  const offersHome = /home/i.test(partner?.typeLabel || '');
+  const offersStudio = /studio/i.test(partner?.typeLabel || '');
+  const offersBoth = offersHome && offersStudio;
+
   const handleBookSingle = (service) => {
-    const price = pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
+    const price = serviceUptoPrice(service);
     openBookingModal({
       provider: providerObj,
       partnerId: partner.id,
@@ -127,7 +132,7 @@ export function ProviderStorefront() {
             )}
           </div>
 
-          <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl tracking-wide uppercase font-normal text-white">
+          <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl tracking-tight font-normal text-white">
             {providerObj.name}
           </h1>
 
@@ -137,7 +142,7 @@ export function ProviderStorefront() {
         </div>
       </section>
 
-      <main className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-12 space-y-10">
+      <main className="max-w-[1100px] mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-10">
         <div className="p-6 border border-stone-200 bg-[#F9F9F9] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase text-stone-600">
@@ -149,35 +154,35 @@ export function ProviderStorefront() {
             </p>
           </div>
 
-          <div className="space-y-1.5 w-full md:w-auto">
-            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
-              Select Pricing Mode
-            </span>
-            <div className="flex p-1 bg-white border border-stone-200 rounded-sm text-[11px] tracking-wider uppercase font-semibold">
-              <button
-                type="button"
-                onClick={() => setPricingMode('HOME_VISIT')}
-                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${pricingMode === 'HOME_VISIT'
-                    ? 'bg-[#111111] text-white shadow-sm'
-                    : 'text-stone-600 hover:text-[#111111]'
+          {offersBoth && (
+            <div className="space-y-1.5 w-full md:w-auto">
+              <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
+                Visit type
+              </span>
+              <div className="flex p-1 bg-white border border-stone-200 text-[11px] tracking-wider uppercase font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setPricingMode('HOME_VISIT')}
+                  className={`px-4 py-2 flex items-center gap-1.5 ${
+                    pricingMode === 'HOME_VISIT' ? 'bg-[#111111] text-white' : 'text-stone-600 hover:text-[#111111]'
                   }`}
-              >
-                <Home size={13} />
-                <span>At-Home Visit</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPricingMode('IN_SALON')}
-                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${pricingMode === 'IN_SALON'
-                    ? 'bg-[#111111] text-white shadow-sm'
-                    : 'text-stone-600 hover:text-[#111111]'
+                >
+                  <Home size={13} />
+                  At home
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPricingMode('IN_SALON')}
+                  className={`px-4 py-2 flex items-center gap-1.5 ${
+                    pricingMode === 'IN_SALON' ? 'bg-[#111111] text-white' : 'text-stone-600 hover:text-[#111111]'
                   }`}
-              >
-                <Building2 size={13} />
-                <span>In-Studio</span>
-              </button>
+                >
+                  <Building2 size={13} />
+                  In studio
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {categories.length === 0 ? (
@@ -207,37 +212,45 @@ export function ProviderStorefront() {
               .map((cat) => (
                 <section key={cat.id} className="space-y-6">
                   <div className="border-b border-stone-200 pb-2">
-                    <h2 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+                    <h2 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
                       {cat.categoryName}
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {cat.services.map((service) => {
-                      const currentPrice = pricingMode === 'HOME_VISIT' ? service.homePrice : service.inSalonPrice;
+                      const cap = serviceUptoPrice(service);
                       const inCart = isCartItem(service.id);
 
                       return (
                         <div
                           key={service.id}
-                          className="border border-stone-200 bg-[#FFFFFF] p-5 flex flex-col justify-between hover:border-stone-400 hover:shadow-md transition-all"
+                          className="border border-stone-200 bg-white flex flex-col hover:border-stone-400 transition-colors overflow-hidden"
                         >
+                          {service.imageUrl ? (
+                            <div className="h-40 bg-stone-100 overflow-hidden">
+                              <img src={service.imageUrl} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ) : null}
+                          <div className="p-5 flex flex-col justify-between flex-1">
                           <div className="space-y-3">
-                            <div className="flex justify-between items-start">
+                            <div className="flex justify-between items-start gap-3">
                               <span className="text-[9px] tracking-[0.2em] uppercase font-semibold text-stone-500 flex items-center gap-1">
                                 <Clock size={11} />
                                 <span>{service.duration}</span>
                               </span>
-                              <span className="font-mono text-base font-bold text-[#111111]">
-                                ₹{Number(currentPrice).toLocaleString()}
+                              <span className="font-mono text-sm font-bold text-[#111111] whitespace-nowrap">
+                                {formatUptoPrice(cap)}
                               </span>
                             </div>
-                            <h3 className="font-serif text-base font-semibold tracking-wide text-[#111111]">
+                            <h3 className="font-serif text-base font-normal tracking-tight text-[#111111]">
                               {service.name}
                             </h3>
-                            <p className="text-xs text-stone-600 font-light leading-relaxed">
-                              {service.description}
-                            </p>
+                            {service.description ? (
+                              <p className="text-xs text-stone-600 font-light leading-relaxed">
+                                {service.description}
+                              </p>
+                            ) : null}
                           </div>
 
                           <div className="pt-5 border-t border-stone-100 flex gap-2">
@@ -247,8 +260,9 @@ export function ProviderStorefront() {
                                 addToCart({
                                   ...service,
                                   category: cat.categoryName,
-                                  homePrice: service.homePrice,
-                                  inSalonPrice: service.inSalonPrice,
+                                  uptoPrice: cap,
+                                  homePrice: cap,
+                                  inSalonPrice: cap,
                                   partnerId: partner.id,
                                 });
                               }}
@@ -277,6 +291,7 @@ export function ProviderStorefront() {
                               Book
                             </button>
                           </div>
+                          </div>
                         </div>
                       );
                     })}
@@ -286,13 +301,13 @@ export function ProviderStorefront() {
           </>
         )}
 
-        <section className="p-6 border border-stone-300 bg-[#F9F9F9] space-y-2">
+        <section className="p-6 border border-stone-200 bg-[#F9F9F9] space-y-2">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#111111]">
             <ShieldCheck size={16} />
-            <span>Direct Payment Notice</span>
+            <span>Pay {partner.brandName} directly</span>
           </div>
           <p className="text-xs text-stone-600 font-light leading-relaxed">
-            Pay {partner.brandName} directly at the time of service via Cash, UPI, or Card.
+            Cash, UPI, or card at the time of service. Prices on the menu are “upto” amounts.
           </p>
         </section>
       </main>
@@ -304,7 +319,7 @@ export function ProviderStorefront() {
               {cart.length} {cart.length === 1 ? 'Service' : 'Services'} Selected
             </span>
             <div className="text-xs font-mono font-bold">
-              Total: ₹{cart.reduce((sum, item) => sum + (pricingMode === 'HOME_VISIT' ? item.homePrice : item.inSalonPrice), 0).toLocaleString()}
+              {formatUptoPrice(cart.reduce((sum, item) => sum + serviceUptoPrice(item), 0))}
             </div>
           </div>
           <button
