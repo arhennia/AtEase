@@ -9,6 +9,19 @@ import {
   slugify,
   TRIAL_DAYS,
 } from '../lib/tenancy';
+import {
+  signUpProvider,
+  signInProvider,
+  signOutProvider,
+  fetchBrandOwnerByUserId,
+  fetchBrandOwnerBySlug,
+  fetchServicesByOwnerId,
+  createBrandOwnerRecord,
+  createServicesRecords,
+  mapBrandOwnerFromDb,
+  isSupabaseConfigured,
+  supabase,
+} from '../lib/supabase';
 
 const PERSIST_KEY = 'atease-whitelabel-v1';
 
@@ -64,7 +77,48 @@ export const useAppStore = create((set, get) => ({
     persistSlice(get());
   },
 
-  loginPartner: ({ email, password, partnerId } = {}) => {
+  loginPartner: async ({ email, password, partnerId } = {}) => {
+    // 1. Try Supabase sign in if credentials provided
+    if (isSupabaseConfigured && email && password) {
+      const authRes = await signInProvider({ email, password });
+      if (authRes.ok && authRes.user) {
+        const user = authRes.user;
+        const brandRow = await fetchBrandOwnerByUserId(user.id);
+        if (brandRow) {
+          const services = await fetchServicesByOwnerId(brandRow.id);
+          const partner = mapBrandOwnerFromDb(brandRow, services);
+          const partners = get().partners;
+          set({
+            partners: [...partners.filter((p) => p.id !== partner.id), partner],
+            isAuthenticated: true,
+            userRole: 'partner',
+            userName: partner.ownerName || partner.brandName,
+            userEmail: partner.ownerEmail,
+            currentPartnerId: partner.id,
+            authModalOpen: false,
+          });
+          persistSlice(get());
+          return { ok: true, partner };
+        } else {
+          set({
+            pendingSignup: {
+              email: user.email,
+              ownerName: user.user_metadata?.owner_name || user.email.split('@')[0],
+              userId: user.id,
+            },
+            isAuthenticated: true,
+            userRole: 'partner',
+            userEmail: user.email,
+          });
+          return { ok: true, needsOnboarding: true };
+        }
+      }
+      if (!authRes.ok && email !== 'aisha@rajkumari.studio') {
+        return { ok: false, error: authRes.error };
+      }
+    }
+
+    // 2. Local / Demo partner fallback
     const partners = get().partners;
     const partner =
       getTenantById(partners, partnerId) ||
@@ -87,7 +141,26 @@ export const useAppStore = create((set, get) => ({
     return { ok: true, partner };
   },
 
-  signupPartner: ({ email, password, ownerName }) => {
+  signupPartner: async ({ email, password, ownerName }) => {
+    if (isSupabaseConfigured) {
+      const res = await signUpProvider({ email, password, ownerName });
+      if (!res.ok) {
+        return { ok: false, error: res.error };
+      }
+      if (!res.session) {
+        await signInProvider({ email, password });
+      }
+      set({
+        pendingSignup: {
+          email: email.trim().toLowerCase(),
+          password: password || '',
+          ownerName: ownerName?.trim() || email.split('@')[0],
+          userId: res.user?.id,
+        },
+      });
+      return { ok: true, user: res.user };
+    }
+
     const partners = get().partners;
     if (getTenantByEmail(partners, email)) {
       return { ok: false, error: 'An account already exists for this email.' };
@@ -102,7 +175,7 @@ export const useAppStore = create((set, get) => ({
     return { ok: true };
   },
 
-  completeOnboarding: ({ brandName, logoUrl, theme, servicesText, location, description }) => {
+  completeOnboarding: async ({ brandName, logoUrl, theme, servicesText, location, description }) => {
     const pending = get().pendingSignup || {};
     const baseSlug = slugify(brandName) || `studio-${Date.now().toString(36)}`;
     let slug = baseSlug;
@@ -112,18 +185,86 @@ export const useAppStore = create((set, get) => ({
       slug = `${baseSlug}-${n++}`;
     }
 
-    const catalog = (servicesText || '')
+    const servicesList = (servicesText || '')
       .split('\n')
       .map((line) => line.trim())
-      .filter(Boolean)
-      .map((name, idx) => ({
-        id: `custom-${idx}`,
-        name,
-        description: 'Added during brand onboarding.',
-        duration: '60 mins',
-        inSalonPrice: 1200,
-        homePrice: 1500,
-      }));
+      .filter(Boolean);
+
+    if (isSupabaseConfigured) {
+      let userId = pending.userId;
+      if (!userId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        userId = user?.id;
+      }
+
+      if (userId) {
+        const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString();
+        const brandPayload = {
+          user_id: userId,
+          brand_name: brandName.trim(),
+          owner_name: pending.ownerName || 'Studio Owner',
+          owner_email: pending.email,
+          slug,
+          professional_title: 'Independent Studio',
+          description: description || '',
+          logo_url: logoUrl || '',
+          cover_url: logoUrl || '',
+          location: location || '',
+          theme: { accent: theme || '#111111', mode: 'light' },
+          subscription_status: 'trial',
+          trial_ends_at: trialEndsAt,
+          is_active: true,
+        };
+
+        const createRes = await createBrandOwnerRecord(brandPayload);
+        if (!createRes.ok) {
+          console.error('Failed to create brand_owner in Supabase:', createRes.error);
+        } else {
+          const brandRow = createRes.data;
+          let dbServices = [];
+          if (servicesList.length > 0) {
+            const servicesPayload = servicesList.map((title, idx) => ({
+              owner_id: brandRow.id,
+              category_name: 'FEATURED SERVICES',
+              title,
+              description: 'Added during brand onboarding.',
+              duration: '60 mins',
+              price_salon: 1200,
+              price_home: 1500,
+              price_fixed: 1500,
+              sort_order: idx,
+              is_active: true,
+            }));
+            const servRes = await createServicesRecords(servicesPayload);
+            if (servRes.ok) {
+              dbServices = servRes.data;
+            }
+          }
+
+          const partner = mapBrandOwnerFromDb(brandRow, dbServices);
+          set({
+            partners: [...partners.filter((p) => p.id !== partner.id), partner],
+            pendingSignup: null,
+            isAuthenticated: true,
+            userRole: 'partner',
+            userName: partner.ownerName,
+            userEmail: partner.ownerEmail,
+            currentPartnerId: partner.id,
+          });
+          persistSlice(get());
+          return { ok: true, partner };
+        }
+      }
+    }
+
+    const catalog = servicesList.map((name, idx) => ({
+      id: `custom-${idx}`,
+      name,
+      description: 'Added during brand onboarding.',
+      duration: '60 mins',
+      inSalonPrice: 1200,
+      homePrice: 1500,
+    }));
 
     const partner = {
       id: `partner_${Date.now()}`,
@@ -172,7 +313,10 @@ export const useAppStore = create((set, get) => ({
     get().showToast('Subscription activated. Your brand site stays live.');
   },
 
-  logout: () => {
+  logout: async () => {
+    if (isSupabaseConfigured) {
+      await signOutProvider();
+    }
     set({
       isAuthenticated: false,
       userRole: null,
@@ -181,6 +325,50 @@ export const useAppStore = create((set, get) => ({
       userEmail: '',
     });
     persistSlice(get());
+  },
+
+  fetchPartnerBySlug: async (slug) => {
+    if (!slug) return null;
+    const local = getTenantBySlug(get().partners, slug);
+    if (local) return local;
+
+    if (isSupabaseConfigured) {
+      const brandRow = await fetchBrandOwnerBySlug(slug);
+      if (brandRow) {
+        const services = await fetchServicesByOwnerId(brandRow.id);
+        const partner = mapBrandOwnerFromDb(brandRow, services);
+        set({
+          partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
+        });
+        return partner;
+      }
+    }
+    return null;
+  },
+
+  syncAuthSession: async () => {
+    if (!isSupabaseConfigured) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const brandRow = await fetchBrandOwnerByUserId(session.user.id);
+        if (brandRow) {
+          const services = await fetchServicesByOwnerId(brandRow.id);
+          const partner = mapBrandOwnerFromDb(brandRow, services);
+          set({
+            partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
+            isAuthenticated: true,
+            userRole: 'partner',
+            userName: partner.ownerName || partner.brandName,
+            userEmail: partner.ownerEmail,
+            currentPartnerId: partner.id,
+          });
+          persistSlice(get());
+        }
+      }
+    } catch (e) {
+      console.warn('Session sync failed:', e);
+    }
   },
 
   getCurrentPartner: () => getTenantById(get().partners, get().currentPartnerId),
@@ -297,37 +485,37 @@ export const useAppStore = create((set, get) => ({
   appointments: persisted.appointments?.length
     ? persisted.appointments
     : [
-        {
-          id: 'ATEASE-84920',
-          partnerId: 'partner_rajkumari-beauty',
-          clientName: 'Priya Menon',
-          clientPhone: '+91 98765 43210',
-          serviceName: 'Keratin Smoothing Treatment, Organic Glow Facial',
-          date: 'Today',
-          time: '11:30 AM',
-          location: 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar',
-          serviceType: 'at-home',
-          status: 'confirmed',
-          amount: 4300,
-          paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 'ATEASE-71829',
-          partnerId: 'partner_rajkumari-beauty',
-          clientName: 'Ananya Pattnaik',
-          clientPhone: '+91 94370 12345',
-          serviceName: 'Luxury HD Bridal Makeover Trial',
-          date: 'Tomorrow',
-          time: '02:00 PM',
-          location: 'Flat 402, Royal Palms, Patia, Bhubaneswar',
-          serviceType: 'at-home',
-          status: 'confirmed',
-          amount: 5500,
-          paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-          createdAt: new Date().toISOString(),
-        },
-      ],
+      {
+        id: 'ATEASE-84920',
+        partnerId: 'partner_rajkumari-beauty',
+        clientName: 'Priya Menon',
+        clientPhone: '+91 98765 43210',
+        serviceName: 'Keratin Smoothing Treatment, Organic Glow Facial',
+        date: 'Today',
+        time: '11:30 AM',
+        location: 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar',
+        serviceType: 'at-home',
+        status: 'confirmed',
+        amount: 4300,
+        paymentMethod: 'Direct Payment (Cash/UPI/Card)',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'ATEASE-71829',
+        partnerId: 'partner_rajkumari-beauty',
+        clientName: 'Ananya Pattnaik',
+        clientPhone: '+91 94370 12345',
+        serviceName: 'Luxury HD Bridal Makeover Trial',
+        date: 'Tomorrow',
+        time: '02:00 PM',
+        location: 'Flat 402, Royal Palms, Patia, Bhubaneswar',
+        serviceType: 'at-home',
+        status: 'confirmed',
+        amount: 5500,
+        paymentMethod: 'Direct Payment (Cash/UPI/Card)',
+        createdAt: new Date().toISOString(),
+      },
+    ],
 
   addAppointment: (newAppt) => {
     const partnerId =
