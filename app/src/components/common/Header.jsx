@@ -42,8 +42,8 @@ export function Header({ isProviderView = false }) {
             onClick={() => navigate('/')}
             className="cursor-pointer group flex items-baseline gap-1"
           >
-            <span className="font-serif text-xl sm:text-2xl tracking-[0.18em] font-normal text-[#111111] uppercase transition-opacity group-hover:opacity-80">
-              AtEase
+            <span className="font-serif text-xl sm:text-2xl tracking-tight font-normal text-[#111111] transition-opacity group-hover:opacity-80">
+              <span className="noto-serif-grantha-regular">AtEase</span>
             </span>
           </div>
 
