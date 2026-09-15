@@ -13,6 +13,179 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 /**
+ * Provider Auth & Database operations
+ */
+
+export async function signUpProvider({ email, password, ownerName }) {
+  if (!isSupabaseConfigured) {
+    return { ok: false, error: 'Supabase is not configured' };
+  }
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        owner_name: ownerName,
+      },
+    },
+  });
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, user: data.user, session: data.session };
+}
+
+export async function signInProvider({ email, password }) {
+  if (!isSupabaseConfigured) {
+    return { ok: false, error: 'Supabase is not configured' };
+  }
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  return { ok: true, user: data.user, session: data.session };
+}
+
+export async function signOutProvider() {
+  if (!isSupabaseConfigured) return;
+  await supabase.auth.signOut();
+}
+
+export async function fetchBrandOwnerByUserId(userId) {
+  if (!isSupabaseConfigured || !userId) return null;
+  const { data, error } = await supabase
+    .from('brand_owners')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    console.error('Error fetching brand owner by user_id:', error);
+    return null;
+  }
+  return data;
+}
+
+export async function fetchBrandOwnerBySlug(slug) {
+  if (!isSupabaseConfigured || !slug) return null;
+  const { data, error } = await supabase
+    .from('brand_owners')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .maybeSingle();
+  if (error) {
+    console.error('Error fetching brand owner by slug:', error);
+    return null;
+  }
+  return data;
+}
+
+export async function fetchServicesByOwnerId(ownerId) {
+  if (!isSupabaseConfigured || !ownerId) return [];
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('owner_id', ownerId)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+  if (error) {
+    console.error('Error fetching services by ownerId:', error);
+    return [];
+  }
+  return data || [];
+}
+
+export async function createBrandOwnerRecord(payload) {
+  if (!isSupabaseConfigured) return { ok: false, error: 'Supabase not configured' };
+  const { data, error } = await supabase
+    .from('brand_owners')
+    .insert([payload])
+    .select()
+    .single();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data };
+}
+
+export async function createServicesRecords(servicesList) {
+  if (!isSupabaseConfigured || !servicesList?.length) return { ok: true, data: [] };
+  const { data, error } = await supabase
+    .from('services')
+    .insert(servicesList)
+    .select();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data };
+}
+
+export function mapBrandOwnerFromDb(row, services = []) {
+  if (!row) return null;
+
+  const categoryMap = {};
+  for (const s of services) {
+    const cat = s.category_name || 'FEATURED SERVICES';
+    if (!categoryMap[cat]) categoryMap[cat] = [];
+    categoryMap[cat].push({
+      id: s.id,
+      name: s.title,
+      description: s.description || '',
+      duration: s.duration || '60 mins',
+      inSalonPrice: Number(s.price_salon || s.price_fixed || 1200),
+      homePrice: Number(s.price_home || s.price_fixed || 1500),
+      imageUrl: s.image_url || '',
+    });
+  }
+
+  const catalog = Object.keys(categoryMap).map((catName, idx) => ({
+    id: `cat-${idx}`,
+    categoryName: catName,
+    services: categoryMap[catName],
+  }));
+
+  return {
+    id: row.id,
+    userId: row.user_id,
+    slug: row.slug,
+    brandName: row.brand_name,
+    ownerName: row.owner_name,
+    ownerEmail: row.owner_email,
+    ownerPhone: row.owner_phone || '',
+    whatsappNumber: row.whatsapp_number || '',
+    professionalTitle: row.professional_title || 'Independent Studio',
+    description: row.description || '',
+    logoUrl: row.logo_url || '',
+    coverUrl: row.cover_url || '',
+    location: row.location || '',
+    theme: row.theme || { accent: '#111111', mode: 'light' },
+    typeLabel: row.type_label || 'Private Brand Site',
+    rating: '5.0',
+    reviewCount: '1',
+    coverageRadiusKm: row.coverage_radius_km || 10,
+    trialEndsAt: row.trial_ends_at,
+    subscriptionStatus: row.subscription_status || 'trial',
+    catalog: catalog.length
+      ? catalog
+      : [
+          {
+            id: 'featured',
+            categoryName: 'FEATURED SERVICES',
+            services: [
+              {
+                id: `srv-${row.id}-1`,
+                name: 'Signature Consultation',
+                description: 'Custom personal styling consultation and service.',
+                duration: '45 mins',
+                inSalonPrice: 1000,
+                homePrice: 1300,
+              },
+            ],
+          },
+        ],
+  };
+}
+
+/**
  * Normalizes an appointment record from DB into a standard object format
  */
 export function normalizeAppointment(record) {
