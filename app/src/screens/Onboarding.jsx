@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { slugify, TRIAL_DAYS } from '../lib/tenancy';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
 
 export function Onboarding() {
@@ -17,6 +17,8 @@ export function Onboarding() {
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [servicesText, setServicesText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   if (!pendingSignup) {
     return (
@@ -31,19 +33,31 @@ export function Onboarding() {
     );
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!brandName.trim()) return;
-    const { partner } = completeOnboarding({
-      brandName,
-      logoUrl,
-      theme,
-      location,
-      description,
-      servicesText,
-    });
-    showToast(`${TRIAL_DAYS}-day trial started for ${partner.brandName}.`);
-    navigate('/dashboard');
+    setLoading(true);
+    setError('');
+    try {
+      const res = await completeOnboarding({
+        brandName,
+        logoUrl,
+        theme,
+        location,
+        description,
+        servicesText,
+      });
+      setLoading(false);
+      if (!res.ok) {
+        setError(res.error || 'Could not complete brand setup.');
+        return;
+      }
+      showToast(`${TRIAL_DAYS}-day trial started for ${res.partner?.brandName || brandName}.`);
+      navigate('/dashboard');
+    } catch (err) {
+      setLoading(false);
+      setError(err?.message || 'Setup error. Please try again.');
+    }
   };
 
   return (
@@ -107,11 +121,23 @@ export function Onboarding() {
               placeholder={'Keratin smoothing\nBridal trial'}
             />
           </label>
+          {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2 disabled:opacity-75"
           >
-            Launch trial dashboard <ArrowRight size={14} />
+            {loading ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>Launching your studio...</span>
+              </>
+            ) : (
+              <>
+                <span>Launch trial dashboard</span>
+                <ArrowRight size={14} />
+              </>
+            )}
           </button>
         </form>
       </main>
