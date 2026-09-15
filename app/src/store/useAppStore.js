@@ -18,6 +18,8 @@ import {
   hydratePartner,
   createBrandOwnerRecord,
   createServicesRecords,
+  updateServiceRecord,
+  deleteServiceRecord,
   createSalonRecord,
   fetchAppointmentsByOwnerId,
   ensureProfile,
@@ -192,7 +194,12 @@ export const useAppStore = create((set, get) => ({
           ownerName: ownerName?.trim() || email.split('@')[0],
           userId: res.user?.id,
         },
+        isAuthenticated: true,
+        userRole: 'partner',
+        userEmail: email.trim().toLowerCase(),
+        userName: ownerName?.trim() || email.split('@')[0],
       });
+      persistSlice(get());
       return { ok: true, user: res.user };
     }
 
@@ -207,10 +214,21 @@ export const useAppStore = create((set, get) => ({
         ownerName: ownerName?.trim() || email.split('@')[0],
       },
     });
+    persistSlice(get());
     return { ok: true };
   },
 
-  completeOnboarding: async ({ brandName, logoUrl, theme, servicesText, location, description, whatsappNumber }) => {
+  completeOnboarding: async ({
+    brandName,
+    location,
+    visitType,
+    crafts,
+    uptoPrice,
+    services,
+    whatsappNumber,
+    logoUrl,
+    theme,
+  }) => {
     const pending = get().pendingSignup || {};
     const baseSlug = slugify(brandName) || `studio-${Date.now().toString(36)}`;
     let slug = baseSlug;
@@ -220,10 +238,12 @@ export const useAppStore = create((set, get) => ({
       slug = `${baseSlug}-${n++}`;
     }
 
-    const servicesList = (servicesText || '')
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
+    const selectedServices = (services || []).filter((s) => s.name);
+    const defaultUpto = Number(uptoPrice) || 1000;
+    const craftLabel = (crafts || []).join(', ') || 'Independent Studio';
+    const visitLabel =
+      visitType === 'home' ? 'Home visits' : visitType === 'studio' ? 'Studio' : 'Studio & home visits';
+    const description = `${craftLabel}. ${visitLabel}.`;
 
     if (isSupabaseConfigured) {
       let userId = pending.userId;
@@ -242,8 +262,9 @@ export const useAppStore = create((set, get) => ({
           owner_phone: get().userPhone || null,
           whatsapp_number: whatsappNumber || get().userPhone || null,
           slug,
-          professional_title: 'Independent Studio',
-          description: description || '',
+          professional_title: craftLabel,
+          description,
+          type_label: visitLabel,
           logo_url: logoUrl || '',
           cover_url: logoUrl || '',
           location: location || '',
@@ -266,20 +287,24 @@ export const useAppStore = create((set, get) => ({
             city: location || '',
             is_primary: true,
           });
-          if (servicesList.length > 0) {
-            const servicesPayload = servicesList.map((title, idx) => ({
-              owner_id: brandRow.id,
-              category_name: 'FEATURED SERVICES',
-              title,
-              description: 'Added during brand onboarding.',
-              duration: '60 mins',
-              price_model: 'dual',
-              price_salon: 1200,
-              price_home: 1500,
-              price_fixed: 1500,
-              sort_order: idx,
-              is_active: true,
-            }));
+          if (selectedServices.length > 0) {
+            const servicesPayload = selectedServices.map((svc, idx) => {
+              const cap = Number(svc.uptoPrice || defaultUpto);
+              return {
+                owner_id: brandRow.id,
+                category_name: svc.categoryName || 'MENU',
+                title: svc.name,
+                description: svc.description || '',
+                duration: svc.duration || '60 mins',
+                price_model: 'starting_at',
+                price_fixed: cap,
+                price_salon: cap,
+                price_home: cap,
+                image_url: svc.imageUrl || '',
+                sort_order: idx,
+                is_active: true,
+              };
+            });
             await createServicesRecords(servicesPayload);
           }
 
@@ -299,35 +324,41 @@ export const useAppStore = create((set, get) => ({
       }
     }
 
-    const catalog = servicesList.map((name, idx) => ({
-      id: `custom-${idx}`,
-      name,
-      description: 'Added during brand onboarding.',
-      duration: '60 mins',
-      inSalonPrice: 1200,
-      homePrice: 1500,
-    }));
+    const catalogServices = selectedServices.map((svc, idx) => {
+      const cap = Number(svc.uptoPrice || defaultUpto);
+      return {
+        id: svc.id || `custom-${idx}`,
+        name: svc.name,
+        description: svc.description || '',
+        duration: svc.duration || '60 mins',
+        uptoPrice: cap,
+        inSalonPrice: cap,
+        homePrice: cap,
+        imageUrl: svc.imageUrl || '',
+        pricingModel: 'starting_at',
+      };
+    });
 
     const partner = {
       id: `partner_${Date.now()}`,
       slug,
       brandName: brandName.trim(),
-      professionalTitle: 'Independent Studio',
+      professionalTitle: craftLabel,
       ownerEmail: pending.email,
       ownerName: pending.ownerName,
       logoUrl: logoUrl || '',
       coverUrl: logoUrl || '',
       theme: { accent: theme || '#111111', mode: 'light' },
       location: location || '',
-      description: description || '',
-      typeLabel: 'Private Brand Site',
+      description,
+      typeLabel: visitLabel,
       rating: '—',
       reviewCount: '0',
       coverageRadiusKm: 10,
       trialEndsAt: addDaysIso(TRIAL_DAYS),
       subscriptionStatus: 'trial',
-      catalog: catalog.length
-        ? [{ id: 'featured', categoryName: 'FEATURED SERVICES', services: catalog }]
+      catalog: catalogServices.length
+        ? [{ id: 'menu', categoryName: 'MENU', services: catalogServices }]
         : [],
     };
 
@@ -342,6 +373,82 @@ export const useAppStore = create((set, get) => ({
     });
     persistSlice(get());
     return { ok: true, partner };
+  },
+
+  updatePartnerCatalog: async (catalog) => {
+    const id = get().currentPartnerId;
+    if (!id) return;
+    set({
+      partners: get().partners.map((p) => (p.id === id ? { ...p, catalog } : p)),
+    });
+    persistSlice(get());
+
+    if (!isSupabaseConfigured) return;
+    const partner = get().partners.find((p) => p.id === id);
+    if (!partner) return;
+
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const flat = (catalog || []).flatMap((cat, catIdx) =>
+      (cat.services || []).map((svc, idx) => ({
+        ...svc,
+        categoryName: cat.categoryName || 'MENU',
+        sortOrder: catIdx * 50 + idx,
+      }))
+    );
+
+    let inserted = false;
+    for (const svc of flat) {
+      const cap = Number(svc.uptoPrice || svc.inSalonPrice || svc.homePrice || 0);
+      const patch = {
+        category_name: svc.categoryName,
+        title: svc.name,
+        description: svc.description || '',
+        duration: svc.duration || '60 mins',
+        price_model: 'starting_at',
+        price_fixed: cap,
+        price_salon: cap,
+        price_home: cap,
+        image_url: svc.imageUrl || '',
+        sort_order: svc.sortOrder,
+        is_active: true,
+      };
+      if (uuidRe.test(svc.id)) {
+        await updateServiceRecord(svc.id, patch);
+      } else {
+        const res = await createServicesRecords([{ ...patch, owner_id: partner.id }]);
+        if (res.ok) inserted = true;
+      }
+    }
+    if (inserted) {
+      const user = await getAuthUser();
+      const brandRow = user ? await fetchBrandOwnerByUserId(user.id) : null;
+      if (brandRow) {
+        const hydrated = await hydratePartner(brandRow);
+        set({
+          partners: get().partners.map((p) => (p.id === id ? hydrated : p)),
+        });
+        persistSlice(get());
+      }
+    }
+  },
+
+  removePartnerService: async (serviceId) => {
+    const id = get().currentPartnerId;
+    if (!id || !serviceId) return;
+    const partner = get().partners.find((p) => p.id === id);
+    if (!partner) return;
+    const catalog = (partner.catalog || []).map((cat) => ({
+      ...cat,
+      services: (cat.services || []).filter((s) => s.id !== serviceId),
+    }));
+    set({
+      partners: get().partners.map((p) => (p.id === id ? { ...p, catalog } : p)),
+    });
+    persistSlice(get());
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (isSupabaseConfigured && uuidRe.test(serviceId)) {
+      await deleteServiceRecord(serviceId);
+    }
   },
 
   activateSubscription: async (partnerId) => {
