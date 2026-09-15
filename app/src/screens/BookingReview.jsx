@@ -12,6 +12,10 @@ export function BookingReview() {
   const state = locationState.state || {};
 
   const addAppointment = useAppStore((state) => state.addAppointment);
+  const isAuthenticated = useAppStore((state) => state.isAuthenticated);
+  const userRole = useAppStore((state) => state.userRole);
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
+  const showToast = useAppStore((state) => state.showToast);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const clientName = state.clientName || 'Priya Menon';
@@ -24,6 +28,12 @@ export function BookingReview() {
   const providerName = state.providerName || 'Rajkumari Beauty & Aesthetics';
 
   const handleConfirm = async () => {
+    if (!isAuthenticated || userRole === 'partner') {
+      openAuthModal('client');
+      showToast('Sign in with Google or phone to confirm this booking.');
+      return;
+    }
+
     setIsProcessing(true);
 
     const bookingPayload = {
@@ -36,16 +46,19 @@ export function BookingReview() {
       amount,
       providerName,
       partnerId: state.partnerId,
+      ownerId: state.partnerId,
       partnerSlug: partnerSlug || state.partnerSlug,
       status: 'confirmed'
     };
 
     if (isSupabaseConfigured) {
-      try {
-        await createAppointmentRecord(bookingPayload);
-      } catch (err) {
-        console.warn('Supabase sync warning:', err);
+      const result = await createAppointmentRecord(bookingPayload);
+      if (!result.success) {
+        setIsProcessing(false);
+        showToast(result.error || 'Could not save booking.');
+        return;
       }
+      bookingPayload.id = result.data?.id;
     }
 
     const created = addAppointment(bookingPayload);
