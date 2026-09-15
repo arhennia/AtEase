@@ -1,30 +1,43 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { ArrowRight, Loader2, ArrowLeft, Store } from 'lucide-react';
-import { DEMO_PARTNER_EMAIL, DEMO_PARTNER_PASSWORD } from '../lib/tenancy';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
+import { AuthMethods } from '../components/auth/AuthMethods';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const loginPartner = useAppStore((state) => state.loginPartner);
+  const applyAuthenticatedUser = useAppStore((state) => state.applyAuthenticatedUser);
   const showToast = useAppStore((state) => state.showToast);
 
-  const [email, setEmail] = useState(DEMO_PARTNER_EMAIL);
-  const [password, setPassword] = useState(DEMO_PARTNER_PASSWORD);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showEmail, setShowEmail] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleVerified = async () => {
+    const result = await applyAuthenticatedUser({ intendedRole: 'brand_owner', nextPath: '/dashboard' });
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    showToast(result.needsOnboarding ? 'Finish setting up your brand.' : 'Welcome back.');
+    navigate(result.redirectTo || '/dashboard');
+  };
+
+  const handleEmailLogin = async (e) => {
     if (e) e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
       const result = await loginPartner({ email, password });
       setIsLoading(false);
       if (!result.ok) {
-        setError(result.error || 'Failed to sign in. Check email and password.');
+        setError(result.error || 'Failed to sign in.');
         return;
       }
       if (result.needsOnboarding) {
@@ -33,7 +46,7 @@ export function Login() {
         return;
       }
       showToast('Welcome back. Opening your dashboard.');
-      navigate('/dashboard');
+      navigate(result.redirectTo || location.state?.from || '/dashboard');
     } catch (err) {
       setIsLoading(false);
       setError(err?.message || 'Login error occurred.');
@@ -52,56 +65,54 @@ export function Login() {
               Partner login
             </span>
             <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-stone-500">
-              Brand owners only
+              Google or phone OTP
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="block text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-600">
-                Email
-              </label>
+          {isSupabaseConfigured ? (
+            <AuthMethods role="brand_owner" nextPath="/dashboard" onVerified={handleVerified} />
+          ) : (
+            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 p-3">
+              Add Supabase keys to enable Google and phone login. Email demo still works below.
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowEmail((v) => !v)}
+            className="w-full text-[10px] tracking-[0.15em] uppercase text-stone-500"
+          >
+            {showEmail ? 'Hide email login' : 'Use email & password'}
+          </button>
+
+          {showEmail && (
+            <form onSubmit={handleEmailLogin} className="space-y-4">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@studio.com"
                 className="w-full bg-[#F9F9F9] border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-black"
               />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-600">
-                Password
-              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
                 className="w-full bg-[#F9F9F9] border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-black"
               />
-              <p className="text-[10px] text-stone-400 font-light">
-                Demo: {DEMO_PARTNER_EMAIL} / {DEMO_PARTNER_PASSWORD}
-              </p>
-            </div>
-            {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && <p className="text-xs text-red-600">{error}</p>}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2"
+              >
+                {isLoading ? <Loader2 size={14} className="animate-spin" /> : <>Open dashboard <ArrowRight size={14} /></>}
+              </button>
+            </form>
+          )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-75"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <span>Open dashboard</span>
-                  <ArrowRight size={14} />
-                </>
-              )}
-            </button>
-          </form>
+          {error && !showEmail && <p className="text-xs text-red-600">{error}</p>}
 
           <p className="text-xs text-stone-500">
             New studio? <Link to="/signup" className="underline text-[#111111]">Start a 14-day trial</Link>
