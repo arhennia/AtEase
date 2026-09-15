@@ -16,7 +16,7 @@ export function Onboarding() {
   const [theme, setTheme] = useState('#111111');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [servicesText, setServicesText] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -46,6 +46,7 @@ export function Onboarding() {
         location,
         description,
         servicesText,
+        whatsappNumber,
       });
       setLoading(false);
       if (!res.ok) {
@@ -92,6 +93,15 @@ export function Onboarding() {
           <label className="block space-y-1">
             <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500">Theme accent</span>
             <input type="color" value={theme} onChange={(e) => setTheme(e.target.value)} className="h-10 w-20 border border-stone-200" />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500">WhatsApp number</span>
+            <input
+              value={whatsappNumber}
+              onChange={(e) => setWhatsappNumber(e.target.value)}
+              className="w-full border border-stone-200 bg-[#F9F9F9] px-3 py-2.5 text-sm outline-none focus:border-black"
+              placeholder="+91 98765 43210"
+            />
           </label>
           <label className="block space-y-1">
             <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500">Service area</span>
