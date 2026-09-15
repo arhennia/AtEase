@@ -51,7 +51,10 @@ Postgres + Auth + Storage **is** the backend. The React app calls it with the an
 | `auth.users` | Google / phone / email identities. `brand_owners.user_id` and `profiles.id` point here. |
 | `storage.objects` | Metadata for logos, covers, service photos in buckets `brand-assets` and `service-images`. |
 
-SQL, RLS, triggers, and storage policies: [`supabase/migrations/001_init.sql`](supabase/migrations/001_init.sql)
+SQL, RLS, triggers, and storage policies:
+
+- Existing Supabase DB (you already created `bookings`): [`supabase/migrations/002_upgrade_existing.sql`](supabase/migrations/002_upgrade_existing.sql)
+- Empty project only: [`supabase/migrations/001_init.sql`](supabase/migrations/001_init.sql) — do not run this on top of the master query
 
 Click-by-click dashboard setup: [`supabase/README.md`](supabase/README.md)
 
