@@ -15,21 +15,29 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     if (e) e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    setTimeout(() => {
-      const result = loginPartner({ email, password });
+    try {
+      const result = await loginPartner({ email, password });
       setIsLoading(false);
       if (!result.ok) {
-        setError(result.error);
+        setError(result.error || 'Failed to sign in. Check email and password.');
+        return;
+      }
+      if (result.needsOnboarding) {
+        showToast('Welcome back. Complete setting up your brand.');
+        navigate('/onboarding');
         return;
       }
       showToast('Welcome back. Opening your dashboard.');
       navigate('/dashboard');
-    }, 220);
+    } catch (err) {
+      setIsLoading(false);
+      setError(err?.message || 'Login error occurred.');
+    }
   };
 
   return (
