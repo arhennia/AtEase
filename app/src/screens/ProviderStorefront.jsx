@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { TenantHeader } from '../components/tenant/TenantHeader';
 import { TenantNotFound, TenantOffline } from './TenantStatus';
 import { tenantToStorefrontProfile } from '../data/tenants';
 import { getPlanStatus, getTenantBySlug, getTenantCatalog } from '../lib/tenancy';
-import { 
-  MapPin, 
-  Star, 
-  Clock, 
-  Plus, 
-  Check, 
-  Home, 
-  Building2, 
+import {
+  MapPin,
+  Star,
+  Clock,
+  Plus,
+  Check,
+  Home,
+  Building2,
   ShieldCheck
 } from 'lucide-react';
 
@@ -23,8 +23,26 @@ export function ProviderStorefront() {
   const currentPartnerId = useAppStore((state) => state.currentPartnerId);
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
   const userRole = useAppStore((state) => state.userRole);
+  const fetchPartnerBySlug = useAppStore((state) => state.fetchPartnerBySlug);
 
   const partner = getTenantBySlug(partners, partnerSlug);
+  const [loadingPartner, setLoadingPartner] = useState(!partner);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!partner && partnerSlug) {
+      setLoadingPartner(true);
+      fetchPartnerBySlug(partnerSlug).then(() => {
+        if (isMounted) setLoadingPartner(false);
+      });
+    } else {
+      setLoadingPartner(false);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [partnerSlug, partner, fetchPartnerBySlug]);
+
   const plan = getPlanStatus(partner);
   const isOwner =
     isAuthenticated &&
@@ -41,6 +59,17 @@ export function ProviderStorefront() {
 
   const categories = getTenantCatalog(partner);
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id || '');
+
+  if (loadingPartner) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-8 h-8 border-2 border-[#111111] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs uppercase tracking-[0.2em] font-semibold text-stone-500">Loading Studio...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!partner) return <TenantNotFound />;
   if (!plan.active && !previewMode) {
@@ -128,11 +157,10 @@ export function ProviderStorefront() {
               <button
                 type="button"
                 onClick={() => setPricingMode('HOME_VISIT')}
-                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${
-                  pricingMode === 'HOME_VISIT'
+                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${pricingMode === 'HOME_VISIT'
                     ? 'bg-[#111111] text-white shadow-sm'
                     : 'text-stone-600 hover:text-[#111111]'
-                }`}
+                  }`}
               >
                 <Home size={13} />
                 <span>At-Home Visit</span>
@@ -140,11 +168,10 @@ export function ProviderStorefront() {
               <button
                 type="button"
                 onClick={() => setPricingMode('IN_SALON')}
-                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${
-                  pricingMode === 'IN_SALON'
+                className={`px-4 py-2 flex items-center gap-1.5 transition-all ${pricingMode === 'IN_SALON'
                     ? 'bg-[#111111] text-white shadow-sm'
                     : 'text-stone-600 hover:text-[#111111]'
-                }`}
+                  }`}
               >
                 <Building2 size={13} />
                 <span>In-Studio</span>
@@ -164,11 +191,10 @@ export function ProviderStorefront() {
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
-                    className={`px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold transition-all whitespace-nowrap rounded-full border ${
-                      isSelected
+                    className={`px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold transition-all whitespace-nowrap rounded-full border ${isSelected
                         ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
                         : 'bg-[#FFFFFF] text-stone-700 border-stone-200 hover:border-[#111111]'
-                    }`}
+                      }`}
                   >
                     {cat.categoryName.split('&')[0].trim()} ({cat.services.length})
                   </button>
@@ -226,11 +252,10 @@ export function ProviderStorefront() {
                                   partnerId: partner.id,
                                 });
                               }}
-                              className={`flex-1 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold border transition-colors flex items-center justify-center gap-1 ${
-                                inCart
+                              className={`flex-1 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold border transition-colors flex items-center justify-center gap-1 ${inCart
                                   ? 'bg-stone-100 border-stone-300 text-stone-800'
                                   : 'border-stone-300 text-[#111111] hover:border-black'
-                              }`}
+                                }`}
                             >
                               {inCart ? (
                                 <>
