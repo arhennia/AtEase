@@ -18,3 +18,17 @@ export async function createServicesRecords(servicesList) {
   if (error) return { ok: false, error: error.message };
   return { ok: true, data };
 }
+
+export async function updateServiceRecord(id, patch) {
+  if (!isSupabaseConfigured || !id) return { ok: false, error: 'Missing service' };
+  const { data, error } = await supabase.from('services').update(patch).eq('id', id).select().maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data };
+}
+
+export async function deleteServiceRecord(id) {
+  if (!isSupabaseConfigured || !id) return { ok: false, error: 'Missing service' };
+  const { error } = await supabase.from('services').delete().eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
