@@ -3,7 +3,8 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Clock, MapPin, ShieldCheck, Check, ArrowRight } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
-import { createAppointmentRecord, isSupabaseConfigured } from '../lib/supabase';
+import { formatUptoPrice } from '../data/onboardingQuiz';
+import { AtEaseLogo } from '../components/platform/AtEaseLogo';
 
 export function BookingReview() {
   const navigate = useNavigate();
@@ -85,9 +86,7 @@ export function BookingReview() {
           <ArrowLeft size={13} />
           <span>Back</span>
         </button>
-        <span className="font-serif text-lg tracking-[0.18em] font-normal uppercase text-[#111111]">
-          AtEase
-        </span>
+        <AtEaseLogo className="text-xl" />
         <div className="w-16" />
       </header>
 
@@ -99,7 +98,7 @@ export function BookingReview() {
             <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
               Direct Booking Review
             </span>
-            <h1 className="font-serif text-2xl tracking-wide uppercase font-normal text-[#111111]">
+            <h1 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
               Appointment Summary
             </h1>
           </div>
@@ -122,8 +121,8 @@ export function BookingReview() {
               <span className="text-[#111111] text-right max-w-[220px] truncate">{address}</span>
             </div>
             <div className="flex justify-between pt-3 text-sm">
-              <span className="text-stone-500 uppercase tracking-wider text-[10px] font-bold">Payable to Provider</span>
-              <span className="font-mono font-bold text-base text-[#111111]">₹{amount.toLocaleString()}</span>
+              <span className="text-stone-500 uppercase tracking-wider text-[10px] font-bold">Upto</span>
+              <span className="font-mono font-bold text-base text-[#111111]">{formatUptoPrice(amount)}</span>
             </div>
           </div>
 
