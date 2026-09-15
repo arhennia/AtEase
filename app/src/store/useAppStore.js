@@ -10,17 +10,20 @@ import {
   TRIAL_DAYS,
 } from '../lib/tenancy';
 import {
-  signUpProvider,
-  signInProvider,
-  signOutProvider,
+  signUpWithEmail,
+  signInWithEmail,
+  signOutUser,
   fetchBrandOwnerByUserId,
   fetchBrandOwnerBySlug,
-  fetchServicesByOwnerId,
+  hydratePartner,
   createBrandOwnerRecord,
   createServicesRecords,
-  mapBrandOwnerFromDb,
+  createSalonRecord,
+  fetchAppointmentsByOwnerId,
+  ensureProfile,
+  getAuthUser,
   isSupabaseConfigured,
-  supabase,
+  updateBrandOwnerRecord,
 } from '../lib/supabase';
 
 const PERSIST_KEY = 'atease-whitelabel-v1';
@@ -41,9 +44,11 @@ function persistSlice(state) {
     userRole: state.userRole,
     userName: state.userName,
     userEmail: state.userEmail,
+    userPhone: state.userPhone,
     currentPartnerId: state.currentPartnerId,
     partners: state.partners,
     appointments: state.appointments,
+    pendingSignup: state.pendingSignup,
   };
   window.localStorage.setItem(PERSIST_KEY, JSON.stringify(slice));
 }
@@ -56,7 +61,7 @@ export const useAppStore = create((set, get) => ({
   isAuthenticated: persisted.isAuthenticated ?? false,
   userName: persisted.userName ?? 'Aisha',
   userEmail: persisted.userEmail ?? '',
-  userPhone: '+91 98765 43210',
+  userPhone: persisted.userPhone ?? '',
 
   partners: persisted.partners?.length ? persisted.partners : seedPartners,
   currentPartnerId: persisted.currentPartnerId ?? null,
@@ -77,44 +82,74 @@ export const useAppStore = create((set, get) => ({
     persistSlice(get());
   },
 
-  loginPartner: async ({ email, password, partnerId } = {}) => {
-    // 1. Try Supabase sign in if credentials provided
-    if (isSupabaseConfigured && email && password) {
-      const authRes = await signInProvider({ email, password });
-      if (authRes.ok && authRes.user) {
-        const user = authRes.user;
-        const brandRow = await fetchBrandOwnerByUserId(user.id);
-        if (brandRow) {
-          const services = await fetchServicesByOwnerId(brandRow.id);
-          const partner = mapBrandOwnerFromDb(brandRow, services);
-          const partners = get().partners;
-          set({
-            partners: [...partners.filter((p) => p.id !== partner.id), partner],
-            isAuthenticated: true,
-            userRole: 'partner',
-            userName: partner.ownerName || partner.brandName,
-            userEmail: partner.ownerEmail,
-            currentPartnerId: partner.id,
-            authModalOpen: false,
-          });
-          persistSlice(get());
-          return { ok: true, partner };
-        } else {
-          set({
-            pendingSignup: {
-              email: user.email,
-              ownerName: user.user_metadata?.owner_name || user.email.split('@')[0],
-              userId: user.id,
-            },
-            isAuthenticated: true,
-            userRole: 'partner',
-            userEmail: user.email,
-          });
-          return { ok: true, needsOnboarding: true };
-        }
+  applyAuthenticatedUser: async ({ intendedRole = 'client', nextPath } = {}) => {
+    const user = await getAuthUser();
+    if (!user) return { ok: false, error: 'No active session. Try signing in again.' };
+
+    const profile = await ensureProfile(user, intendedRole);
+    const role = profile?.role === 'brand_owner' ? 'partner' : 'client';
+
+    if (role === 'partner') {
+      const brandRow = await fetchBrandOwnerByUserId(user.id);
+      if (brandRow) {
+        const partner = await hydratePartner(brandRow);
+        const appointments = await fetchAppointmentsByOwnerId(partner.id);
+        set({
+          partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
+          isAuthenticated: true,
+          userRole: 'partner',
+          userName: partner.ownerName || partner.brandName,
+          userEmail: partner.ownerEmail || user.email || '',
+          userPhone: partner.ownerPhone || user.phone || '',
+          currentPartnerId: partner.id,
+          appointments: appointments.length ? appointments : get().appointments,
+          pendingSignup: null,
+          authModalOpen: false,
+        });
+        persistSlice(get());
+        return { ok: true, role: 'partner', partner, redirectTo: nextPath || '/dashboard' };
       }
-      if (!authRes.ok && email !== 'aisha@rajkumari.studio') {
-        return { ok: false, error: authRes.error };
+
+      set({
+        pendingSignup: {
+          email: user.email,
+          ownerName: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
+          userId: user.id,
+        },
+        isAuthenticated: true,
+        userRole: 'partner',
+        userEmail: user.email || '',
+        userPhone: user.phone || '',
+        userName: user.user_metadata?.full_name || user.user_metadata?.name || 'Owner',
+        authModalOpen: false,
+      });
+      persistSlice(get());
+      return { ok: true, role: 'partner', needsOnboarding: true, redirectTo: '/onboarding' };
+    }
+
+    set({
+      isAuthenticated: true,
+      userRole: 'client',
+      userName: profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || 'Client',
+      userEmail: user.email || profile?.email || '',
+      userPhone: user.phone || profile?.phone || '',
+      authModalOpen: false,
+    });
+    persistSlice(get());
+    return { ok: true, role: 'client', redirectTo: nextPath || '/' };
+  },
+
+  loginPartner: async ({ email, password, partnerId } = {}) => {
+    if (isSupabaseConfigured && email && password) {
+      const authRes = await signInWithEmail({ email, password });
+      if (!authRes.ok) {
+        if (email === 'aisha@rajkumari.studio') {
+          // fall through to local demo
+        } else {
+          return { ok: false, error: authRes.error };
+        }
+      } else {
+        return get().applyAuthenticatedUser({ intendedRole: 'brand_owner', nextPath: '/dashboard' });
       }
     }
 
@@ -143,12 +178,12 @@ export const useAppStore = create((set, get) => ({
 
   signupPartner: async ({ email, password, ownerName }) => {
     if (isSupabaseConfigured) {
-      const res = await signUpProvider({ email, password, ownerName });
+      const res = await signUpWithEmail({ email, password, ownerName, role: 'brand_owner' });
       if (!res.ok) {
         return { ok: false, error: res.error };
       }
       if (!res.session) {
-        await signInProvider({ email, password });
+        await signInWithEmail({ email, password });
       }
       set({
         pendingSignup: {
@@ -175,7 +210,7 @@ export const useAppStore = create((set, get) => ({
     return { ok: true };
   },
 
-  completeOnboarding: async ({ brandName, logoUrl, theme, servicesText, location, description }) => {
+  completeOnboarding: async ({ brandName, logoUrl, theme, servicesText, location, description, whatsappNumber }) => {
     const pending = get().pendingSignup || {};
     const baseSlug = slugify(brandName) || `studio-${Date.now().toString(36)}`;
     let slug = baseSlug;
@@ -193,7 +228,7 @@ export const useAppStore = create((set, get) => ({
     if (isSupabaseConfigured) {
       let userId = pending.userId;
       if (!userId) {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getAuthUser();
         userId = user?.id;
       }
 
@@ -203,7 +238,9 @@ export const useAppStore = create((set, get) => ({
           user_id: userId,
           brand_name: brandName.trim(),
           owner_name: pending.ownerName || 'Studio Owner',
-          owner_email: pending.email,
+          owner_email: pending.email || null,
+          owner_phone: get().userPhone || null,
+          whatsapp_number: whatsappNumber || get().userPhone || null,
           slug,
           professional_title: 'Independent Studio',
           description: description || '',
@@ -219,9 +256,16 @@ export const useAppStore = create((set, get) => ({
         const createRes = await createBrandOwnerRecord(brandPayload);
         if (!createRes.ok) {
           console.error('Failed to create brand_owner in Supabase:', createRes.error);
+          return { ok: false, error: createRes.error };
         } else {
           const brandRow = createRes.data;
-          let dbServices = [];
+          await createSalonRecord({
+            owner_id: brandRow.id,
+            name: brandName.trim(),
+            address: location || '',
+            city: location || '',
+            is_primary: true,
+          });
           if (servicesList.length > 0) {
             const servicesPayload = servicesList.map((title, idx) => ({
               owner_id: brandRow.id,
@@ -229,19 +273,18 @@ export const useAppStore = create((set, get) => ({
               title,
               description: 'Added during brand onboarding.',
               duration: '60 mins',
+              duration_mins: 60,
+              pricing_model: 'dual',
               price_salon: 1200,
               price_home: 1500,
               price_fixed: 1500,
               sort_order: idx,
               is_active: true,
             }));
-            const servRes = await createServicesRecords(servicesPayload);
-            if (servRes.ok) {
-              dbServices = servRes.data;
-            }
+            await createServicesRecords(servicesPayload);
           }
 
-          const partner = mapBrandOwnerFromDb(brandRow, dbServices);
+          const partner = await hydratePartner(brandRow);
           set({
             partners: [...partners.filter((p) => p.id !== partner.id), partner],
             pendingSignup: null,
@@ -302,8 +345,11 @@ export const useAppStore = create((set, get) => ({
     return { ok: true, partner };
   },
 
-  activateSubscription: (partnerId) => {
+  activateSubscription: async (partnerId) => {
     const id = partnerId || get().currentPartnerId;
+    if (isSupabaseConfigured && id) {
+      await updateBrandOwnerRecord(id, { subscription_status: 'active' });
+    }
     set({
       partners: get().partners.map((p) =>
         p.id === id ? { ...p, subscriptionStatus: 'active' } : p
@@ -315,7 +361,7 @@ export const useAppStore = create((set, get) => ({
 
   logout: async () => {
     if (isSupabaseConfigured) {
-      await signOutProvider();
+      await signOutUser();
     }
     set({
       isAuthenticated: false,
@@ -323,6 +369,7 @@ export const useAppStore = create((set, get) => ({
       currentPartnerId: null,
       cart: [],
       userEmail: '',
+      userPhone: '',
     });
     persistSlice(get());
   },
@@ -335,8 +382,7 @@ export const useAppStore = create((set, get) => ({
     if (isSupabaseConfigured) {
       const brandRow = await fetchBrandOwnerBySlug(slug);
       if (brandRow) {
-        const services = await fetchServicesByOwnerId(brandRow.id);
-        const partner = mapBrandOwnerFromDb(brandRow, services);
+        const partner = await hydratePartner(brandRow);
         set({
           partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
         });
@@ -349,22 +395,9 @@ export const useAppStore = create((set, get) => ({
   syncAuthSession: async () => {
     if (!isSupabaseConfigured) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const brandRow = await fetchBrandOwnerByUserId(session.user.id);
-        if (brandRow) {
-          const services = await fetchServicesByOwnerId(brandRow.id);
-          const partner = mapBrandOwnerFromDb(brandRow, services);
-          set({
-            partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
-            isAuthenticated: true,
-            userRole: 'partner',
-            userName: partner.ownerName || partner.brandName,
-            userEmail: partner.ownerEmail,
-            currentPartnerId: partner.id,
-          });
-          persistSlice(get());
-        }
+      const user = await getAuthUser();
+      if (user) {
+        await get().applyAuthenticatedUser({ intendedRole: 'client' });
       }
     } catch (e) {
       console.warn('Session sync failed:', e);
@@ -374,7 +407,7 @@ export const useAppStore = create((set, get) => ({
   getCurrentPartner: () => getTenantById(get().partners, get().currentPartnerId),
   getPartnerPlan: () => getPlanStatus(getTenantById(get().partners, get().currentPartnerId)),
 
-  pendingSignup: null,
+  pendingSignup: persisted.pendingSignup ?? null,
 
   cart: [],
   pricingMode: 'HOME_VISIT',
