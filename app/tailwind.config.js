@@ -73,14 +73,19 @@ export default {
         "stack-xl": "80px"
       },
       fontFamily: {
-        "headline-lg": ["Playfair Display", "serif"],
-        "body-lg": ["Inter", "sans-serif"],
-        "label-caps": ["Inter", "sans-serif"],
-        "body-md": ["Inter", "sans-serif"],
-        "headline-md": ["Playfair Display", "serif"],
-        "headline-sm": ["Playfair Display", "serif"],
-        "headline-lg-mobile": ["Playfair Display", "serif"],
-        "button-text": ["Inter", "sans-serif"]
+        sans: ['"Lexend Giga"', 'sans-serif'],
+        serif: ['"Noto Serif Grantha"', 'serif'],
+        mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
+        display: ['"Faculty Glyphic"', 'serif'],
+        logo: ['"Noto Serif Grantha"', 'serif'],
+        "headline-lg": ['"Noto Serif Grantha"', 'serif'],
+        "body-lg": ['"Lexend Giga"', 'sans-serif'],
+        "label-caps": ['"Lexend Giga"', 'sans-serif'],
+        "body-md": ['"Lexend Giga"', 'sans-serif'],
+        "headline-md": ['"Noto Serif Grantha"', 'serif'],
+        "headline-sm": ['"Noto Serif Grantha"', 'serif'],
+        "headline-lg-mobile": ['"Noto Serif Grantha"', 'serif'],
+        "button-text": ['"Lexend Giga"', 'sans-serif']
       },
       fontSize: {
         "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.05em", "fontWeight": "400" }],
