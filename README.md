@@ -1,182 +1,125 @@
-#  AtEase — Your Brand. Your Clients. Your Platform.
+# AtEase — White-label booking SaaS for solo studios
 
-**AtEase** is a white-label SaaS platform that gives independent, self-employed service providers their own professional booking website — without needing to know how to code, design, or manage servers.
-
-Think of it as handing every solo beauty professional, home-based salon owner, or independent freelancer their own *Linktree meets Calendly meets Fresha* — fully branded to **them**, not to AtEase.
+**AtEase** is a multi-tenant brand platform for independent service professionals. It is **not** a marketplace. The main domain sells the product to brand owners. Each owner gets an isolated client site. Clients of Partner A cannot browse Partner B.
 
 ---
 
-##  The Core Idea: Not a Marketplace. A Brand Launcher.
+## What changed (architecture)
 
-Most booking platforms (Urban Company, Fresha, Sulekha) operate as **marketplaces** — they list dozens of competing providers side-by-side, and every client visit is an opportunity for the platform to cross-sell a competitor.
+| Surface | Who sees it | Route |
+| :--- | :--- | :--- |
+| B2B marketing home | Prospective brand owners | `/` |
+| Trial signup / login | Brand owners | `/signup` `/login` `/onboarding` |
+| Owner dashboard | Authenticated brand owner only | `/dashboard` |
+| Isolated client site | That studio's clients only | `/p/[brandSlug]` |
 
-**AtEase flips this entirely.**
-
-Each brand owner on AtEase gets their own:
-
-- **Isolated storefront URL** — e.g. `atease.com/beautybyarti`
-- **Zero cross-listing** — clients who open that link see *only* that provider's services, pricing, photos, and booking form
-- **No platform directory** — there is no public search bar that leads clients away to another professional
-- **True brand ownership** — the storefront looks like *their* personal website, not a profile on someone else's platform
-
-```
-Main Platform (/)                     Brand Pages (/[brandSlug])
-────────────────────────────────      ─────────────────────────────────────
-Sells AtEase to providers.            Exclusively serves the provider's clients.
-Feature highlights, pricing,          Their services, photos, availability,
-onboarding CTA, demo videos.          and booking form — nothing else.
-```
+There is no public directory of studios. Booking flows stay under `/p/[brandSlug]/…`.
 
 ---
 
-##  Who Is This For?
+## Auth (owners and clients)
 
-AtEase is purpose-built for **non-tech-savvy, self-employed service professionals** who run their business from WhatsApp, Instagram DMs, and word-of-mouth — but want a more professional, automated system without the complexity of building a website.
+Both **brand owners** and **end-clients** sign in with:
 
-| User | Their Current Reality | What AtEase Gives Them |
-|:-----|:----------------------|:-----------------------|
-| Home salon owner | Takes bookings over WhatsApp, forgets appointments | A public booking page + auto-confirmation |
-| Freelance makeup artist | Sends rates in DMs, no deposit system | Service catalog with pricing + booking form |
-| Independent nail tech | Loses repeat clients because there's no CRM | Client history, repeat visit tracking |
-| Solo yoga instructor | Uses Google Calendar + manual invoicing | Scheduling, booking, and client record in one place |
+- **Google**
+- **Phone OTP** (SMS)
+
+Owners use `/login` and `/signup`. Clients sign in on the studio site before a booking is saved. Credentials live in Supabase `auth.users`. App roles live in `public.profiles` (`brand_owner` or `client`).
 
 ---
 
-##  How It Works
+## Backend (Supabase — there is no custom Node server)
 
-```
-                        ┌─────────────────────────────┐
-                        │      ATEASE PLATFORM         │
-                        └──────────────┬──────────────┘
-                                       │
-              ┌────────────────────────┴────────────────────────┐
-              ▼                                                  ▼
-    PROVIDER JOURNEY                                  CLIENT JOURNEY
-    (SaaS Dashboard)                                  (Brand Storefront)
-    ─────────────────────────────────                 ──────────────────────────────
-    • Sign up with phone OTP                          • Opens link shared by provider
-    • Complete brand profile                            (e.g. atease.com/beautybyarti)
-    • Add services + prices + photos                  • Sees only that brand's catalog
-    • Set working hours & service area                • Picks a service + date + time
-    • Get their unique booking link                   • Submits name, phone, notes
-    • Manage appointments + clients                   • Gets WhatsApp confirmation
-    • Track revenue + booking history                 • Provider is notified instantly
-```
+Postgres + Auth + Storage **is** the backend. The React app calls it with the anon key. Row Level Security enforces tenant isolation.
 
----
+### App tables
 
-##  Key Features
+| Table | Purpose |
+| :--- | :--- |
+| `profiles` | Role + name/phone linked to `auth.users.id` |
+| `brand_owners` | Studio profile, WhatsApp, theme, trial / subscription |
+| `salons` | Business location(s) for an owner |
+| `services` | Catalog (fixed / starting_at / dual prices, images, active flag) |
+| `appointments` | Bookings (client, service, slot, status, source) |
+| `clients` | Per-studio customer history + lifetime value (trigger on booking) |
+| `business_analytics` | Monthly booking count / revenue (trigger on booking) |
 
-### For the Service Provider (SaaS Dashboard)
-- 📱 **Phone OTP sign-up** — no email or password needed
-- 🎨 **Brand profile setup** — logo, cover photo, brand colors, bio
-- 🛍️ **Service catalog management** — add/edit services with photos, prices (fixed, home/salon, hourly), and duration
-- 📅 **Booking management** — view, confirm, decline, or complete appointments
-- 👥 **Client records** — auto-tracks client history, visit count, and total spend per provider
-- 🔗 **One-click link sharing** — instant copy of public booking URL for Instagram bio / WhatsApp status
-- ⏰ **Working hours & service area config** — set availability and coverage localities
+### Managed by Supabase
 
-### For the Client (Public Storefront)
-- 🌐 **Mobile-first storefront** — loads instantly, no app download needed
-- 📋 **Clean service listing** — with pricing and estimated duration
-- 🗓️ **Slot selection** — pick an available date and time
-- 📲 **WhatsApp booking confirmation** — instant notification to both client and provider
-- 🔒 **Data isolation** — client data belongs to the provider who brought them in, never shared
+| Schema | Role |
+| :--- | :--- |
+| `auth.users` | Google / phone / email identities. `brand_owners.user_id` and `profiles.id` point here. |
+| `storage.objects` | Metadata for logos, covers, service photos in buckets `brand-assets` and `service-images`. |
+
+SQL, RLS, triggers, and storage policies: [`supabase/migrations/001_init.sql`](supabase/migrations/001_init.sql)
+
+Click-by-click dashboard setup: [`supabase/README.md`](supabase/README.md)
 
 ---
 
-##  Architecture Highlights
+## Tech stack
 
-### Scoped Routing
-Every public-facing booking page is scoped entirely to a single brand owner by their `slug`:
-
-```
-GET /[brandSlug]         → Public storefront for that brand only
-GET /[brandSlug]/book    → Booking form for that brand
-GET /dashboard           → Provider's private SaaS portal (auth-gated)
-```
-
-### Supabase Row Level Security
-All database policies enforce strict cross-tenant isolation:
-- Providers can only read/write their own `brand_owners`, `services`, `clients`, and `bookings` rows
-- Public clients can read active services and submit bookings — nothing more
-- No provider can ever query or accidentally see another provider's client data
-
-### No Shared Client Pool
-The platform has no global client database that it "owns". Every client record belongs to a specific `owner_id` and is inaccessible to anyone else on the platform.
+| Layer | Tool |
+| :--- | :--- |
+| App | React 19 + Vite + React Router v7 |
+| State | Zustand |
+| Style | Tailwind CSS + AtEase tokens |
+| Backend | Supabase (Auth, Postgres, RLS, Storage) |
 
 ---
 
-##  Tech Stack
-
-| Component     | Technology |
-|:-------------|:-----------|
-| **Framework** | [React 19](https://react.dev) |
-| **Bundler**   | [Vite](https://vite.dev) |
-| **Routing**   | [React Router v7](https://reactrouter.com) |
-| **Styling**   | Tailwind CSS v3 + Custom AtEase Design System |
-| **Animation** | [Framer Motion](https://www.framer.com/motion/) |
-| **Backend**   | [Supabase](https://supabase.com) (Auth, Database, RLS, Storage) |
-| **Typography**| Playfair Display (Headlines) · Inter (Body) |
-| **Icons**     | Material Symbols Outlined |
-
----
-
-##  Getting Started
+## Run locally
 
 ```bash
-# 1. Navigate to the web app directory
 cd app
-
-# 2. Install dependencies
 npm install
-
-# 3. Set up environment variables
-cp .env.example .env
-# Fill in your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
-
-# 4. Start local development server
+cp .env.example .env.local
+# fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
 npm run dev
 ```
 
+On Windows PowerShell, if `npm` is blocked, use `npm.cmd run dev`.
+
+Until env vars are set, the UI still runs with local demo data. Google and phone login need a live Supabase project.
+
+**Useful URLs**
+
+- Platform: `/`
+- Owner login: `/login`
+- Dashboard (after auth): `/dashboard`
+- Example tenant: `/p/rajkumari-beauty`
+
 ---
 
-##  Project Structure
+## Repo layout
 
 ```
 AtEase/
-├── app/                                  # React + Vite application
+├── app/                         React + Vite client
 │   ├── src/
-│   │   ├── screens/
-│   │   │   ├── ClientHome.jsx            # Public storefront (client-facing)
-│   │   │   ├── ProviderStorefront.jsx    # Provider's public booking page
-│   │   │   ├── ProviderDashboard.jsx     # Private SaaS dashboard (auth-gated)
-│   │   │   ├── OtpVerification.jsx       # Phone OTP verification flow
-│   │   │   └── ServiceDetails.jsx        # Individual service detail page
-│   │   ├── components/
-│   │   │   └── common/
-│   │   │       ├── AuthModal.jsx         # Phone auth bottom sheet
-│   │   │       ├── BookingModal.jsx      # Appointment booking flow
-│   │   │       ├── CartDrawer.jsx        # Service selection drawer
-│   │   │       └── Header.jsx            # Shared navigation header
-│   │   ├── lib/
-│   │   │   ├── supabase.js              # Supabase client + DB helpers
-│   │   │   └── tenancy.js               # Slug + multi-tenant utilities
-│   │   ├── store/
-│   │   │   └── useAppStore.js           # Zustand global state
-│   │   ├── data/                         # Mock/seed data (pre-Supabase)
-│   │   ├── App.jsx                       # Route definitions
-│   │   ├── index.css                     # Design system tokens
-│   │   └── main.jsx                      # Entry point
-│   ├── index.html
-│   └── package.json
-├── lib/                                  # Shared utilities
-├── PRD.md                                # Product requirements document
+│   │   ├── lib/supabase/        Supabase client split by domain
+│   │   │   ├── client.js
+│   │   │   ├── auth.js          Google + phone OTP + email
+│   │   │   ├── profiles.js
+│   │   │   ├── brandOwners.js
+│   │   │   ├── salons.js
+│   │   │   ├── services.js
+│   │   │   ├── appointments.js
+│   │   │   ├── clients.js       clients + analytics reads
+│   │   │   └── index.js
+│   │   ├── screens/             Landing, auth, dashboard, tenant site
+│   │   ├── components/auth/     Guards + AuthMethods
+│   │   └── store/useAppStore.js
+│   └── .env.example
+├── supabase/
+│   ├── migrations/001_init.sql  Schema + RLS + triggers + storage
+│   └── README.md                Dashboard checklist
+├── PRD.md
 └── README.md
 ```
 
 ---
 
-##  License
+## License
 
-MIT License. Built for independent service professionals who deserve better tools.
+MIT. Built for independent service professionals who need a branded site, not a marketplace listing.
