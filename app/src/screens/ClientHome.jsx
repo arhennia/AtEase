@@ -356,13 +356,13 @@ export function ClientHome() {
 
       {/* Editorial Footer */}
       <footer className="border-t border-stone-200 bg-[#FFFFFF] py-12 px-4 sm:px-6 lg:px-10 text-center space-y-4">
-        <span className="font-serif text-xl tracking-[0.2em] font-normal uppercase text-[#111111] block">
+        <span className="noto-serif-grantha-regular text-xl text-[#111111] block">
           AtEase
         </span>
-        <p className="text-[10px] tracking-[0.25em] uppercase text-stone-500 max-w-lg mx-auto font-medium">
-          The Hyper-Local Discovery Layer for Mobile Specialists &amp; Boutique Parlors • Bhubaneswar, Odisha
+        <p className="font-sans text-sm text-stone-500 max-w-lg mx-auto font-light leading-relaxed">
+          The hyper-local discovery layer for mobile specialists and boutique parlors.
         </p>
-        <p className="text-[9px] text-stone-400 font-light">
+        <p className="font-sans text-xs text-stone-400 font-light">
           AtEase does not process payments or manage service staff. Providers are paid directly at appointment time.
         </p>
       </footer>
