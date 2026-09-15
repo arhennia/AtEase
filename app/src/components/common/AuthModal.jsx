@@ -56,10 +56,10 @@ export function AuthModal() {
           </button>
 
           <div className="text-center space-y-1.5 border-b border-stone-200 pb-5">
-            <span className="font-serif text-xl tracking-[0.18em] font-normal uppercase text-[#111111] block">
+            <span className="font-serif text-xl tracking-tight font-normal text-[#111111] block">
               Sign in to book
             </span>
-            <p className="text-[11px] tracking-[0.2em] uppercase font-semibold text-stone-500">
+            <p className="text-sm text-stone-500 font-light">
               Google or phone OTP
             </p>
           </div>
