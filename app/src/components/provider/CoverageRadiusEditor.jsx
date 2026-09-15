@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { MapPin, Navigation, Check, ShieldCheck } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { BHUBANESWAR_LOCALITIES } from '../../data/mockProviders';
 
 export function CoverageRadiusEditor() {
@@ -9,6 +9,9 @@ export function CoverageRadiusEditor() {
   const coverageAreas = useAppStore((state) => state.coverageAreas);
   const toggleCoverageArea = useAppStore((state) => state.toggleCoverageArea);
   const showToast = useAppStore((state) => state.showToast);
+  const partners = useAppStore((state) => state.partners);
+  const currentPartnerId = useAppStore((state) => state.currentPartnerId);
+  const partner = partners.find((p) => p.id === currentPartnerId);
 
   const handleSliderChange = (e) => {
     setCoverageRadius(Number(e.target.value));
@@ -20,13 +23,10 @@ export function CoverageRadiusEditor() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-stone-200 pb-4">
-        <h3 className="font-serif text-lg tracking-wide uppercase font-normal text-[#111111]">
-          Mobile Service Coverage &amp; Working Radius
-        </h3>
-        <p className="text-xs text-stone-500 font-light mt-0.5">
-          Define the geographical reach for your mobile at-home beauty &amp; wellness appointments.
+      <div>
+        <h3 className="font-serif text-xl tracking-tight">Service area</h3>
+        <p className="text-sm text-stone-500 font-light mt-1">
+          How far you’ll travel for home visits.
         </p>
       </div>
 
@@ -38,11 +38,11 @@ export function CoverageRadiusEditor() {
               Active Radius
             </span>
             <div className="font-mono text-2xl font-bold text-[#111111]">
-              {coverageRadius} km <span className="text-xs font-sans font-normal text-stone-500">from Base Location</span>
+              {coverageRadius} km{' '}
+              <span className="text-xs font-sans font-normal text-stone-500">
+                from {partner?.location || 'your city'}
+              </span>
             </div>
-          </div>
-          <div className="p-3 bg-[#F9F9F9] border border-stone-200 text-xs font-mono font-bold text-[#111111]">
-            Base: Patia, Bhubaneswar
           </div>
         </div>
 
@@ -57,9 +57,9 @@ export function CoverageRadiusEditor() {
         />
 
         <div className="flex justify-between text-[10px] tracking-wider text-stone-500 uppercase">
-          <span>3 km (Local Colony)</span>
-          <span>15 km (Greater City)</span>
-          <span>35 km (Full Metro &amp; Suburbs)</span>
+          <span>3 km</span>
+          <span>15 km</span>
+          <span>35 km</span>
         </div>
       </div>
 
