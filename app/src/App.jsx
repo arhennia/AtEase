@@ -21,6 +21,7 @@ import { LocationModal } from './components/common/LocationModal';
 import { CartDrawer } from './components/common/CartDrawer';
 import { BookingModal } from './components/common/BookingModal';
 import { Toast } from './components/common/Toast';
+import { AuthCallback } from './screens/AuthCallback';
 
 function LegacyStorefrontRedirect() {
   const { providerId } = useParams();
@@ -49,6 +50,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           <Route
             path="/dashboard"
