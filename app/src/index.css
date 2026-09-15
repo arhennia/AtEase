@@ -3,11 +3,41 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    @apply font-sans;
+  }
+
   body {
-    @apply bg-background text-on-surface font-body-md antialiased;
+    @apply bg-background text-on-surface font-sans antialiased font-light;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.02em;
   }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif font-normal tracking-tight;
+    letter-spacing: 0;
+  }
+
+  p,
+  li,
+  label,
+  input,
+  textarea,
+  button,
+  a {
+    @apply font-sans;
+  }
+}
+
+.noto-serif-grantha-regular {
+  font-family: "Noto Serif Grantha", serif;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0.01em;
 }
 
 .ghost-border {
