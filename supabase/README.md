@@ -15,25 +15,11 @@ VITE_SUPABASE_ANON_KEY=eyJ...
 
 Restart `npm run dev` after saving.
 
-## 2. Run the schema
+## 2. Run the schema (one query)
 
-1. SQL Editor → New query
-2. Paste **all** of `migrations/001_init.sql`
-3. Run
+Paste **all** of `migrations/000_master_setup.sql` into SQL Editor and Run.
 
-That creates:
-
-| Table | Purpose |
-| :--- | :--- |
-| `profiles` | App role (`brand_owner` / `client`) linked to `auth.users` |
-| `brand_owners` | Studio profile, WhatsApp, theme, trial / subscription |
-| `salons` | Location entity per owner |
-| `services` | Catalog (fixed / starting_at / dual pricing) |
-| `appointments` | Bookings |
-| `clients` | Per-studio customer history (filled by trigger) |
-| `business_analytics` | Monthly booking/revenue rollups (filled by trigger) |
-
-Plus RLS, `auth.users` trigger → `profiles`, appointment trigger → `clients` + analytics, and Storage buckets `brand-assets` and `service-images`.
+That is the replacement for your old master query. It drops and recreates the AtEase tables (data in those tables is deleted). Do not also run `001` or `002`.
 
 ## 3. Turn on Google login
 
