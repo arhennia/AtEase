@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate, useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { useAppStore } from './store/useAppStore';
 
 import { PlatformLanding } from './screens/PlatformLanding';
 import { Signup } from './screens/Signup';
@@ -28,6 +29,11 @@ function LegacyStorefrontRedirect() {
 
 function App() {
   const location = useLocation();
+  const syncAuthSession = useAppStore((s) => s.syncAuthSession);
+
+  useEffect(() => {
+    syncAuthSession();
+  }, [syncAuthSession]);
 
   return (
     <div className="bg-[#FFFFFF] min-h-screen text-[#111111] antialiased selection:bg-[#111111] selection:text-white">
