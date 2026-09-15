@@ -18,6 +18,7 @@ import {
   Share2,
   CheckCircle2
 } from 'lucide-react';
+import { formatUptoPrice } from '../../data/onboardingQuiz';
 import { createAppointmentRecord, isSupabaseConfigured } from '../../lib/supabase';
 
 export function BookingModal() {
@@ -187,7 +188,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   {activeProvider.name}
                 </span>
-                <h3 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
                   Select Treatment Mode
                 </h3>
               </div>
@@ -199,7 +200,7 @@ export function BookingModal() {
                 <div className="flex justify-between items-center text-xs text-stone-600">
                   <span>Estimated Total:</span>
                   <span className="font-mono font-bold text-sm text-[#111111]">
-                    ₹{Number(amount).toLocaleString()}
+                    {formatUptoPrice(amount)}
                   </span>
                 </div>
               </div>
@@ -264,7 +265,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   Step 2 • Date
                 </span>
-                <h3 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
                   Choose Preferred Date
                 </h3>
               </div>
@@ -330,7 +331,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   Step 3 • Time
                 </span>
-                <h3 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
                   Available Time Slots
                 </h3>
               </div>
@@ -430,7 +431,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   Step 4 • Final Confirmation
                 </span>
-                <h3 className="font-serif text-xl tracking-wide uppercase font-normal text-[#111111]">
+                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
                   Review Booking Details
                 </h3>
               </div>
@@ -451,7 +452,7 @@ export function BookingModal() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500 uppercase tracking-wider text-[10px]">Direct Payable Amount</span>
-                  <span className="font-mono font-bold text-sm text-[#111111]">₹{Number(amount).toLocaleString()}</span>
+                  <span className="font-mono font-bold text-sm text-[#111111]">{formatUptoPrice(amount)}</span>
                 </div>
               </div>
 
@@ -537,7 +538,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
                   Appointment Confirmed
                 </span>
-                <h3 className="font-serif text-2xl tracking-wide uppercase font-normal text-[#111111]">
+                <h3 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
                   Booking Registered
                 </h3>
                 <p className="text-xs font-mono text-stone-600">
@@ -560,7 +561,7 @@ export function BookingModal() {
                 </div>
                 <div className="flex justify-between pt-2 border-t border-stone-200">
                   <span className="text-stone-500">Direct Payable:</span>
-                  <span className="font-mono font-bold text-sm text-[#111111]">₹{Number(confirmedBooking.amount).toLocaleString()}</span>
+                  <span className="font-mono font-bold text-sm text-[#111111]">{formatUptoPrice(confirmedBooking.amount)}</span>
                 </div>
               </div>
 
