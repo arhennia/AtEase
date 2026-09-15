@@ -1,6 +1,14 @@
--- AtEase backend schema
--- Paste this entire file into Supabase → SQL Editor → Run.
--- Do not skip sections. Tables, RLS, triggers, and storage policies all live here.
+-- AtEase backend schema — EMPTY PROJECT ONLY
+--
+-- If you already ran the master query that creates
+-- brand_owners / services / clients / bookings, DO NOT run this file.
+-- Run supabase/migrations/002_upgrade_existing.sql instead.
+--
+-- Running this on top of those tables causes:
+--   ERROR 42703: column "owner_id" does not exist
+-- because CREATE TABLE IF NOT EXISTS skips your real tables, then later
+-- statements assume different columns (appointments, clients.phone, etc.).
+--
 
 create extension if not exists "pgcrypto";
 
