@@ -13,7 +13,7 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null) {
       inSalonPrice: Number(s.price_salon || s.price_fixed || 0),
       homePrice: Number(s.price_home || s.price_fixed || 0),
       imageUrl: s.image_url || '',
-      pricingModel: s.pricing_model || 'dual',
+      pricingModel: s.pricing_model || s.price_model || 'dual',
     });
   }
 
@@ -53,12 +53,24 @@ export function normalizeAppointment(record) {
   if (!record) return null;
 
   const serviceName = record.service_name || record.service_title || 'Booked service';
-  const amount = Number(record.amount || record.price || 0);
-  const dateStr = record.slot_date || record.date || record.booking_date || 'Today';
-  const timeStr = record.slot_time || record.time || record.appointment_time || '';
+  const amount = Number(record.amount || record.service_price || record.price || 0);
+  let dateStr = record.slot_date || record.date || record.booking_date;
+  let timeStr = record.slot_time || record.time || record.appointment_time;
+
+  if (record.booking_time) {
+    const d = new Date(record.booking_time);
+    if (!Number.isNaN(d.getTime())) {
+      if (!dateStr) {
+        dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      if (!timeStr) {
+        timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      }
+    }
+  }
 
   return {
-    id: record.id,
+    id: record.booking_ref || record.id,
     partnerId: record.owner_id,
     ownerId: record.owner_id,
     salonId: record.salon_id,
@@ -68,8 +80,8 @@ export function normalizeAppointment(record) {
     clientPhone: record.client_phone || '',
     serviceName,
     serviceId: record.service_id || null,
-    date: dateStr,
-    time: timeStr,
+    date: dateStr || 'Today',
+    time: timeStr || '',
     location: record.location || '',
     status: record.status || 'pending',
     amount,
