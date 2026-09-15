@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ShieldCheck, ArrowRight, Home, Calendar, Phone } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { AtEaseLogo } from '../components/platform/AtEaseLogo';
 
 export function BookingSuccess() {
   const navigate = useNavigate();
@@ -33,9 +34,7 @@ export function BookingSuccess() {
     <div className="bg-[#FFFFFF] min-h-screen font-sans text-[#111111] antialiased flex flex-col justify-between">
       {/* Header */}
       <header className="p-6 border-b border-stone-200 flex items-center justify-between">
-        <span className="font-serif text-lg tracking-[0.18em] font-normal uppercase text-[#111111]">
-          AtEase
-        </span>
+        <AtEaseLogo className="text-xl" />
         <button
           onClick={() => navigate(backToSite)}
           className="text-[10px] tracking-[0.15em] uppercase font-bold text-stone-600 hover:text-black"
@@ -56,7 +55,7 @@ export function BookingSuccess() {
             <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
               Direct Reservation Confirmed
             </span>
-            <h1 className="font-serif text-2xl sm:text-3xl tracking-wide uppercase font-normal text-[#111111]">
+            <h1 className="font-serif text-2xl sm:text-3xl tracking-tight font-normal text-[#111111]">
               Booking Registered
             </h1>
             <p className="text-xs font-mono text-stone-600 pt-1">
