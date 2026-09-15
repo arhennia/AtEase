@@ -15,18 +15,18 @@ export function Signup() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email.includes('@') || password.length < 4) {
-      setError('Use a valid email and a password of at least 4 characters.');
+    if (!email.includes('@') || password.length < 6) {
+      setError('Use a valid email and a password of at least 6 characters.');
       return;
     }
     setLoading(true);
-    const result = signupPartner({ email, password, ownerName });
+    const result = await signupPartner({ email, password, ownerName });
     setLoading(false);
     if (!result.ok) {
-      setError(result.error);
+      setError(result.error || 'Failed to create account.');
       return;
     }
     showToast('Account started. Set up your brand next.');
