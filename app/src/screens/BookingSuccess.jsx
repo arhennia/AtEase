@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, ShieldCheck, ArrowRight, Home, Calendar, Phone } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -7,7 +7,9 @@ import confetti from 'canvas-confetti';
 export function BookingSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { partnerSlug } = useParams();
   const state = location.state || {};
+  const backToSite = partnerSlug ? `/p/${partnerSlug}` : '/';
 
   const bookingId = state.bookingId || 'ATEASE-' + Math.floor(10000 + Math.random() * 90000);
   const providerName = state.providerName || 'Rajkumari Beauty & Aesthetics';
@@ -35,10 +37,10 @@ export function BookingSuccess() {
           AtEase
         </span>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(backToSite)}
           className="text-[10px] tracking-[0.15em] uppercase font-bold text-stone-600 hover:text-black"
         >
-          Marketplace →
+          Studio site →
         </button>
       </header>
 
@@ -91,10 +93,10 @@ export function BookingSuccess() {
           </div>
 
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(backToSite)}
             className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors"
           >
-            Done &amp; Return to Home
+            Done
           </button>
 
         </div>
