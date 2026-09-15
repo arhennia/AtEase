@@ -21,7 +21,7 @@ export function RequireActivePlan({ children }) {
           <ShieldAlert size={20} />
           <span className="text-[10px] tracking-[0.25em] uppercase font-bold">Trial ended</span>
         </div>
-        <h1 className="font-serif text-2xl uppercase tracking-wide">Add payment to keep your brand site live</h1>
+        <h1 className="font-serif text-2xl tracking-tight">Add payment to keep your brand site live</h1>
         <p className="text-sm text-stone-600 font-light leading-relaxed">
           Your 14-day trial has expired. Dashboard tools and your client-facing website stay paused until a subscription is active.
         </p>
