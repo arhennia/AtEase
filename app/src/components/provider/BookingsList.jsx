@@ -109,8 +109,12 @@ export function BookingsList({ partnerId }) {
                   <h4 className="text-sm font-bold text-[#111111] tracking-wide">
                     {appt.clientName}
                   </h4>
-                  <span className="text-[9px] tracking-wider uppercase font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 border border-emerald-200">
-                    Confirmed
+                  <span className={`text-[9px] tracking-wider uppercase font-semibold px-1.5 py-0.2 border ${
+                    String(appt.status).toLowerCase() === 'pending'
+                      ? 'text-amber-800 bg-amber-50 border-amber-200'
+                      : 'text-emerald-800 bg-emerald-50 border-emerald-200'
+                  }`}>
+                    {appt.status || 'pending'}
                   </span>
                 </div>
 
