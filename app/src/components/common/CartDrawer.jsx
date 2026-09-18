@@ -7,14 +7,13 @@ import { formatUptoPrice, serviceUptoPrice } from '../../data/onboardingQuiz';
 export function CartDrawer() {
   const cartDrawerOpen = useAppStore((state) => state.cartDrawerOpen);
   const setCartDrawerOpen = useAppStore((state) => state.setCartDrawerOpen);
+  const partners = useAppStore((state) => state.partners);
   const cart = useAppStore((state) => state.cart);
   const removeFromCart = useAppStore((state) => state.removeFromCart);
   const clearCart = useAppStore((state) => state.clearCart);
   const pricingMode = useAppStore((state) => state.pricingMode);
   const setPricingMode = useAppStore((state) => state.setPricingMode);
   const openBookingModal = useAppStore((state) => state.openBookingModal);
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
-  const isAuthenticated = useAppStore((state) => state.isAuthenticated);
 
   if (!cartDrawerOpen) return null;
 
@@ -22,13 +21,26 @@ export function CartDrawer() {
 
   const handleProceed = () => {
     if (cart.length === 0) return;
-    
-    // Open Booking Modal with selected cart items
+    const partnerId = cart.find((item) => item.partnerId)?.partnerId;
+    const partner = partners.find((p) => p.id === partnerId);
     openBookingModal({
       services: cart,
       pricingMode,
       totalAmount,
-      serviceName: cart.map(c => c.name).join(', ')
+      serviceName: cart.map((c) => c.name).join(', '),
+      partnerId,
+      salonId: partner?.salonId || null,
+      whatsappNumber: partner?.whatsappNumber || partner?.ownerPhone || '',
+      provider: partner
+        ? {
+            name: partner.brandName,
+            title: partner.professionalTitle,
+            location: partner.location,
+            partnerId: partner.id,
+            salonId: partner.salonId,
+            whatsappNumber: partner.whatsappNumber || partner.ownerPhone || '',
+          }
+        : undefined,
     });
   };
 
