@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
 import { ServiceCatalogManager } from '../components/provider/ServiceCatalogManager';
@@ -7,6 +7,7 @@ import { AvailabilityEditor } from '../components/provider/AvailabilityEditor';
 import { BookingsList } from '../components/provider/BookingsList';
 import { Calendar, Layers, Navigation, Clock, ExternalLink, Copy } from 'lucide-react';
 import { getPlanStatus, getTenantCatalog, tenantPath, tenantSiteUrl } from '../lib/tenancy';
+import { isValidWhatsAppNumber, toNationalDigits } from '../lib/whatsapp';
 
 export function ProviderDashboard() {
   const partners = useAppStore((state) => state.partners);
@@ -14,14 +15,21 @@ export function ProviderDashboard() {
   const partner = partners.find((p) => p.id === currentPartnerId);
   const plan = getPlanStatus(partner);
   const activateSubscription = useAppStore((state) => state.activateSubscription);
+  const updatePartnerWhatsApp = useAppStore((state) => state.updatePartnerWhatsApp);
 
   const [activeTab, setActiveTab] = useState('bookings');
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [whatsappDraft, setWhatsappDraft] = useState('');
+  const [savingWhatsapp, setSavingWhatsapp] = useState(false);
 
   const allAppointments = useAppStore((state) => state.appointments);
   const showToast = useAppStore((state) => state.showToast);
   const appointments = allAppointments.filter((a) => a.partnerId === partner?.id);
   const serviceCount = getTenantCatalog(partner).reduce((n, cat) => n + (cat.services?.length || 0), 0);
+
+  useEffect(() => {
+    setWhatsappDraft(toNationalDigits(partner?.whatsappNumber || partner?.ownerPhone || ''));
+  }, [partner?.id, partner?.whatsappNumber, partner?.ownerPhone]);
 
   if (!partner) {
     return (
@@ -41,6 +49,15 @@ export function ProviderDashboard() {
 
   const handleViewSite = () => {
     window.open(`${sitePath}?preview=1`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleSaveWhatsApp = async () => {
+    setSavingWhatsapp(true);
+    const result = await updatePartnerWhatsApp(whatsappDraft);
+    setSavingWhatsapp(false);
+    if (!result.ok) {
+      showToast(result.error || 'Could not save WhatsApp number.');
+    }
   };
 
   const tabs = [
@@ -102,6 +119,37 @@ export function ProviderDashboard() {
           <div className="p-5 border border-stone-200">
             <p className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">Menu items</p>
             <p className="font-mono text-2xl font-bold mt-2">{serviceCount}</p>
+          </div>
+        </section>
+
+        <section className="p-5 border border-stone-200 space-y-3">
+          <div>
+            <p className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">WhatsApp for bookings</p>
+            <p className="text-xs text-stone-500 font-light mt-1">
+              Clients send a pre-filled booking message to this number.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-1 border border-stone-200 focus-within:border-black bg-[#F9F9F9]">
+              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-stone-100">
+                +91
+              </span>
+              <input
+                type="tel"
+                value={whatsappDraft}
+                onChange={(e) => setWhatsappDraft(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="98765 43210"
+                className="w-full bg-transparent px-3 py-2.5 text-sm outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              disabled={savingWhatsapp || !isValidWhatsAppNumber(whatsappDraft)}
+              onClick={handleSaveWhatsApp}
+              className="h-11 px-4 bg-[#111111] text-white text-[11px] tracking-[0.15em] uppercase font-bold disabled:opacity-40"
+            >
+              {savingWhatsapp ? 'Saving…' : 'Save number'}
+            </button>
           </div>
         </section>
 
