@@ -14,12 +14,14 @@ import {
   formatUptoPrice,
   presetsForCrafts,
 } from '../data/onboardingQuiz';
+import { isValidWhatsAppNumber } from '../lib/whatsapp';
 
 const STEPS = [
   { id: 'name', title: 'What should we call your studio?' },
   { id: 'craft', title: 'What kind of work do you do?' },
   { id: 'visit', title: 'Where do you see clients?' },
   { id: 'city', title: 'Which city are you in?' },
+  { id: 'whatsapp', title: 'What WhatsApp number should clients message?' },
   { id: 'price', title: 'Typical price for a service?' },
   { id: 'menu', title: 'Pick the services you offer' },
 ];
@@ -75,6 +77,7 @@ export function Onboarding() {
   const [crafts, setCrafts] = useState([]);
   const [visitType, setVisitType] = useState('');
   const [location, setLocation] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [uptoPrice, setUptoPrice] = useState(1000);
   const [selectedNames, setSelectedNames] = useState([]);
   const [serviceImages, setServiceImages] = useState({});
@@ -125,8 +128,9 @@ export function Onboarding() {
     if (step === 1) return crafts.length > 0;
     if (step === 2) return Boolean(visitType);
     if (step === 3) return Boolean(location);
-    if (step === 4) return Boolean(uptoPrice);
-    if (step === 5) return selectedNames.length > 0;
+    if (step === 4) return isValidWhatsAppNumber(whatsappNumber);
+    if (step === 5) return Boolean(uptoPrice);
+    if (step === 6) return selectedNames.length > 0;
     return true;
   };
 
@@ -190,6 +194,7 @@ export function Onboarding() {
         uptoPrice,
         services,
         logoUrl,
+        whatsappNumber,
       });
       setLoading(false);
       if (!res.ok) {
@@ -248,8 +253,9 @@ export function Onboarding() {
           {step === 1 && 'Tap all that apply.'}
           {step === 2 && 'This decides how clients book you.'}
           {step === 3 && 'We use this on your website.'}
-          {step === 4 && 'Shown on your menu as an “upto” price, not a fixed rate.'}
-          {step === 5 && 'Tap to add. You can attach a photo for the menu.'}
+          {step === 4 && 'Bookings open WhatsApp with a pre-filled message to this number.'}
+          {step === 5 && 'Shown on your menu as an “upto” price, not a fixed rate.'}
+          {step === 6 && 'Tap to add. You can attach a photo for the menu.'}
         </p>
 
         <div className="flex-1">
@@ -326,6 +332,27 @@ export function Onboarding() {
               )}
 
               {step === 4 && (
+                <div className="space-y-3">
+                  <div className="flex border border-stone-200 focus-within:border-black bg-[#F9F9F9]">
+                    <span className="px-3 py-3.5 text-sm text-stone-500 border-r border-stone-200 font-mono bg-stone-100">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="98765 43210"
+                      className="w-full bg-transparent px-4 py-3.5 text-base outline-none"
+                      autoFocus
+                    />
+                  </div>
+                  <p className="text-xs text-stone-500 font-light">
+                    Use the number you already chat with clients on. 10 digits.
+                  </p>
+                </div>
+              )}
+
+              {step === 5 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {PRICE_BANDS.map((band) => (
                     <Option key={band.value} selected={uptoPrice === band.value} onClick={() => setUptoPrice(band.value)}>
@@ -335,7 +362,7 @@ export function Onboarding() {
                 </div>
               )}
 
-              {step === 5 && (
+              {step === 6 && (
                 <div className="space-y-3">
                   {presets.map((item) => {
                     const selected = selectedNames.includes(item.name);
