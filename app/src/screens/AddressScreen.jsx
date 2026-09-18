@@ -10,9 +10,9 @@ export function AddressScreen() {
   const state = location.state || {};
 
   const [addressType, setAddressType] = useState('home');
-  const [customAddress, setCustomAddress] = useState('Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar, Odisha');
-  const [clientName, setClientName] = useState('Priya Menon');
-  const [clientPhone, setClientPhone] = useState('+91 98765 43210');
+  const [customAddress, setCustomAddress] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
 
   const handleProceed = () => {
     navigate(partnerSlug ? `/p/${partnerSlug}/review` : '/', {
@@ -65,7 +65,7 @@ export function AddressScreen() {
                 type="button"
                 onClick={() => {
                   setAddressType('home');
-                  setCustomAddress('Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar, Odisha');
+                  setCustomAddress('');
                 }}
                 className={`p-3.5 border text-left transition-all ${
                   addressType === 'home'
