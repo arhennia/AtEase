@@ -93,7 +93,10 @@ export function ProviderStorefront() {
       partnerSlug: partner.slug,
       serviceName: service.name,
       amount: price,
-      pricingMode
+      pricingMode,
+      serviceId: service.id,
+      salonId: partner.salonId || null,
+      whatsappNumber: partner.whatsappNumber || partner.ownerPhone || '',
     });
   };
 
