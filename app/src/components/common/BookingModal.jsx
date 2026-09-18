@@ -16,10 +16,12 @@ import {
   Home, 
   Building2,
   Share2,
-  CheckCircle2
+  CheckCircle2,
+  MessageCircle
 } from 'lucide-react';
 import { formatUptoPrice } from '../../data/onboardingQuiz';
 import { createAppointmentRecord, isSupabaseConfigured } from '../../lib/supabase';
+import { buildWhatsAppBookingUrl, openWhatsApp } from '../../lib/whatsapp';
 
 export function BookingModal() {
   const bookingModalOpen = useAppStore((state) => state.bookingModalOpen);
@@ -30,9 +32,9 @@ export function BookingModal() {
   const showToast = useAppStore((state) => state.showToast);
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
   const userRole = useAppStore((state) => state.userRole);
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
   const userName = useAppStore((state) => state.userName);
   const userPhone = useAppStore((state) => state.userPhone);
+  const partners = useAppStore((state) => state.partners);
 
   // Scheduler Steps: 1: Service/Mode, 2: Date, 3: Time, 4: Confirm, 5: Success
   const [step, setStep] = useState(1);
@@ -41,9 +43,9 @@ export function BookingModal() {
   const [selectedTime, setSelectedTime] = useState('11:30 AM');
   
   // Client input details
-  const [clientName, setClientName] = useState('Priya Menon');
-  const [clientPhone, setClientPhone] = useState('+91 98765 43210');
-  const [clientAddress, setClientAddress] = useState('Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar, Odisha');
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [clientAddress, setClientAddress] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -76,8 +78,17 @@ export function BookingModal() {
       } else {
         setServiceType('at-home');
       }
+      if (isAuthenticated && userRole === 'client') {
+        setClientName(userName || '');
+        setClientPhone(String(userPhone || '').replace(/\D/g, '').slice(-10));
+      } else {
+        setClientName('');
+        setClientPhone('');
+      }
+      setClientAddress('');
+      setConfirmedBooking(null);
     }
-  }, [bookingModalData, bookingModalOpen]);
+  }, [bookingModalData, bookingModalOpen, isAuthenticated, userRole, userName, userPhone]);
 
   if (!bookingModalOpen) return null;
 
@@ -95,17 +106,49 @@ export function BookingModal() {
   const activeDate = dates[selectedDateIdx];
 
   const handleFinalBooking = async () => {
-    if (!isAuthenticated || userRole === 'partner') {
-      openAuthModal('client');
-      showToast('Sign in with Google or phone to confirm this booking.');
+    const name = clientName.trim();
+    const phone = clientPhone.trim();
+    if (!name) {
+      showToast('Enter your name.');
+      return;
+    }
+    if (phone.replace(/\D/g, '').length < 10) {
+      showToast('Enter a valid 10-digit phone number.');
+      return;
+    }
+    if (!selectedTime) {
+      showToast('Pick a time slot.');
+      return;
+    }
+
+    const ownerId = bookingModalData?.partnerId || bookingModalData?.provider?.partnerId;
+    const partner = partners.find((p) => p.id === ownerId);
+    const ownerWhatsApp =
+      bookingModalData?.whatsappNumber ||
+      bookingModalData?.provider?.whatsappNumber ||
+      partner?.whatsappNumber ||
+      partner?.ownerPhone;
+
+    const waUrl = buildWhatsAppBookingUrl({
+      phone: ownerWhatsApp,
+      clientName: name,
+      services: serviceName,
+      date: activeDate.formatted,
+      time: selectedTime,
+      total: amount,
+      studioName: activeProvider.name,
+    });
+
+    if (!waUrl) {
+      showToast('This studio has not set a WhatsApp number yet.');
       return;
     }
 
     setIsSubmitting(true);
 
     const bookingPayload = {
-      clientName: clientName.trim() || userName || 'Guest Client',
-      clientPhone: clientPhone.trim() || userPhone || '',
+      clientName: name,
+      clientPhone: phone,
       serviceName,
       date: activeDate.formatted,
       time: selectedTime,
@@ -113,13 +156,15 @@ export function BookingModal() {
       serviceType,
       amount,
       providerName: activeProvider.name,
-      ownerId: bookingModalData?.partnerId || bookingModalData?.provider?.partnerId,
+      ownerId,
+      partnerId: ownerId,
       salonId: bookingModalData?.salonId || bookingModalData?.provider?.salonId,
       serviceId: bookingModalData?.serviceId,
-      status: 'confirmed',
+      status: 'pending',
+      bookingSource: 'whatsapp',
     };
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerId || '')) {
       const result = await createAppointmentRecord(bookingPayload);
       if (!result.success) {
         setIsSubmitting(false);
@@ -130,9 +175,10 @@ export function BookingModal() {
     }
 
     const created = addAppointment(bookingPayload);
-    setConfirmedBooking(created);
+    setConfirmedBooking({ ...created, whatsappUrl: waUrl });
     clearCart();
     setIsSubmitting(false);
+    openWhatsApp(waUrl);
     setStep(5);
   };
 
@@ -467,17 +513,19 @@ export function BookingModal() {
                       type="text"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Your name"
                       className="w-full bg-[#F9F9F9] border border-stone-200 focus:border-[#111111] p-2 text-xs text-[#111111] focus:outline-none"
                     />
                   </div>
                   <div>
                     <label className="block text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-600 mb-1">
-                      Phone (for SMS &amp; Provider)
+                      Phone
                     </label>
                     <input
                       type="tel"
                       value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
+                      onChange={(e) => setClientPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="98765 43210"
                       className="w-full bg-[#F9F9F9] border border-stone-200 focus:border-[#111111] p-2 text-xs font-mono text-[#111111] focus:outline-none"
                     />
                   </div>
@@ -492,6 +540,7 @@ export function BookingModal() {
                       type="text"
                       value={clientAddress}
                       onChange={(e) => setClientAddress(e.target.value)}
+                      placeholder="House / street / landmark"
                       className="w-full bg-[#F9F9F9] border border-stone-200 focus:border-[#111111] p-2 text-xs text-[#111111] focus:outline-none"
                     />
                   </div>
@@ -520,8 +569,8 @@ export function BookingModal() {
                   onClick={handleFinalBooking}
                   className="flex-1 bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
                 >
-                  <span>{isSubmitting ? 'Confirming...' : 'Confirm Appointment'}</span>
-                  <Check size={14} />
+                  <span>{isSubmitting ? 'Saving…' : 'Send on WhatsApp'}</span>
+                  <MessageCircle size={14} />
                 </button>
               </div>
             </div>
@@ -536,13 +585,16 @@ export function BookingModal() {
 
               <div className="space-y-1">
                 <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-                  Appointment Confirmed
+                  WhatsApp booking started
                 </span>
                 <h3 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
-                  Booking Registered
+                  Message ready
                 </h3>
                 <p className="text-xs font-mono text-stone-600">
                   Reference: <strong>{confirmedBooking.id}</strong>
+                </p>
+                <p className="text-xs text-stone-500 font-light">
+                  We saved this as pending and opened WhatsApp with the booking details.
                 </p>
               </div>
 
@@ -574,14 +626,24 @@ export function BookingModal() {
               </div>
 
               <div className="space-y-2">
+                {confirmedBooking.whatsappUrl && (
+                  <button
+                    type="button"
+                    onClick={() => openWhatsApp(confirmedBooking.whatsappUrl)}
+                    className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors"
+                  >
+                    Open WhatsApp again
+                  </button>
+                )}
                 <button
+                  type="button"
                   onClick={() => {
                     closeBookingModal();
-                    showToast('Booking details saved. See you at your appointment!');
+                    showToast('Pending booking saved. Send the WhatsApp message if you have not yet.');
                   }}
-                  className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors"
+                  className="w-full border border-stone-200 text-[#111111] py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:border-black transition-colors"
                 >
-                  Done &amp; Return to Discovery
+                  Done
                 </button>
               </div>
             </div>
