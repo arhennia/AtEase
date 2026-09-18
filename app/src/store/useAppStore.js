@@ -27,6 +27,7 @@ import {
   isSupabaseConfigured,
   updateBrandOwnerRecord,
 } from '../lib/supabase';
+import { isValidWhatsAppNumber, toWhatsAppDigits } from '../lib/whatsapp';
 
 const PERSIST_KEY = 'atease-whitelabel-v1';
 
@@ -260,7 +261,7 @@ export const useAppStore = create((set, get) => ({
           owner_name: pending.ownerName || 'Studio Owner',
           owner_email: pending.email || null,
           owner_phone: get().userPhone || null,
-          whatsapp_number: whatsappNumber || get().userPhone || null,
+          whatsapp_number: toWhatsAppDigits(whatsappNumber || get().userPhone) || null,
           slug,
           professional_title: craftLabel,
           description,
@@ -357,6 +358,7 @@ export const useAppStore = create((set, get) => ({
       coverageRadiusKm: 10,
       trialEndsAt: addDaysIso(TRIAL_DAYS),
       subscriptionStatus: 'trial',
+      whatsappNumber: toWhatsAppDigits(whatsappNumber || get().userPhone),
       catalog: catalogServices.length
         ? [{ id: 'menu', categoryName: 'MENU', services: catalogServices }]
         : [],
@@ -449,6 +451,26 @@ export const useAppStore = create((set, get) => ({
     if (isSupabaseConfigured && uuidRe.test(serviceId)) {
       await deleteServiceRecord(serviceId);
     }
+  },
+
+  updatePartnerWhatsApp: async (whatsappNumber) => {
+    const id = get().currentPartnerId;
+    if (!id) return { ok: false, error: 'No studio on this account.' };
+    if (!isValidWhatsAppNumber(whatsappNumber)) {
+      return { ok: false, error: 'Enter a valid 10-digit WhatsApp number.' };
+    }
+    const digits = toWhatsAppDigits(whatsappNumber);
+    set({
+      partners: get().partners.map((p) => (p.id === id ? { ...p, whatsappNumber: digits } : p)),
+    });
+    persistSlice(get());
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (isSupabaseConfigured && uuidRe.test(id)) {
+      const res = await updateBrandOwnerRecord(id, { whatsapp_number: digits });
+      if (!res.ok) return res;
+    }
+    get().showToast('WhatsApp number saved. Client bookings will message this number.');
+    return { ok: true };
   },
 
   activateSubscription: async (partnerId) => {
@@ -669,7 +691,9 @@ export const useAppStore = create((set, get) => ({
     };
     set({ appointments: [appt, ...get().appointments] });
     persistSlice(get());
-    get().showToast('Booking confirmed! Direct payment details recorded.');
+    if (appt.status !== 'pending') {
+      get().showToast('Booking confirmed! Direct payment details recorded.');
+    }
     return appt;
   },
 
