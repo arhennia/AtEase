@@ -21,6 +21,7 @@ function providerToTenant(provider, extras = {}) {
     coverageRadiusKm: provider.coverageRadiusKm,
     trialEndsAt: extras.trialEndsAt || addDaysIso(TRIAL_DAYS),
     subscriptionStatus: extras.subscriptionStatus || 'trial',
+    whatsappNumber: extras.whatsappNumber || provider.whatsappNumber || '',
     catalog: extras.catalog || [],
   };
 }
@@ -34,6 +35,7 @@ export function createSeedPartners() {
     providerToTenant(rajkumari, {
       ownerEmail: 'aisha@rajkumari.studio',
       ownerName: 'Aisha',
+      whatsappNumber: RAJKUMARI_PROVIDER_DATA.provider.whatsappNumber,
       catalog: RAJKUMARI_PROVIDER_DATA.serviceCategories,
     }),
     providerToTenant(maison, {
@@ -75,5 +77,7 @@ export function tenantToStorefrontProfile(partner) {
     avatarUrl: partner.logoUrl,
     coverageRadiusKm: partner.coverageRadiusKm || 10,
     partnerId: partner.id,
+    salonId: partner.salonId || null,
+    whatsappNumber: partner.whatsappNumber || partner.ownerPhone || '',
   };
 }
