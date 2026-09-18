@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Clock, MapPin, ShieldCheck, Check, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, MessageCircle } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { formatUptoPrice } from '../data/onboardingQuiz';
 import { AtEaseLogo } from '../components/platform/AtEaseLogo';
+import { createAppointmentRecord, isSupabaseConfigured } from '../lib/supabase';
+import { buildWhatsAppBookingUrl, openWhatsApp } from '../lib/whatsapp';
 
 export function BookingReview() {
   const navigate = useNavigate();
@@ -13,46 +14,69 @@ export function BookingReview() {
   const state = locationState.state || {};
 
   const addAppointment = useAppStore((state) => state.addAppointment);
-  const isAuthenticated = useAppStore((state) => state.isAuthenticated);
-  const userRole = useAppStore((state) => state.userRole);
-  const openAuthModal = useAppStore((state) => state.openAuthModal);
   const showToast = useAppStore((state) => state.showToast);
+  const partners = useAppStore((state) => state.partners);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const clientName = state.clientName || 'Priya Menon';
-  const clientPhone = state.clientPhone || '+91 98765 43210';
-  const serviceName = state.serviceName || 'Keratin Smoothing Treatment';
-  const date = state.date || 'Today';
-  const time = state.time || '11:30 AM';
-  const address = state.location || 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar, Odisha';
-  const amount = Number(state.amount) || 2500;
-  const providerName = state.providerName || 'Rajkumari Beauty & Aesthetics';
+  const clientName = state.clientName || '';
+  const clientPhone = state.clientPhone || '';
+  const serviceName = state.serviceName || '';
+  const date = state.date || '';
+  const time = state.time || '';
+  const address = state.location || '';
+  const amount = Number(state.amount) || 0;
+  const providerName = state.providerName || 'Studio';
+  const ownerId = state.partnerId;
+  const partner = partners.find((p) => p.id === ownerId || p.slug === (partnerSlug || state.partnerSlug));
 
   const handleConfirm = async () => {
-    if (!isAuthenticated || userRole === 'partner') {
-      openAuthModal('client');
-      showToast('Sign in with Google or phone to confirm this booking.');
+    if (!String(clientName).trim()) {
+      showToast('Enter your name on the previous step.');
+      return;
+    }
+    if (String(clientPhone).replace(/\D/g, '').length < 10) {
+      showToast('Enter a valid phone number on the previous step.');
+      return;
+    }
+    if (!serviceName || !date || !time) {
+      showToast('Pick a service, date, and time before sending.');
+      return;
+    }
+
+    const waUrl = buildWhatsAppBookingUrl({
+      phone: state.whatsappNumber || partner?.whatsappNumber || partner?.ownerPhone,
+      clientName: String(clientName).trim(),
+      services: serviceName,
+      date,
+      time,
+      total: amount,
+      studioName: providerName,
+    });
+
+    if (!waUrl) {
+      showToast('This studio has not set a WhatsApp number yet.');
       return;
     }
 
     setIsProcessing(true);
 
     const bookingPayload = {
-      clientName,
-      clientPhone,
+      clientName: String(clientName).trim(),
+      clientPhone: String(clientPhone).trim(),
       serviceName,
       date,
       time,
       location: address,
       amount,
       providerName,
-      partnerId: state.partnerId,
-      ownerId: state.partnerId,
+      partnerId: ownerId || partner?.id,
+      ownerId: ownerId || partner?.id,
       partnerSlug: partnerSlug || state.partnerSlug,
-      status: 'confirmed'
+      status: 'pending',
+      bookingSource: 'whatsapp',
     };
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bookingPayload.ownerId || '')) {
       const result = await createAppointmentRecord(bookingPayload);
       if (!result.success) {
         setIsProcessing(false);
@@ -64,14 +88,16 @@ export function BookingReview() {
 
     const created = addAppointment(bookingPayload);
     setIsProcessing(false);
+    openWhatsApp(waUrl);
 
     const slug = partnerSlug || state.partnerSlug;
     navigate(slug ? `/p/${slug}/success` : '/', {
       state: {
         ...state,
         bookingId: created.id,
-        amount
-      }
+        amount,
+        whatsappUrl: waUrl,
+      },
     });
   };
 
@@ -139,8 +165,8 @@ export function BookingReview() {
             disabled={isProcessing}
             className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
           >
-            <span>{isProcessing ? 'Confirming...' : 'Confirm Appointment'}</span>
-            <Check size={14} />
+            <span>{isProcessing ? 'Saving…' : 'Send on WhatsApp'}</span>
+            <MessageCircle size={14} />
           </button>
 
         </div>
