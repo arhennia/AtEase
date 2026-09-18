@@ -73,6 +73,7 @@ export default {
         "stack-xl": "80px"
       },
       fontFamily: {
+        heroSans: ['"Inter"', '"Lexend Giga"', 'sans-serif'],
         sans: ['"Lexend Giga"', 'sans-serif'],
         serif: ['"Noto Serif Grantha"', 'serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
