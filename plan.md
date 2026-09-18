@@ -217,18 +217,12 @@ These still look like a marketplace, not a WhatsApp-first salon storefront.
 
 ## Implementation plan (close the gaps)
 
-### Phase A — WhatsApp booking (P0)
+### Phase A — WhatsApp booking (P0) — done in app
 
-1. Add `app/src/lib/whatsapp.js`:
-   - Normalize E.164 (`91…`).
-   - Build message: client name, services, date, time, total.
-   - Return `https://wa.me/${phone}?text=${encodeURIComponent(body)}`.
-2. Collect and edit `whatsapp_number` in onboarding + dashboard.
-3. Change confirm CTA to **Send on WhatsApp**:
-   - Validate name, phone, services, slot.
-   - `createAppointmentRecord` with `status: 'pending'`, `booking_source: 'whatsapp'`.
-   - Then open the `wa.me` URL.
-4. Allow insert without forcing client Google/OTP (spec is a WhatsApp handoff, not a logged-in marketplace booking). Align RLS: public insert of pending bookings for a live brand.
+1. [x] `app/src/lib/whatsapp.js` — E.164 digits, pre-filled message, `wa.me` URL
+2. [x] Collect and edit `whatsapp_number` in onboarding + dashboard
+3. [x] Confirm CTA is **Send on WhatsApp**: validate → insert `pending` / `booking_source: whatsapp` → open `wa.me`
+4. [x] App no longer requires client Google/OTP to book. **You must run** `supabase/migrations/003_whatsapp_guest_bookings.sql` in the Supabase SQL Editor so guest inserts are allowed.
 
 ### Phase B — Honest slots (P0)
 
