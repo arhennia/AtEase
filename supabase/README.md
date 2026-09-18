@@ -44,6 +44,21 @@ That is the replacement for your old master query. It drops and recreates the At
 
 Without an SMS provider, Google login still works; phone OTP will fail until this is set.
 
+## 8. WhatsApp guest bookings (required for Phase A)
+
+Clients book without logging in. The app inserts a **pending** row, then opens `wa.me`.
+
+Paste **all** of `migrations/003_whatsapp_guest_bookings.sql` into SQL Editor and Run.
+
+Then on the owner dashboard, save a real 10-digit WhatsApp number. New studios collect this during onboarding.
+
+How you know it worked:
+
+1. Open a storefront (`/p/your-slug`) in a private window (no login)
+2. Book a service → Send on WhatsApp
+3. WhatsApp opens with name, services, date, time, and total
+4. Table Editor → `bookings` shows a `pending` row with `booking_source = whatsapp`
+
 ## 5. Confirm Auth settings
 
 - Authentication → Providers → **Email** can stay on (optional email/password fallback)
@@ -63,5 +78,5 @@ Uploads must go under `{auth.uid()}/filename`.
 1. `cd app` → `npm run dev`
 2. Open `/signup` → Continue with Google (as a brand owner)
 3. Finish onboarding → dashboard + `/p/your-slug`
-4. Open that storefront in a private window → Sign in with Google or phone → Book
-5. Table Editor: new rows in `brand_owners`, `salons`, `services`, `appointments`, `clients`, `business_analytics`
+4. Open that storefront in a private window → Book without logging in → WhatsApp opens
+5. Table Editor: new rows in `brand_owners`, `salons`, `services`, `bookings`, `clients`, `business_analytics`
