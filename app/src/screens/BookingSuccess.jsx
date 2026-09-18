@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ShieldCheck, ArrowRight, Home, Calendar, Phone } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, MessageCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AtEaseLogo } from '../components/platform/AtEaseLogo';
+import { openWhatsApp } from '../lib/whatsapp';
 
 export function BookingSuccess() {
   const navigate = useNavigate();
@@ -53,10 +54,10 @@ export function BookingSuccess() {
 
           <div className="space-y-1">
             <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-              Direct Reservation Confirmed
+              WhatsApp booking started
             </span>
             <h1 className="font-serif text-2xl sm:text-3xl tracking-tight font-normal text-[#111111]">
-              Booking Registered
+              Message ready
             </h1>
             <p className="text-xs font-mono text-stone-600 pt-1">
               Booking Ref: <strong>{bookingId}</strong>
@@ -87,13 +88,29 @@ export function BookingSuccess() {
           <div className="border border-stone-300 bg-stone-50 p-3 text-[11px] text-[#111111] leading-relaxed text-left flex items-start gap-2.5 font-medium">
             <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
             <span>
-              Pay directly to the service provider at the time of service via Cash, UPI, or Card.
+              {state.whatsappUrl
+                ? 'We saved this as pending and opened WhatsApp with the booking details.'
+                : 'Pay directly to the service provider at the time of service via Cash, UPI, or Card.'}
             </span>
           </div>
 
+          {state.whatsappUrl && (
+            <button
+              type="button"
+              onClick={() => openWhatsApp(state.whatsappUrl)}
+              className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors inline-flex items-center justify-center gap-2"
+            >
+              <MessageCircle size={14} />
+              Open WhatsApp again
+            </button>
+          )}
           <button
             onClick={() => navigate(backToSite)}
-            className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors"
+            className={`w-full py-3.5 text-xs tracking-[0.2em] uppercase font-bold ${
+              state.whatsappUrl
+                ? 'border border-stone-200 text-[#111111] hover:border-black'
+                : 'bg-[#111111] text-white hover:bg-black'
+            }`}
           >
             Done
           </button>
