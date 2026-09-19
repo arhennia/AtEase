@@ -55,12 +55,12 @@ export function AvailabilityEditor() {
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b border-stone-200 pb-4">
-        <h3 className="font-serif text-xl tracking-tight">Hours</h3>
+        <h3 className="font-heroSans text-xl font-semibold tracking-tight">Hours</h3>
         <p className="text-sm text-stone-500 font-light mt-1">Days and times clients can book.</p>
       </div>
 
       {/* Days Selector */}
-      <div className="p-6 border border-stone-200 bg-[#FFFFFF] space-y-4">
+      <div className="p-6 rounded-[22px] border border-stone-200/70 bg-white space-y-4">
         <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
           Operating Days
         </span>
@@ -72,10 +72,10 @@ export function AvailabilityEditor() {
                 key={day}
                 type="button"
                 onClick={() => toggleDay(day)}
-                className={`py-3 text-xs font-semibold uppercase tracking-wider border transition-all ${
+                className={`py-3 text-xs font-semibold uppercase tracking-wider rounded-2xl border transition-all ${
                   isActive
-                    ? 'bg-[#111111] text-white border-[#111111]'
-                    : 'bg-[#F9F9F9] text-stone-400 border-stone-200 hover:border-stone-400'
+                    ? 'bg-[#F3EEF8] text-[#4A3F5C] border-[#E4D9F0]'
+                    : 'bg-[#F7F6F8] text-stone-400 border-stone-200 hover:border-stone-300'
                 }`}
               >
                 {day}
@@ -94,7 +94,7 @@ export function AvailabilityEditor() {
               type="text"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full bg-[#F9F9F9] border border-stone-200 p-2 text-xs font-mono font-bold text-[#111111] focus:outline-none"
+              className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl p-2.5 text-xs font-mono font-bold text-[#1C1917] focus:outline-none"
             />
           </div>
           <div>
@@ -105,7 +105,7 @@ export function AvailabilityEditor() {
               type="text"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full bg-[#F9F9F9] border border-stone-200 p-2 text-xs font-mono font-bold text-[#111111] focus:outline-none"
+              className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl p-2.5 text-xs font-mono font-bold text-[#1C1917] focus:outline-none"
             />
           </div>
         </div>
@@ -113,7 +113,7 @@ export function AvailabilityEditor() {
         <button
           type="button"
           onClick={handleSaveHours}
-          className="bg-[#111111] text-white px-5 py-2 text-[11px] tracking-[0.15em] uppercase font-bold hover:bg-black transition-colors"
+          className="rounded-full bg-[#1C1917] text-white px-5 py-2.5 text-[13px] font-heroSans font-medium hover:bg-black transition-colors"
         >
           Save Operating Schedule
         </button>
@@ -138,7 +138,7 @@ export function AvailabilityEditor() {
           {blockedSlots.map((block) => (
             <div
               key={block.id}
-              className="p-3.5 border border-stone-200 bg-[#F9F9F9] flex items-center justify-between text-xs"
+              className="p-3.5 rounded-2xl border border-stone-200 bg-[#F7F6F8] flex items-center justify-between text-xs"
             >
               <div className="space-y-0.5">
                 <div className="font-mono font-bold text-[#111111]">
@@ -162,9 +162,9 @@ export function AvailabilityEditor() {
       {/* Quick Block Modal */}
       {showBlockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm border border-stone-200 p-6 space-y-4 shadow-2xl">
+          <div className="bg-white w-full max-w-sm rounded-[22px] border border-stone-200/70 p-6 space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h4 className="font-serif text-base tracking-tight">Block Slot</h4>
+              <h4 className="font-heroSans text-base font-semibold tracking-tight">Block Slot</h4>
               <button onClick={() => setShowBlockModal(false)}>✕</button>
             </div>
 
@@ -189,13 +189,13 @@ export function AvailabilityEditor() {
                 <button
                   type="button"
                   onClick={() => setShowBlockModal(false)}
-                  className="w-1/3 border border-stone-200 text-xs py-2 uppercase font-medium"
+                  className="w-1/3 rounded-full border border-stone-200 text-xs py-2 font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-[#111111] text-white text-xs py-2 uppercase font-bold"
+                  className="flex-1 rounded-full bg-[#1C1917] text-white text-xs py-2 font-medium"
                 >
                   Confirm Block
                 </button>
