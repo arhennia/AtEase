@@ -3,6 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { AtEaseLogo } from './AtEaseLogo';
 
+export const CONTACT_LINKS = [
+  { label: 'Email', href: 'mailto:arhennia@gmail.com' },
+  { label: 'GitHub', href: 'https://github.com/arhennia', external: true },
+  { label: 'Instagram', href: 'https://instagram.com/arhyatelier', external: true },
+  { label: 'X', href: 'https://x.com/arhennia', external: true },
+];
+
 export function LandingFooter() {
   const navigate = useNavigate();
 
@@ -18,17 +25,14 @@ export function LandingFooter() {
     {
       title: 'Company',
       links: [
-        { label: 'Journal', href: '#features' },
-        { label: 'Connect', href: '#connect' },
+        { label: 'How it works', href: '#studio' },
         { label: 'Log in', action: () => navigate('/login') },
+        { label: 'Get started', action: () => navigate('/signup') },
       ],
     },
     {
-      title: 'Resources',
-      links: [
-        { label: 'Start free trial', action: () => navigate('/signup') },
-        { label: 'How it works', href: '#studio' },
-      ],
+      title: 'Connect',
+      links: CONTACT_LINKS,
     },
   ];
 
@@ -65,6 +69,7 @@ export function LandingFooter() {
                   <a
                     key={link.label}
                     href={link.href}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     className="group inline-flex items-center gap-1 font-heroSans text-sm text-white/70 hover:text-white transition-colors duration-200"
                   >
                     {link.label}
