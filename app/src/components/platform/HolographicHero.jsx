@@ -1,12 +1,11 @@
 import React from 'react';
-import { UnicornBackground } from '../UnicornBackground';
+import { ShaderBackground } from '../ui/hero-shader';
 
 export function HolographicHero({ children, className = '' }) {
   return (
-    <section className={`relative isolate w-full min-h-screen overflow-hidden bg-[#F3F4F6] ${className}`}>
-      <UnicornBackground />
-      <div className="relative z-10">{children}</div>
-    </section>
+    <ShaderBackground className={`relative isolate w-full min-h-screen ${className}`}>
+      <div className="relative z-10 flex flex-col min-h-screen">{children}</div>
+    </ShaderBackground>
   );
 }
 
