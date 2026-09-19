@@ -15,7 +15,7 @@ export function Toast() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="fixed top-20 right-4 sm:right-8 z-50 max-w-md bg-[#111111] text-white px-5 py-3.5 border border-black shadow-2xl flex items-center gap-3 text-xs tracking-wider uppercase font-medium"
+          className="fixed top-20 right-4 sm:right-8 z-50 max-w-md bg-[#1C1917] text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-heroSans"
         >
           <Info size={16} className="text-white/80 shrink-0" />
           <span className="flex-1 font-sans">{toastMessage}</span>
