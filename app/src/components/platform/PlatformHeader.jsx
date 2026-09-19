@@ -1,35 +1,29 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
-import { ArrowRight, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { AtEaseLogo } from './AtEaseLogo';
+import { SoftButton } from './ui';
 
 export function PlatformHeader() {
   const navigate = useNavigate();
-  const location = useLocation();
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const userRole = useAppStore((s) => s.userRole);
   const logout = useAppStore((s) => s.logout);
-  const onHome = location.pathname === '/';
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200">
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-stone-200/70">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
         <button type="button" onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
-          <AtEaseLogo />
+          <AtEaseLogo className="text-[1.2rem] sm:text-[1.35rem] text-[#1C1917]" />
         </button>
-        <nav className="flex items-center gap-4 sm:gap-6">
-          {onHome && (
-            <a href="#how-it-works" className="hidden sm:inline text-sm text-stone-600 hover:text-black">
-              How it works
-            </a>
-          )}
+        <nav className="flex items-center gap-2 sm:gap-4">
           {isAuthenticated && userRole === 'partner' ? (
             <>
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="text-sm text-stone-700 hover:text-black"
+                className="font-heroSans text-[13px] text-stone-500 hover:text-[#1C1917] px-3 py-2 rounded-full hover:bg-stone-100 transition-colors"
               >
                 Dashboard
               </button>
@@ -39,7 +33,7 @@ export function PlatformHeader() {
                   logout();
                   navigate('/');
                 }}
-                className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-black"
+                className="font-heroSans text-[13px] text-stone-400 hover:text-[#1C1917] px-3 py-2 rounded-full inline-flex items-center gap-1.5"
               >
                 <LogOut size={13} />
                 Logout
@@ -50,18 +44,11 @@ export function PlatformHeader() {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="text-sm text-stone-600 hover:text-black"
+                className="font-heroSans text-[13px] text-stone-500 hover:text-[#1C1917] px-3 py-2 rounded-full hover:bg-stone-100 transition-colors"
               >
-                Login
+                Log in
               </button>
-              <button
-                type="button"
-                onClick={() => navigate('/signup')}
-                className="bg-[#111111] text-white px-4 py-2 text-sm font-medium hover:bg-black flex items-center gap-1.5"
-              >
-                Get started
-                <ArrowRight size={13} />
-              </button>
+              <SoftButton onClick={() => navigate('/signup')}>Get started</SoftButton>
             </>
           )}
         </nav>
