@@ -1,13 +1,8 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export const EASE = 'ease-[cubic-bezier(0.25,0.1,0.25,1)]';
 
-/**
- * Vertical "roll up" text reveal used on hover — the label slides up to
- * reveal a duplicate copy underneath, à la Hirael's button micro-interaction.
- * The parent element must have the `group` class.
- */
 export function RollText({ children }) {
   return (
     <span className="block h-[20px] overflow-hidden">
@@ -21,42 +16,64 @@ export function RollText({ children }) {
   );
 }
 
-/**
- * Pill button with a roll-up label and a circular arrow that un-rotates on
- * hover. `tone` picks the fill: 'dark' (near-black, used in nav / secondary
- * spots) or 'purple' (brand accent, used for primary CTAs).
- */
-export function PillButton({ label, tone = 'purple', className = '', onClick, type = 'button' }) {
-  const fill = tone === 'dark' ? 'bg-[#111111] hover:bg-[#111111]' : 'bg-[#7C3AED] hover:bg-[#8B5CF6]';
-  const iconColor = tone === 'dark' ? 'text-[#111111]' : 'text-[#7C3AED]';
+export function PillButton({ label, tone = 'purple', className = '', onClick, type = 'button', href }) {
+  const isGlass = tone === 'glass' || tone === 'dark';
+  const isOutline = tone === 'outline';
+  const isMuted = tone === 'muted';
+  const fill = isOutline
+    ? 'bg-transparent border border-white/30 text-white hover:bg-white/10 hover:border-white/50'
+    : isMuted
+      ? 'bg-transparent border border-stone-200 text-[#111111] hover:border-[#7C3AED] hover:text-[#7C3AED]'
+      : isGlass
+        ? 'bg-white text-[#111111] hover:bg-white/90'
+        : 'bg-[#7C3AED] text-white hover:bg-[#8B5CF6] hover:shadow-[0_0_24px_rgba(139,92,246,0.45)]';
+
+  const sharedClassName = `group inline-flex items-center justify-center rounded-full px-6 py-2.5 text-[13px] sm:text-[14px] font-medium transition-all duration-300 hover:scale-[1.02] font-heroSans ${fill} ${className}`;
+
+  if (href) {
+    return (
+      <a href={href} onClick={onClick} className={sharedClassName}>
+        <RollText>{label}</RollText>
+      </a>
+    );
+  }
+
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={`group h-auto inline-flex items-center rounded-full py-2 ps-5 pe-2 text-[13px] sm:text-[14px] font-medium text-white transition-all duration-300 hover:shadow-[0_0_24px_rgba(139,92,246,0.45)] hover:scale-[1.02] font-heroSans ${fill} ${className}`}
-    >
+    <button type={type} onClick={onClick} className={sharedClassName}>
       <RollText>{label}</RollText>
-      <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white ml-2">
-        <ArrowRight
-          size={15}
-          className={`transition-transform duration-500 group-hover:-rotate-45 ${iconColor} ${EASE}`}
-        />
-      </span>
     </button>
   );
 }
 
-/**
- * Small numbered circle + outline badge, used to introduce each major
- * section — adapted from Hirael's "1 / Introducing Hirael" pattern.
- */
+export function GooeyPillButton({ label, onClick, type = 'button' }) {
+  return (
+    <div className="relative flex items-center group" style={{ filter: 'url(#gooey-filter)' }}>
+      <button
+        type="button"
+        aria-hidden="true"
+        tabIndex={-1}
+        className="absolute right-0 z-0 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#111111] -translate-x-9 transition-transform duration-300 group-hover:-translate-x-[calc(100%+8px)]"
+      >
+        <ArrowUpRight size={15} />
+      </button>
+      <button
+        type={type}
+        onClick={onClick}
+        className="relative z-10 h-9 flex items-center rounded-full bg-white px-5 text-[13px] font-medium text-[#111111] font-heroSans transition-colors duration-300 hover:bg-white"
+      >
+        {label}
+      </button>
+    </div>
+  );
+}
+
 export function SectionBadge({ index, label, tone = 'light' }) {
   const dark = tone === 'dark';
   return (
     <div className="mb-4 flex items-center gap-3">
       <span
         className={`flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-[11px] sm:text-[12px] font-semibold font-heroSans ${
-          dark ? 'bg-white text-[#111111]' : 'bg-[#111111] text-white'
+          dark ? 'bg-white text-[#7C3AED]' : 'bg-[#7C3AED] text-white'
         }`}
       >
         {index}
