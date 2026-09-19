@@ -72,14 +72,14 @@ export function AuthMethods({
           type="button"
           onClick={handleGoogle}
           disabled={loading}
-          className="w-full border border-stone-300 bg-white py-3 text-xs tracking-[0.15em] uppercase font-bold hover:border-black flex items-center justify-center gap-2 disabled:opacity-70"
+          className="w-full rounded-full border border-stone-200 bg-white py-3 text-[13px] font-heroSans font-medium hover:border-stone-400 flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <GoogleIcon />}
           Continue with Google
         </button>
       )}
 
-      <div className="flex items-center gap-3 text-[10px] tracking-[0.2em] uppercase text-stone-400">
+      <div className="flex items-center gap-3 text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans">
         <span className="flex-1 h-px bg-stone-200" />
         or phone OTP
         <span className="flex-1 h-px bg-stone-200" />
@@ -88,9 +88,9 @@ export function AuthMethods({
       {step === 'phone' ? (
         <form onSubmit={handleSendOtp} className="space-y-3">
           <label className="block space-y-1">
-            <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500">Mobile number</span>
-            <div className="flex border border-stone-200 focus-within:border-black bg-[#F9F9F9]">
-              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-stone-100">+91</span>
+            <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans">Mobile number</span>
+            <div className="flex rounded-2xl border border-stone-200 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-[#F7F6F8]">
+              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-[#EFECEF] rounded-l-2xl">+91</span>
               <input
                 type="tel"
                 value={phone}
@@ -105,7 +105,7 @@ export function AuthMethods({
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2"
+            className="w-full rounded-full bg-[#1C1917] text-white py-3 text-[13px] font-heroSans font-medium flex items-center justify-center gap-2 disabled:opacity-40"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : 'Send OTP'}
           </button>
@@ -118,7 +118,7 @@ export function AuthMethods({
             inputMode="numeric"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="w-full border border-stone-200 bg-[#F9F9F9] px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-black"
+            className="w-full rounded-2xl border border-stone-200 bg-[#F7F6F8] px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE]"
             placeholder="000000"
             required
           />
@@ -126,7 +126,7 @@ export function AuthMethods({
           <button
             type="submit"
             disabled={loading || otp.length < 6}
-            className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2"
+            className="w-full rounded-full bg-[#1C1917] text-white py-3 text-[13px] font-heroSans font-medium flex items-center justify-center gap-2 disabled:opacity-40"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : 'Verify & continue'}
           </button>
