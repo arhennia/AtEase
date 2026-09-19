@@ -24,14 +24,14 @@ export function CoverageRadiusEditor() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="font-serif text-xl tracking-tight">Service area</h3>
+        <h3 className="font-heroSans text-xl font-semibold tracking-tight">Service area</h3>
         <p className="text-sm text-stone-500 font-light mt-1">
           How far you’ll travel for home visits.
         </p>
       </div>
 
       {/* Radius Slider Section */}
-      <div className="p-6 border border-stone-200 bg-[#FFFFFF] space-y-4">
+      <div className="p-6 rounded-[22px] border border-stone-200/70 bg-white space-y-4">
         <div className="flex justify-between items-center">
           <div className="space-y-0.5">
             <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
@@ -53,7 +53,7 @@ export function CoverageRadiusEditor() {
           step="1"
           value={coverageRadius}
           onChange={handleSliderChange}
-          className="w-full accent-[#111111] cursor-pointer h-2 bg-stone-200 rounded-none"
+          className="w-full accent-[#B8A9D4] cursor-pointer h-2 bg-stone-200 rounded-full"
         />
 
         <div className="flex justify-between text-[10px] tracking-wider text-stone-500 uppercase">
@@ -76,21 +76,21 @@ export function CoverageRadiusEditor() {
               <div
                 key={loc.id}
                 onClick={() => toggleCoverageArea(loc.name.split('&')[0].trim())}
-                className={`p-3.5 border transition-all cursor-pointer flex items-center justify-between ${
+                className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                   isCovered
-                    ? 'border-[#111111] bg-[#111111] text-white'
-                    : 'border-stone-200 bg-[#F9F9F9] text-stone-700 hover:border-stone-400'
+                    ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                    : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300'
                 }`}
               >
                 <div className="space-y-0.5">
                   <div className="text-xs font-semibold uppercase tracking-wider truncate">
                     {loc.name.split('&')[0].trim()}
                   </div>
-                  <div className={`text-[9px] ${isCovered ? 'text-white/70' : 'text-stone-400'}`}>
+                  <div className={`text-[9px] ${isCovered ? 'text-[#6D5A8D]' : 'text-stone-400'}`}>
                     {isCovered ? 'Active Coverage' : 'Off Route'}
                   </div>
                 </div>
-                {isCovered && <Check size={14} className="text-white shrink-0" />}
+                {isCovered && <Check size={14} className="text-[#6D5A8D] shrink-0" />}
               </div>
             );
           })}
@@ -101,7 +101,7 @@ export function CoverageRadiusEditor() {
       <div className="pt-2">
         <button
           onClick={handleSave}
-          className="bg-[#111111] text-white px-6 py-3 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors"
+          className="rounded-full bg-[#1C1917] text-white px-6 py-3 text-[13px] font-heroSans font-medium hover:bg-black transition-colors"
         >
           Save Coverage Preferences
         </button>
