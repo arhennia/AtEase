@@ -184,7 +184,7 @@ export function BookingModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -205,7 +205,7 @@ export function BookingModal() {
           {/* Close button */}
           <button
             onClick={closeBookingModal}
-            className="absolute top-5 right-5 text-stone-400 hover:text-[#111111] transition-colors p-1"
+            className="absolute top-5 right-5 text-stone-400 hover:text-[#1C1917] transition-colors p-1"
             aria-label="Close scheduler"
           >
             <X size={18} />
@@ -219,10 +219,10 @@ export function BookingModal() {
                 <span>Step {step} of 4</span>
               </div>
               <div className="grid grid-cols-4 gap-1.5 h-1 bg-stone-100">
-                <div className={`h-full ${step >= 1 ? 'bg-[#111111]' : 'bg-stone-200'}`} />
-                <div className={`h-full ${step >= 2 ? 'bg-[#111111]' : 'bg-stone-200'}`} />
-                <div className={`h-full ${step >= 3 ? 'bg-[#111111]' : 'bg-stone-200'}`} />
-                <div className={`h-full ${step >= 4 ? 'bg-[#111111]' : 'bg-stone-200'}`} />
+                <div className={`h-full ${step >= 1 ? 'bg-[#D4C8E8]' : 'bg-stone-200'}`} />
+                <div className={`h-full ${step >= 2 ? 'bg-[#D4C8E8]' : 'bg-stone-200'}`} />
+                <div className={`h-full ${step >= 3 ? 'bg-[#D4C8E8]' : 'bg-stone-200'}`} />
+                <div className={`h-full ${step >= 4 ? 'bg-[#D4C8E8]' : 'bg-stone-200'}`} />
               </div>
             </div>
           )}
@@ -234,18 +234,18 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   {activeProvider.name}
                 </span>
-                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
+                <h3 className="font-heroSans text-xl font-semibold tracking-tight text-[#1C1917]">
                   Select Treatment Mode
                 </h3>
               </div>
 
               <div className="border border-stone-200 p-4 bg-[#F9F9F9] space-y-2">
-                <div className="text-xs font-semibold text-[#111111] tracking-wide">
+                <div className="text-xs font-semibold text-[#1C1917] tracking-wide">
                   {serviceName}
                 </div>
                 <div className="flex justify-between items-center text-xs text-stone-600">
                   <span>Estimated Total:</span>
-                  <span className="font-mono font-bold text-sm text-[#111111]">
+                  <span className="font-mono font-bold text-sm text-[#1C1917]">
                     {formatUptoPrice(amount)}
                   </span>
                 </div>
@@ -261,8 +261,8 @@ export function BookingModal() {
                     onClick={() => setServiceType('at-home')}
                     className={`p-3.5 border text-left transition-all space-y-1 ${
                       serviceType === 'at-home'
-                        ? 'border-[#111111] bg-[#111111] text-white'
-                        : 'border-stone-200 bg-[#FFFFFF] hover:border-stone-400 text-[#111111]'
+                        ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                        : 'border-stone-200 bg-[#FFFFFF] hover:border-stone-400 text-[#1C1917]'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
@@ -279,8 +279,8 @@ export function BookingModal() {
                     onClick={() => setServiceType('in-studio')}
                     className={`p-3.5 border text-left transition-all space-y-1 ${
                       serviceType === 'in-studio'
-                        ? 'border-[#111111] bg-[#111111] text-white'
-                        : 'border-stone-200 bg-[#FFFFFF] hover:border-stone-400 text-[#111111]'
+                        ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                        : 'border-stone-200 bg-[#FFFFFF] hover:border-stone-400 text-[#1C1917]'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider">
@@ -296,7 +296,7 @@ export function BookingModal() {
 
               <button
                 onClick={() => setStep(2)}
-                className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                  className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
               >
                 <span>Select Appointment Date</span>
                 <ArrowRight size={14} />
@@ -311,7 +311,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   Step 2 • Date
                 </span>
-                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
+                <h3 className="font-heroSans text-xl font-semibold tracking-tight text-[#1C1917]">
                   Choose Preferred Date
                 </h3>
               </div>
@@ -327,8 +327,8 @@ export function BookingModal() {
                       onClick={() => setSelectedDateIdx(idx)}
                       className={`p-2.5 border text-center transition-all ${
                         isSelected
-                          ? 'border-[#111111] bg-[#111111] text-white shadow-sm'
-                          : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C] shadow-sm'
+                          : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
                       }`}
                     >
                       <div className="text-[9px] tracking-wider uppercase opacity-70">
@@ -346,7 +346,7 @@ export function BookingModal() {
               </div>
 
               <div className="p-3 bg-[#F9F9F9] border border-stone-200 text-xs text-stone-700 flex items-center gap-2">
-                <Calendar size={14} className="text-[#111111]" />
+                <Calendar size={14} className="text-[#1C1917]" />
                 <span>Selected: <strong>{activeDate.formatted}</strong></span>
               </div>
 
@@ -354,14 +354,14 @@ export function BookingModal() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 border border-stone-200 text-[#111111] py-3.5 text-xs tracking-[0.15em] uppercase font-medium hover:border-[#111111]"
+                  className="w-1/3 rounded-full border border-stone-200 text-[#1C1917] py-3.5 text-[13px] font-medium hover:border-stone-400"
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="flex-1 bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
                 >
                   <span>Select Time Slot</span>
                   <ArrowRight size={14} />
@@ -377,7 +377,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   Step 3 • Time
                 </span>
-                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
+                <h3 className="font-heroSans text-xl font-semibold tracking-tight text-[#1C1917]">
                   Available Time Slots
                 </h3>
               </div>
@@ -395,8 +395,8 @@ export function BookingModal() {
                         onClick={() => setSelectedTime(slot)}
                         className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
                           selectedTime === slot
-                            ? 'border-[#111111] bg-[#111111] text-white'
-                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                            ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
                         }`}
                       >
                         {slot}
@@ -417,8 +417,8 @@ export function BookingModal() {
                         onClick={() => setSelectedTime(slot)}
                         className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
                           selectedTime === slot
-                            ? 'border-[#111111] bg-[#111111] text-white'
-                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                            ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
                         }`}
                       >
                         {slot}
@@ -439,8 +439,8 @@ export function BookingModal() {
                         onClick={() => setSelectedTime(slot)}
                         className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
                           selectedTime === slot
-                            ? 'border-[#111111] bg-[#111111] text-white'
-                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                            ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
                         }`}
                       >
                         {slot}
@@ -454,14 +454,14 @@ export function BookingModal() {
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="w-1/3 border border-stone-200 text-[#111111] py-3.5 text-xs tracking-[0.15em] uppercase font-medium hover:border-[#111111]"
+                  className="w-1/3 rounded-full border border-stone-200 text-[#1C1917] py-3.5 text-[13px] font-medium hover:border-stone-400"
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(4)}
-                  className="flex-1 bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
                 >
                   <span>Review &amp; Confirm</span>
                   <ArrowRight size={14} />
@@ -477,7 +477,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
                   Step 4 • Final Confirmation
                 </span>
-                <h3 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
+                <h3 className="font-heroSans text-xl font-semibold tracking-tight text-[#1C1917]">
                   Review Booking Details
                 </h3>
               </div>
@@ -486,19 +486,19 @@ export function BookingModal() {
               <div className="border border-stone-200 p-4 bg-[#F9F9F9] space-y-3 text-xs">
                 <div className="flex justify-between border-b border-stone-200 pb-2">
                   <span className="text-stone-500 uppercase tracking-wider text-[10px]">Provider</span>
-                  <span className="font-bold text-[#111111]">{activeProvider.name}</span>
+                  <span className="font-bold text-[#1C1917]">{activeProvider.name}</span>
                 </div>
                 <div className="flex justify-between border-b border-stone-200 pb-2">
                   <span className="text-stone-500 uppercase tracking-wider text-[10px]">Service</span>
-                  <span className="font-medium text-[#111111] text-right max-w-[220px] truncate">{serviceName}</span>
+                  <span className="font-medium text-[#1C1917] text-right max-w-[220px] truncate">{serviceName}</span>
                 </div>
                 <div className="flex justify-between border-b border-stone-200 pb-2">
                   <span className="text-stone-500 uppercase tracking-wider text-[10px]">Schedule</span>
-                  <span className="font-bold text-[#111111]">{activeDate.formatted} • {selectedTime}</span>
+                  <span className="font-bold text-[#1C1917]">{activeDate.formatted} • {selectedTime}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500 uppercase tracking-wider text-[10px]">Direct Payable Amount</span>
-                  <span className="font-mono font-bold text-sm text-[#111111]">{formatUptoPrice(amount)}</span>
+                  <span className="font-mono font-bold text-sm text-[#1C1917]">{formatUptoPrice(amount)}</span>
                 </div>
               </div>
 
@@ -514,7 +514,7 @@ export function BookingModal() {
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                       placeholder="Your name"
-                      className="w-full bg-[#F9F9F9] border border-stone-200 focus:border-[#111111] p-2 text-xs text-[#111111] focus:outline-none"
+                      className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl focus:border-[#D4C8E8] p-2.5 text-xs text-[#1C1917] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -526,7 +526,7 @@ export function BookingModal() {
                       value={clientPhone}
                       onChange={(e) => setClientPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                       placeholder="98765 43210"
-                      className="w-full bg-[#F9F9F9] border border-stone-200 focus:border-[#111111] p-2 text-xs font-mono text-[#111111] focus:outline-none"
+                      className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl focus:border-[#D4C8E8] p-2.5 text-xs font-mono text-[#1C1917] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -541,15 +541,15 @@ export function BookingModal() {
                       value={clientAddress}
                       onChange={(e) => setClientAddress(e.target.value)}
                       placeholder="House / street / landmark"
-                      className="w-full bg-[#F9F9F9] border border-stone-200 focus:border-[#111111] p-2 text-xs text-[#111111] focus:outline-none"
+                      className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl focus:border-[#D4C8E8] p-2.5 text-xs text-[#1C1917] focus:outline-none"
                     />
                   </div>
                 )}
               </div>
 
               {/* MANDATORY PAYMENT DISCLOSURE BADGE (Exact Copy) */}
-              <div className="border border-stone-300 bg-stone-50 p-3 rounded-sm text-[11px] text-[#111111] leading-relaxed flex items-start gap-2.5 font-medium shadow-sm">
-                <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
+              <div className="border border-stone-300 bg-stone-50 p-3 rounded-sm text-[11px] text-[#1C1917] leading-relaxed flex items-start gap-2.5 font-medium shadow-sm">
+                <ShieldCheck size={16} className="text-[#1C1917] shrink-0 mt-0.5" />
                 <span>
                   Pay directly to the service provider at the time of service via Cash, UPI, or Card.
                 </span>
@@ -559,7 +559,7 @@ export function BookingModal() {
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="w-1/3 border border-stone-200 text-[#111111] py-3.5 text-xs tracking-[0.15em] uppercase font-medium hover:border-[#111111]"
+                  className="w-1/3 rounded-full border border-stone-200 text-[#1C1917] py-3.5 text-[13px] font-medium hover:border-stone-400"
                 >
                   Back
                 </button>
@@ -567,7 +567,7 @@ export function BookingModal() {
                   type="button"
                   disabled={isSubmitting}
                   onClick={handleFinalBooking}
-                  className="flex-1 bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
                 >
                   <span>{isSubmitting ? 'Saving…' : 'Send on WhatsApp'}</span>
                   <MessageCircle size={14} />
@@ -579,7 +579,7 @@ export function BookingModal() {
           {/* ================= STEP 5: Success State ================= */}
           {step === 5 && confirmedBooking && (
             <div className="space-y-6 text-center py-2">
-              <div className="w-12 h-12 bg-[#111111] text-white rounded-full flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 bg-[#EDE9FE] text-[#6D5A8D] rounded-full flex items-center justify-center mx-auto">
                 <CheckCircle2 size={24} />
               </div>
 
@@ -587,7 +587,7 @@ export function BookingModal() {
                 <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
                   WhatsApp booking started
                 </span>
-                <h3 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
+                <h3 className="font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917]">
                   Message ready
                 </h3>
                 <p className="text-xs font-mono text-stone-600">
@@ -601,25 +601,25 @@ export function BookingModal() {
               <div className="border border-stone-200 p-4 bg-[#F9F9F9] text-left space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-stone-500">Provider:</span>
-                  <span className="font-semibold text-[#111111]">{activeProvider.name}</span>
+                  <span className="font-semibold text-[#1C1917]">{activeProvider.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500">Date &amp; Time:</span>
-                  <span className="font-bold text-[#111111]">{confirmedBooking.date} • {confirmedBooking.time}</span>
+                  <span className="font-bold text-[#1C1917]">{confirmedBooking.date} • {confirmedBooking.time}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500">Location:</span>
-                  <span className="text-[#111111] text-right truncate max-w-[200px]">{confirmedBooking.location}</span>
+                  <span className="text-[#1C1917] text-right truncate max-w-[200px]">{confirmedBooking.location}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-stone-200">
                   <span className="text-stone-500">Direct Payable:</span>
-                  <span className="font-mono font-bold text-sm text-[#111111]">{formatUptoPrice(confirmedBooking.amount)}</span>
+                  <span className="font-mono font-bold text-sm text-[#1C1917]">{formatUptoPrice(confirmedBooking.amount)}</span>
                 </div>
               </div>
 
               {/* Exact Payment Disclosure Notice on Success */}
               <div className="border border-stone-300 bg-white p-3 text-[10px] text-stone-700 leading-relaxed text-left flex items-start gap-2">
-                <ShieldCheck size={14} className="text-[#111111] shrink-0 mt-0.5" />
+                <ShieldCheck size={14} className="text-[#1C1917] shrink-0 mt-0.5" />
                 <span>
                   Pay directly to the service provider at the time of service via Cash, UPI, or Card.
                 </span>
@@ -630,7 +630,7 @@ export function BookingModal() {
                   <button
                     type="button"
                     onClick={() => openWhatsApp(confirmedBooking.whatsappUrl)}
-                    className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors"
+                    className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors"
                   >
                     Open WhatsApp again
                   </button>
@@ -641,7 +641,7 @@ export function BookingModal() {
                     closeBookingModal();
                     showToast('Pending booking saved. Send the WhatsApp message if you have not yet.');
                   }}
-                  className="w-full border border-stone-200 text-[#111111] py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:border-black transition-colors"
+                  className="w-full rounded-full border border-stone-200 text-[#1C1917] py-3.5 text-[13px] font-medium hover:border-stone-400 transition-colors"
                 >
                   Done
                 </button>
