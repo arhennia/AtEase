@@ -62,13 +62,13 @@ export function CartDrawer() {
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="bg-[#FFFFFF] w-full max-w-md h-full z-10 shadow-2xl flex flex-col justify-between border-l border-stone-200"
+          className="bg-[#FFFFFF] w-full max-w-md h-full z-10 shadow-2xl flex flex-col justify-between rounded-l-[22px] border-l border-stone-200/70"
         >
           {/* Header */}
           <div className="p-6 border-b border-stone-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShoppingBag size={18} className="text-[#111111]" />
-              <h2 className="font-serif text-lg tracking-tight font-normal text-[#111111]">
+              <h2 className="font-heroSans text-lg font-semibold tracking-tight text-[#1C1917]">
                 Your Selection ({cart.length})
               </h2>
             </div>
@@ -86,13 +86,13 @@ export function CartDrawer() {
             <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
               Treatment Mode
             </span>
-            <div className="grid grid-cols-2 p-1 bg-white border border-stone-200 rounded-sm text-[11px] tracking-wider uppercase font-semibold">
+            <div className="grid grid-cols-2 p-1 bg-[#F7F6F8] rounded-full text-[12px] font-medium">
               <button
                 type="button"
                 onClick={() => setPricingMode('HOME_VISIT')}
                 className={`py-1.5 flex items-center justify-center gap-1.5 transition-all ${
                   pricingMode === 'HOME_VISIT'
-                    ? 'bg-[#111111] text-white shadow-sm'
+                    ? 'bg-white text-[#1C1917] shadow-sm rounded-full'
                     : 'text-stone-600 hover:text-[#111111]'
                 }`}
               >
@@ -104,7 +104,7 @@ export function CartDrawer() {
                 onClick={() => setPricingMode('IN_SALON')}
                 className={`py-1.5 flex items-center justify-center gap-1.5 transition-all ${
                   pricingMode === 'IN_SALON'
-                    ? 'bg-[#111111] text-white shadow-sm'
+                    ? 'bg-white text-[#1C1917] shadow-sm rounded-full'
                     : 'text-stone-600 hover:text-[#111111]'
                 }`}
               >
@@ -129,7 +129,7 @@ export function CartDrawer() {
                 </div>
                 <button
                   onClick={() => setCartDrawerOpen(false)}
-                  className="mt-2 bg-[#111111] text-white px-5 py-2 text-[11px] tracking-[0.15em] uppercase font-medium hover:bg-black"
+                  className="mt-2 rounded-full bg-[#1C1917] text-white px-5 py-2 text-[13px] font-medium hover:bg-black"
                 >
                   Explore Services
                 </button>
@@ -141,7 +141,7 @@ export function CartDrawer() {
                 return (
                   <div 
                     key={item.id}
-                    className="p-4 border border-stone-200 bg-[#FFFFFF] space-y-3 hover:border-stone-400 transition-colors"
+                    className="p-4 rounded-2xl border border-stone-200/70 bg-white space-y-3"
                   >
                     <div className="flex justify-between items-start gap-2">
                       <div className="space-y-0.5">
@@ -203,7 +203,7 @@ export function CartDrawer() {
               <div className="space-y-2">
                 <button
                   onClick={handleProceed}
-                  className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+                  className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
                 >
                   <span>Proceed to Select Date &amp; Time</span>
                   <ArrowRight size={14} />
