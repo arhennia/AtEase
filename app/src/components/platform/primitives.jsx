@@ -23,10 +23,10 @@ export function PillButton({ label, tone = 'purple', className = '', onClick, ty
   const fill = isOutline
     ? 'bg-transparent border border-white/30 text-white hover:bg-white/10 hover:border-white/50'
     : isMuted
-      ? 'bg-transparent border border-stone-200 text-[#111111] hover:border-[#7C3AED] hover:text-[#7C3AED]'
+      ? 'bg-transparent border border-stone-200 text-[#1C1917] hover:border-[#D4C8E8] hover:text-[#6D5A8D]'
       : isGlass
-        ? 'bg-white text-[#111111] hover:bg-white/90'
-        : 'bg-[#7C3AED] text-white hover:bg-[#8B5CF6] hover:shadow-[0_0_24px_rgba(139,92,246,0.45)]';
+        ? 'bg-white text-[#1C1917] hover:bg-white/90'
+        : 'bg-[#B8A9D4] text-white hover:bg-[#A898C8]';
 
   const sharedClassName = `group inline-flex items-center justify-center rounded-full px-6 py-2.5 text-[13px] sm:text-[14px] font-medium transition-all duration-300 hover:scale-[1.02] font-heroSans ${fill} ${className}`;
 
@@ -73,7 +73,7 @@ export function SectionBadge({ index, label, tone = 'light' }) {
     <div className="mb-4 flex items-center gap-3">
       <span
         className={`flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-[11px] sm:text-[12px] font-semibold font-heroSans ${
-          dark ? 'bg-white text-[#7C3AED]' : 'bg-[#7C3AED] text-white'
+          dark ? 'bg-white text-[#6D5A8D]' : 'bg-[#EDE9FE] text-[#6D5A8D]'
         }`}
       >
         {index}
