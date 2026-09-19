@@ -25,11 +25,11 @@ export const CITIES = [
 ];
 
 export const PRICE_BANDS = [
-  { value: 500, label: 'upto ₹500/-' },
-  { value: 1000, label: 'upto ₹1,000/-' },
-  { value: 2000, label: 'upto ₹2,000/-' },
-  { value: 3500, label: 'upto ₹3,500/-' },
-  { value: 5000, label: 'upto ₹5,000/-' },
+  { value: 500, label: '₹500' },
+  { value: 1000, label: '₹1,000' },
+  { value: 2000, label: '₹2,000' },
+  { value: 3500, label: '₹3,500' },
+  { value: 5000, label: '₹5,000' },
 ];
 
 export const SERVICE_PRESETS = {
@@ -82,10 +82,10 @@ export function presetsForCrafts(craftIds) {
 }
 
 export function serviceUptoPrice(service) {
-  return Number(service?.uptoPrice || service?.price_fixed || service?.inSalonPrice || service?.homePrice || 0);
+  return Number(service?.price || service?.uptoPrice || service?.price_fixed || service?.inSalonPrice || service?.homePrice || 0);
 }
 
 export function formatUptoPrice(value) {
   const n = Number(value) || 0;
-  return `upto ₹${n.toLocaleString('en-IN')}/-`;
+  return `₹${n.toLocaleString('en-IN')}`;
 }

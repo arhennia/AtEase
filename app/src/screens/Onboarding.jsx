@@ -31,10 +31,10 @@ function Option({ selected, onClick, children, className = '' }) {
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-[52px] px-4 py-3 text-sm text-left border transition-colors ${
+      className={`min-h-[52px] px-4 py-3 text-sm text-left rounded-2xl border transition-colors font-heroSans ${
         selected
-          ? 'bg-[#111111] text-white border-[#111111]'
-          : 'bg-white text-[#111111] border-stone-200 hover:border-stone-400'
+          ? 'bg-[#F3EEF8] text-[#4A3F5C] border-[#E4D9F0]'
+          : 'bg-white text-[#1C1917] border-stone-200 hover:border-stone-300'
       } ${className}`}
     >
       <span className="flex items-center justify-between gap-3">
@@ -231,17 +231,17 @@ export function Onboarding() {
   }
 
   return (
-    <div className="bg-white min-h-screen text-[#111111] flex flex-col">
+    <div className="bg-[#FAFAFB] min-h-screen text-[#1C1917] flex flex-col font-heroSans">
       <PlatformHeader />
       <div className="h-1 bg-stone-100">
-        <div className="h-full bg-[#111111] transition-all duration-300" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-[#D4C8E8] transition-all duration-300" style={{ width: `${progress}%` }} />
       </div>
 
-      <main className="flex-1 w-full max-w-[640px] mx-auto px-4 sm:px-6 py-10 sm:py-14 flex flex-col">
-        <p className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-400 mb-3">
+      <main className="flex-1 w-full max-w-[640px] mx-auto px-5 sm:px-6 py-12 sm:py-16 flex flex-col">
+        <p className="text-[11px] tracking-[0.16em] uppercase text-stone-400 mb-3">
           Step {step + 1} of {STEPS.length}
         </p>
-        <h1 className="font-serif text-3xl sm:text-4xl tracking-tight leading-tight mb-2">
+        <h1 className="font-heroSans text-3xl sm:text-4xl font-semibold tracking-tight leading-tight mb-2">
           {STEPS[step].title}
         </h1>
         <p className="text-sm text-stone-500 font-light mb-8 min-h-[20px]">
@@ -254,7 +254,7 @@ export function Onboarding() {
           {step === 2 && 'This decides how clients book you.'}
           {step === 3 && 'We use this on your website.'}
           {step === 4 && 'Bookings open WhatsApp with a pre-filled message to this number.'}
-          {step === 5 && 'Shown on your menu as an “upto” price, not a fixed rate.'}
+          {step === 5 && 'Shown on your menu as a fixed price.'}
           {step === 6 && 'Tap to add. You can attach a photo for the menu.'}
         </p>
 
@@ -272,12 +272,12 @@ export function Onboarding() {
                   <input
                     value={brandName}
                     onChange={(e) => setBrandName(e.target.value)}
-                    className="w-full border border-stone-200 bg-[#F9F9F9] px-4 py-3.5 text-base outline-none focus:border-black"
+                    className="w-full rounded-2xl border border-stone-200 bg-[#F7F6F8] px-4 py-3.5 text-base outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE]"
                     placeholder="Luxe Studio"
                     autoFocus
                   />
                   <label className="flex items-center gap-4 cursor-pointer">
-                    <span className="w-16 h-16 border border-stone-200 bg-[#F9F9F9] overflow-hidden flex items-center justify-center shrink-0">
+                    <span className="w-16 h-16 rounded-2xl border border-stone-200 bg-[#F7F6F8] overflow-hidden flex items-center justify-center shrink-0">
                       {logoUrl ? (
                         <img src={logoUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -333,8 +333,8 @@ export function Onboarding() {
 
               {step === 4 && (
                 <div className="space-y-3">
-                  <div className="flex border border-stone-200 focus-within:border-black bg-[#F9F9F9]">
-                    <span className="px-3 py-3.5 text-sm text-stone-500 border-r border-stone-200 font-mono bg-stone-100">
+                  <div className="flex rounded-2xl border border-stone-200 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-[#F7F6F8]">
+                    <span className="px-3 py-3.5 text-sm text-stone-500 border-r border-stone-200 font-mono bg-[#EFECEF] rounded-l-2xl">
                       +91
                     </span>
                     <input
@@ -367,11 +367,11 @@ export function Onboarding() {
                   {presets.map((item) => {
                     const selected = selectedNames.includes(item.name);
                     return (
-                      <div key={item.name} className="border border-stone-200">
+                      <div key={item.name} className="border border-stone-200 rounded-2xl overflow-hidden">
                         <Option selected={selected} onClick={() => toggleService(item.name)} className="w-full border-0">
                           <span className="flex flex-col">
                             <span>{item.name}</span>
-                            <span className={`text-[11px] mt-0.5 ${selected ? 'text-white/70' : 'text-stone-400'}`}>
+            <span className={`text-[11px] mt-0.5 ${selected ? 'text-[#6D5A8D]' : 'text-stone-400'}`}>
                               {item.duration} · {formatUptoPrice(uptoPrice)}
                             </span>
                           </span>
@@ -422,7 +422,7 @@ export function Onboarding() {
               type="button"
               disabled={!canContinue() || loading}
               onClick={handleLaunch}
-              className="h-12 px-6 bg-[#111111] text-white text-xs tracking-[0.18em] uppercase font-bold flex items-center gap-2 disabled:opacity-40"
+              className="h-12 px-6 rounded-full bg-[#1C1917] text-white text-[13px] font-medium flex items-center gap-2 disabled:opacity-40"
             >
               {loading ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
               {loading ? 'Building your site…' : 'Open dashboard'}
@@ -432,7 +432,7 @@ export function Onboarding() {
               type="button"
               disabled={!canContinue()}
               onClick={() => setStep((s) => s + 1)}
-              className="h-12 px-6 bg-[#111111] text-white text-xs tracking-[0.18em] uppercase font-bold flex items-center gap-2 disabled:opacity-40"
+              className="h-12 px-6 rounded-full bg-[#1C1917] text-white text-[13px] font-medium flex items-center gap-2 disabled:opacity-40"
             >
               Continue
               <ArrowRight size={14} />

@@ -52,12 +52,12 @@ export function DateTimeSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#111111] font-sans antialiased flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FAFAFB] text-[#1C1917] font-heroSans antialiased flex flex-col justify-between">
       {/* Top Header */}
-      <header className="p-6 border-b border-stone-200 flex items-center justify-between">
+      <header className="px-5 sm:px-8 py-5 border-b border-stone-200/70 bg-white/80 backdrop-blur-md flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-bold text-stone-600 hover:text-black"
+          className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-[#1C1917]"
         >
           <ArrowLeft size={13} />
           <span>Back</span>
@@ -68,14 +68,14 @@ export function DateTimeSelection() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-8 space-y-6">
-        <div className="border border-stone-200 p-6 sm:p-8 space-y-6 shadow-sm bg-[#FFFFFF]">
+        <div className="rounded-[22px] border border-stone-200/70 p-6 sm:p-8 space-y-6 bg-white">
           
-          <div className="border-b border-stone-200 pb-4 space-y-1">
-            <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-              Schedule Step
+          <div className="pb-2 space-y-1">
+            <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400">
+              Schedule
             </span>
-            <h1 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
-              Select Date &amp; Time
+            <h1 className="font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917]">
+              Select date &amp; time
             </h1>
             <p className="text-xs text-stone-500 font-light">
               Choose an available appointment slot with your provider.
@@ -95,10 +95,10 @@ export function DateTimeSelection() {
                     key={idx}
                     type="button"
                     onClick={() => setSelectedDate(idx)}
-                    className={`p-2.5 border text-center transition-all ${
+                    className={`p-2.5 rounded-2xl border text-center transition-all ${
                       isSelected
-                        ? 'border-[#111111] bg-[#111111] text-white shadow-sm'
-                        : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                        ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                        : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
                     }`}
                   >
                     <div className="text-[9px] tracking-wider uppercase opacity-70">
@@ -133,10 +133,10 @@ export function DateTimeSelection() {
                       key={slot}
                       type="button"
                       onClick={() => setSelectedTime(slot)}
-                      className={`p-2 text-xs font-mono font-medium border text-center transition-all ${
+                      className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
                         selectedTime === slot
-                          ? 'border-[#111111] bg-[#111111] text-white'
-                          : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                          : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
                       }`}
                     >
                       {slot}
@@ -155,10 +155,10 @@ export function DateTimeSelection() {
                       key={slot}
                       type="button"
                       onClick={() => setSelectedTime(slot)}
-                      className={`p-2 text-xs font-mono font-medium border text-center transition-all ${
+                      className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
                         selectedTime === slot
-                          ? 'border-[#111111] bg-[#111111] text-white'
-                          : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                          : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
                       }`}
                     >
                       {slot}
@@ -177,10 +177,10 @@ export function DateTimeSelection() {
                       key={slot}
                       type="button"
                       onClick={() => setSelectedTime(slot)}
-                      className={`p-2 text-xs font-mono font-medium border text-center transition-all ${
+                      className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
                         selectedTime === slot
-                          ? 'border-[#111111] bg-[#111111] text-white'
-                          : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#111111]'
+                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                          : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
                       }`}
                     >
                       {slot}
@@ -193,7 +193,7 @@ export function DateTimeSelection() {
 
           <button
             onClick={handleConfirm}
-            className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
           >
             <span>Continue to Address &amp; Review</span>
             <ArrowRight size={14} />
@@ -203,7 +203,7 @@ export function DateTimeSelection() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center border-t border-stone-200 text-[10px] tracking-[0.2em] uppercase text-stone-400">
+      <footer className="p-6 text-center border-t border-stone-200/70 text-[11px] text-stone-400 font-heroSans">
         AtEase • Discovery &amp; Direct Booking
       </footer>
     </div>

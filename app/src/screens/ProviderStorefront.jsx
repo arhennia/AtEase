@@ -63,10 +63,10 @@ export function ProviderStorefront() {
 
   if (loadingPartner) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAFB] flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-[#111111] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs uppercase tracking-[0.2em] font-semibold text-stone-500">Loading Studio...</p>
+          <div className="w-8 h-8 border-2 border-[#B8A9D4] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs uppercase tracking-[0.16em] font-medium text-stone-400 font-heroSans">Loading studio…</p>
         </div>
       </div>
     );
@@ -101,16 +101,16 @@ export function ProviderStorefront() {
   };
 
   return (
-    <div className="bg-[#FFFFFF] text-[#111111] font-sans antialiased min-h-screen selection:bg-[#111111] selection:text-white">
+    <div className="bg-[#FAFAFB] text-[#1C1917] font-heroSans antialiased min-h-screen selection:bg-[#EDE9FE] selection:text-[#1C1917]">
       <TenantHeader partner={partner} />
 
       {previewMode && (
-        <div className="bg-amber-50 border-b border-amber-200 text-center py-2 text-[10px] tracking-[0.2em] uppercase font-bold text-amber-900">
+        <div className="bg-[#F3EEF8] border-b border-[#E4D9F0] text-center py-2.5 text-[12px] font-heroSans text-[#4A3F5C]">
           Owner preview — clients cannot see this site while the plan is inactive
         </div>
       )}
 
-      <section className="relative w-full h-72 sm:h-96 bg-stone-900 overflow-hidden">
+      <section className="relative w-full h-80 sm:h-[28rem] bg-stone-200 overflow-hidden">
         {providerObj.imageUrl ? (
           <img
             src={providerObj.imageUrl}
@@ -120,33 +120,33 @@ export function ProviderStorefront() {
         ) : (
           <div className="w-full h-full bg-stone-800" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
 
-        <div className="absolute bottom-6 sm:bottom-10 left-4 sm:left-10 right-4 sm:right-10 z-10 text-white space-y-2 max-w-3xl">
+        <div className="absolute bottom-8 sm:bottom-12 left-5 sm:left-10 right-5 sm:right-10 z-10 text-white space-y-3 max-w-3xl">
           <div className="flex items-center gap-3">
-            <span className="text-[10px] tracking-[0.25em] uppercase font-bold bg-white/20 backdrop-blur-md px-2.5 py-1 border border-white/30">
+            <span className="text-[11px] tracking-[0.16em] uppercase font-medium bg-white/15 backdrop-blur-md px-3 py-1 rounded-full border border-white/25">
               {providerObj.typeLabel}
             </span>
             {providerObj.reviewCount !== '0' && (
-              <div className="flex items-center gap-1 bg-white text-[#111111] px-2 py-0.5 text-[10px] font-mono font-bold">
-                <Star size={11} className="fill-[#111111] text-[#111111]" />
+              <div className="flex items-center gap-1 bg-white/95 text-[#1C1917] px-2.5 py-1 rounded-full text-[11px] font-medium">
+                <Star size={11} className="fill-[#B8A9D4] text-[#B8A9D4]" />
                 <span>{providerObj.rating} ({providerObj.reviewCount} reviews)</span>
               </div>
             )}
           </div>
 
-          <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl tracking-tight font-normal text-white">
+          <h1 className="font-heroSans text-3xl sm:text-5xl tracking-tight font-semibold text-white">
             {providerObj.name}
           </h1>
 
-          <p className="text-xs sm:text-sm text-white/90 font-light max-w-2xl">
+          <p className="text-sm sm:text-base text-white/80 font-light max-w-2xl leading-relaxed">
             {providerObj.description}
           </p>
         </div>
       </section>
 
-      <main className="max-w-[1100px] mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-10">
-        <div className="p-6 border border-stone-200 bg-[#F9F9F9] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <main className="max-w-[1100px] mx-auto px-5 sm:px-8 py-10 sm:py-16 space-y-12">
+        <div className="p-6 sm:p-8 rounded-[22px] border border-stone-200/70 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase text-stone-600">
               <MapPin size={14} className="text-[#111111]" />
@@ -162,12 +162,12 @@ export function ProviderStorefront() {
               <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
                 Visit type
               </span>
-              <div className="flex p-1 bg-white border border-stone-200 text-[11px] tracking-wider uppercase font-semibold">
+              <div className="flex p-1 bg-[#F7F6F8] rounded-full text-[12px] font-medium">
                 <button
                   type="button"
                   onClick={() => setPricingMode('HOME_VISIT')}
-                  className={`px-4 py-2 flex items-center gap-1.5 ${
-                    pricingMode === 'HOME_VISIT' ? 'bg-[#111111] text-white' : 'text-stone-600 hover:text-[#111111]'
+                  className={`px-4 py-2 flex items-center gap-1.5 rounded-full ${
+                    pricingMode === 'HOME_VISIT' ? 'bg-white text-[#1C1917] shadow-sm' : 'text-stone-500 hover:text-[#1C1917]'
                   }`}
                 >
                   <Home size={13} />
@@ -176,8 +176,8 @@ export function ProviderStorefront() {
                 <button
                   type="button"
                   onClick={() => setPricingMode('IN_SALON')}
-                  className={`px-4 py-2 flex items-center gap-1.5 ${
-                    pricingMode === 'IN_SALON' ? 'bg-[#111111] text-white' : 'text-stone-600 hover:text-[#111111]'
+                  className={`px-4 py-2 flex items-center gap-1.5 rounded-full ${
+                    pricingMode === 'IN_SALON' ? 'bg-white text-[#1C1917] shadow-sm' : 'text-stone-500 hover:text-[#1C1917]'
                   }`}
                 >
                   <Building2 size={13} />
@@ -192,16 +192,16 @@ export function ProviderStorefront() {
           <p className="text-sm text-stone-500">This studio has not published services yet.</p>
         ) : (
           <>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar border-b border-stone-200 pb-3 sticky top-16 sm:top-20 bg-white z-30 pt-2">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar sticky top-[68px] bg-[#FAFAFB]/90 backdrop-blur-md z-30 py-3">
               {categories.map((cat) => {
                 const isSelected = (activeCategory || categories[0].id) === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
-                    className={`px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold transition-all whitespace-nowrap rounded-full border ${isSelected
-                        ? 'bg-[#111111] text-white border-[#111111] shadow-sm'
-                        : 'bg-[#FFFFFF] text-stone-700 border-stone-200 hover:border-[#111111]'
+                    className={`px-4 py-2 text-[13px] font-medium transition-all whitespace-nowrap rounded-full border ${isSelected
+                        ? 'bg-[#F3EEF8] text-[#4A3F5C] border-[#E4D9F0]'
+                        : 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
                       }`}
                   >
                     {cat.categoryName.split('&')[0].trim()} ({cat.services.length})
@@ -215,7 +215,7 @@ export function ProviderStorefront() {
               .map((cat) => (
                 <section key={cat.id} className="space-y-6">
                   <div className="border-b border-stone-200 pb-2">
-                    <h2 className="font-serif text-xl tracking-tight font-normal text-[#111111]">
+                    <h2 className="font-heroSans text-xl font-semibold tracking-tight text-[#1C1917]">
                       {cat.categoryName}
                     </h2>
                   </div>
@@ -228,7 +228,7 @@ export function ProviderStorefront() {
                       return (
                         <div
                           key={service.id}
-                          className="border border-stone-200 bg-white flex flex-col hover:border-stone-400 transition-colors overflow-hidden"
+                          className="rounded-[22px] border border-stone-200/70 bg-white flex flex-col hover:border-stone-300 transition-colors overflow-hidden"
                         >
                           {service.imageUrl ? (
                             <div className="h-40 bg-stone-100 overflow-hidden">
@@ -246,7 +246,7 @@ export function ProviderStorefront() {
                                 {formatUptoPrice(cap)}
                               </span>
                             </div>
-                            <h3 className="font-serif text-base font-normal tracking-tight text-[#111111]">
+                            <h3 className="font-heroSans text-base font-semibold tracking-tight text-[#1C1917]">
                               {service.name}
                             </h3>
                             {service.description ? (
@@ -269,9 +269,9 @@ export function ProviderStorefront() {
                                   partnerId: partner.id,
                                 });
                               }}
-                              className={`flex-1 py-2 text-[10px] tracking-[0.15em] uppercase font-semibold border transition-colors flex items-center justify-center gap-1 ${inCart
-                                  ? 'bg-stone-100 border-stone-300 text-stone-800'
-                                  : 'border-stone-300 text-[#111111] hover:border-black'
+                              className={`flex-1 py-2.5 text-[12px] font-medium rounded-full border transition-colors flex items-center justify-center gap-1 ${inCart
+                                  ? 'bg-[#F3EEF8] border-[#E4D9F0] text-[#4A3F5C]'
+                                  : 'border-stone-200 text-[#1C1917] hover:border-stone-400'
                                 }`}
                             >
                               {inCart ? (
@@ -289,7 +289,7 @@ export function ProviderStorefront() {
                             <button
                               type="button"
                               onClick={() => handleBookSingle(service)}
-                              className="flex-1 bg-[#111111] text-white py-2 text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-black transition-colors"
+                              className="flex-1 rounded-full bg-[#1C1917] text-white py-2.5 text-[12px] font-medium hover:bg-black transition-colors"
                             >
                               Book
                             </button>
@@ -304,19 +304,19 @@ export function ProviderStorefront() {
           </>
         )}
 
-        <section className="p-6 border border-stone-200 bg-[#F9F9F9] space-y-2">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#111111]">
+        <section className="p-6 sm:p-8 rounded-[22px] border border-stone-200/70 bg-white space-y-2">
+          <div className="flex items-center gap-2 text-[13px] font-medium text-[#1C1917]">
             <ShieldCheck size={16} />
             <span>Pay {partner.brandName} directly</span>
           </div>
           <p className="text-xs text-stone-600 font-light leading-relaxed">
-            Cash, UPI, or card at the time of service. Prices on the menu are “upto” amounts.
+            Cash, UPI, or card at the time of service. Menu prices are fixed.
           </p>
         </section>
       </main>
 
       {cart.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-md bg-[#111111] text-white p-4 shadow-2xl border border-black flex items-center justify-between">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-md bg-[#1C1917] text-white p-4 rounded-full shadow-2xl flex items-center justify-between">
           <div className="space-y-0.5">
             <span className="text-[10px] tracking-[0.2em] uppercase opacity-70">
               {cart.length} {cart.length === 1 ? 'Service' : 'Services'} Selected
@@ -328,7 +328,7 @@ export function ProviderStorefront() {
           <button
             type="button"
             onClick={() => setCartDrawerOpen(true)}
-            className="bg-white text-[#111111] px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-stone-100 transition-colors"
+            className="bg-white text-[#1C1917] px-4 py-2 text-[12px] font-medium rounded-full hover:bg-stone-100 transition-colors"
           >
             Review Selection →
           </button>

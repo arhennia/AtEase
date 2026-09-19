@@ -26,19 +26,19 @@ export function BookingSuccess() {
         particleCount: 40,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#111111', '#555555', '#999999']
+        colors: ['#B8A9D4', '#EDE9FE', '#1C1917']
       });
     } catch (e) {}
   }, []);
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen font-sans text-[#111111] antialiased flex flex-col justify-between">
+    <div className="bg-[#FAFAFB] min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between">
       {/* Header */}
-      <header className="p-6 border-b border-stone-200 flex items-center justify-between">
+      <header className="px-5 sm:px-8 py-5 border-b border-stone-200/70 bg-white/80 backdrop-blur-md flex items-center justify-between">
         <AtEaseLogo className="text-xl" />
         <button
           onClick={() => navigate(backToSite)}
-          className="text-[10px] tracking-[0.15em] uppercase font-bold text-stone-600 hover:text-black"
+          className="text-[13px] text-stone-500 hover:text-[#1C1917]"
         >
           Studio site →
         </button>
@@ -46,9 +46,9 @@ export function BookingSuccess() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-lg w-full mx-auto p-4 sm:p-8 space-y-6 flex flex-col justify-center text-center">
-        <div className="border border-stone-200 p-8 sm:p-10 space-y-6 shadow-sm bg-[#FFFFFF]">
+        <div className="rounded-[22px] border border-stone-200/70 p-8 sm:p-10 space-y-6 bg-white">
           
-          <div className="w-14 h-14 bg-[#111111] text-white rounded-full flex items-center justify-center mx-auto">
+          <div className="w-14 h-14 bg-[#EDE9FE] text-[#6D5A8D] rounded-full flex items-center justify-center mx-auto">
             <CheckCircle2 size={28} />
           </div>
 
@@ -56,7 +56,7 @@ export function BookingSuccess() {
             <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
               WhatsApp booking started
             </span>
-            <h1 className="font-serif text-2xl sm:text-3xl tracking-tight font-normal text-[#111111]">
+            <h1 className="font-heroSans text-2xl sm:text-3xl font-semibold tracking-tight text-[#1C1917]">
               Message ready
             </h1>
             <p className="text-xs font-mono text-stone-600 pt-1">
@@ -65,7 +65,7 @@ export function BookingSuccess() {
           </div>
 
           {/* Details Box */}
-          <div className="border border-stone-200 p-4 bg-[#F9F9F9] text-left space-y-2 text-xs">
+          <div className="border border-stone-200/70 rounded-2xl p-4 bg-[#F7F6F8] text-left space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-stone-500">Provider:</span>
               <span className="font-bold text-[#111111]">{providerName}</span>
@@ -85,7 +85,7 @@ export function BookingSuccess() {
           </div>
 
           {/* EXACT PAYMENT DISCLOSURE NOTICE */}
-          <div className="border border-stone-300 bg-stone-50 p-3 text-[11px] text-[#111111] leading-relaxed text-left flex items-start gap-2.5 font-medium">
+          <div className="border border-[#E4D9F0] bg-[#F3EEF8] p-3 rounded-2xl text-[11px] text-[#4A3F5C] leading-relaxed text-left flex items-start gap-2.5">
             <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
             <span>
               {state.whatsappUrl
@@ -98,7 +98,7 @@ export function BookingSuccess() {
             <button
               type="button"
               onClick={() => openWhatsApp(state.whatsappUrl)}
-              className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors inline-flex items-center justify-center gap-2"
+              className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors inline-flex items-center justify-center gap-2"
             >
               <MessageCircle size={14} />
               Open WhatsApp again
@@ -106,10 +106,10 @@ export function BookingSuccess() {
           )}
           <button
             onClick={() => navigate(backToSite)}
-            className={`w-full py-3.5 text-xs tracking-[0.2em] uppercase font-bold ${
+            className={`w-full rounded-full py-3.5 text-[13px] font-medium ${
               state.whatsappUrl
-                ? 'border border-stone-200 text-[#111111] hover:border-black'
-                : 'bg-[#111111] text-white hover:bg-black'
+                ? 'border border-stone-200 text-[#1C1917] hover:border-stone-400'
+                : 'bg-[#1C1917] text-white hover:bg-black'
             }`}
           >
             Done
@@ -119,7 +119,7 @@ export function BookingSuccess() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center border-t border-stone-200 text-[10px] tracking-[0.2em] uppercase text-stone-400">
+      <footer className="p-6 text-center border-t border-stone-200/70 text-[11px] text-stone-400 font-heroSans">
         AtEase • Editorial Discovery &amp; Direct Booking
       </footer>
     </div>

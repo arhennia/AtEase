@@ -15,7 +15,9 @@ import {
   signOutUser,
   fetchBrandOwnerByUserId,
   fetchBrandOwnerBySlug,
+  fetchPublishedSiteBySlug,
   hydratePartner,
+  upsertSiteConfigRecord,
   createBrandOwnerRecord,
   createServicesRecords,
   updateServiceRecord,
@@ -28,6 +30,7 @@ import {
   updateBrandOwnerRecord,
 } from '../lib/supabase';
 import { isValidWhatsAppNumber, toWhatsAppDigits } from '../lib/whatsapp';
+import { normalizeSiteConfig, siteConfigIsReady } from '../lib/siteConfig';
 
 const PERSIST_KEY = 'atease-whitelabel-v1';
 
@@ -51,6 +54,7 @@ function persistSlice(state) {
     currentPartnerId: state.currentPartnerId,
     partners: state.partners,
     appointments: state.appointments,
+    reviews: state.reviews || [],
     pendingSignup: state.pendingSignup,
   };
   window.localStorage.setItem(PERSIST_KEY, JSON.stringify(slice));
@@ -59,6 +63,27 @@ function persistSlice(state) {
 const persisted = loadPersisted();
 const seedPartners = createSeedPartners();
 
+function mergeSeedSiteConfigs(partners) {
+  return (partners || []).map((partner) => {
+    const seed = seedPartners.find((s) => s.slug === partner.slug);
+    if (!seed) return partner;
+    const stalePackages = (partner.packages || []).some((pkg) => pkg.id === 'pkg-make-your-own');
+    return {
+      ...partner,
+      packages: stalePackages || !partner.packages?.length ? seed.packages || [] : partner.packages,
+      vipMembers: partner.vipMembers?.length ? partner.vipMembers : seed.vipMembers || [],
+      siteConfig: partner.siteConfig
+        ? {
+            ...seed.siteConfig,
+            ...partner.siteConfig,
+            about: { ...(seed.siteConfig?.about || {}), ...(partner.siteConfig?.about || {}) },
+            bannerUrl: partner.siteConfig.bannerUrl || seed.siteConfig?.bannerUrl || partner.coverUrl,
+          }
+        : seed.siteConfig,
+    };
+  });
+}
+
 export const useAppStore = create((set, get) => ({
   userRole: persisted.userRole ?? null,
   isAuthenticated: persisted.isAuthenticated ?? false,
@@ -66,7 +91,7 @@ export const useAppStore = create((set, get) => ({
   userEmail: persisted.userEmail ?? '',
   userPhone: persisted.userPhone ?? '',
 
-  partners: persisted.partners?.length ? persisted.partners : seedPartners,
+  partners: mergeSeedSiteConfigs(persisted.partners?.length ? persisted.partners : seedPartners),
   currentPartnerId: persisted.currentPartnerId ?? null,
 
   setUserRole: (role) => {
@@ -297,7 +322,7 @@ export const useAppStore = create((set, get) => ({
                 title: svc.name,
                 description: svc.description || '',
                 duration: svc.duration || '60 mins',
-                price_model: 'starting_at',
+                price_model: 'fixed',
                 price_fixed: cap,
                 price_salon: cap,
                 price_home: cap,
@@ -332,11 +357,12 @@ export const useAppStore = create((set, get) => ({
         name: svc.name,
         description: svc.description || '',
         duration: svc.duration || '60 mins',
+        price: cap,
         uptoPrice: cap,
         inSalonPrice: cap,
         homePrice: cap,
         imageUrl: svc.imageUrl || '',
-        pricingModel: 'starting_at',
+        pricingModel: 'fixed',
       };
     });
 
@@ -362,6 +388,8 @@ export const useAppStore = create((set, get) => ({
       catalog: catalogServices.length
         ? [{ id: 'menu', categoryName: 'MENU', services: catalogServices }]
         : [],
+      packages: [],
+      vipMembers: [],
     };
 
     set({
@@ -400,13 +428,13 @@ export const useAppStore = create((set, get) => ({
 
     let inserted = false;
     for (const svc of flat) {
-      const cap = Number(svc.uptoPrice || svc.inSalonPrice || svc.homePrice || 0);
+      const cap = Number(svc.price || svc.uptoPrice || svc.inSalonPrice || svc.homePrice || 0);
       const patch = {
         category_name: svc.categoryName,
         title: svc.name,
         description: svc.description || '',
         duration: svc.duration || '60 mins',
-        price_model: 'starting_at',
+        price_model: 'fixed',
         price_fixed: cap,
         price_salon: cap,
         price_home: cap,
@@ -520,6 +548,84 @@ export const useAppStore = create((set, get) => ({
     return null;
   },
 
+  fetchPublishedSite: async (slug) => {
+    if (!slug) return null;
+    const local = getTenantBySlug(get().partners, slug);
+    if (local?.siteConfig?.published) {
+      return normalizeSiteConfig(local.siteConfig, slug);
+    }
+    if (isSupabaseConfigured) {
+      const remote = await fetchPublishedSiteBySlug(slug);
+      if (remote) return remote;
+    }
+    return null;
+  },
+
+  publishSiteConfig: async (draft) => {
+    const id = get().currentPartnerId;
+    if (!id) return { ok: false, error: 'No studio on this account.' };
+    const partner = get().partners.find((p) => p.id === id);
+    if (!partner) return { ok: false, error: 'No studio on this account.' };
+
+    const config = normalizeSiteConfig(
+      {
+        ...draft,
+        slug: partner.slug,
+        published: true,
+        publishedAt: new Date().toISOString(),
+      },
+      partner.slug
+    );
+    const ready = siteConfigIsReady(config);
+    if (!ready.ok) return ready;
+
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              brandName: config.businessName || p.brandName,
+              professionalTitle: config.subtitle || p.professionalTitle,
+              whatsappNumber: config.contactPhone || p.whatsappNumber,
+              coverUrl: config.bannerUrl || p.coverUrl,
+              logoUrl: config.about?.ownerPhotoUrl || p.logoUrl,
+              description: config.about?.bio || p.description,
+              location: config.about?.location || p.location,
+              siteConfig: config,
+            }
+          : p
+      ),
+    });
+    persistSlice(get());
+
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (isSupabaseConfigured && uuidRe.test(id)) {
+      const res = await upsertSiteConfigRecord(id, config);
+      if (!res.ok) return res;
+      await updateBrandOwnerRecord(id, {
+        brand_name: config.businessName,
+        professional_title: config.subtitle || partner.professionalTitle,
+        whatsapp_number: config.contactPhone,
+      });
+    }
+
+    get().showToast('Website published. Share the public link with clients.');
+    return { ok: true, config };
+  },
+
+  saveSiteDraft: async (draft) => {
+    const id = get().currentPartnerId;
+    if (!id) return { ok: false, error: 'No studio on this account.' };
+    const partner = get().partners.find((p) => p.id === id);
+    if (!partner) return { ok: false, error: 'No studio on this account.' };
+    const config = normalizeSiteConfig({ ...draft, slug: partner.slug, published: Boolean(draft.published) }, partner.slug);
+    set({
+      partners: get().partners.map((p) => (p.id === id ? { ...p, siteConfig: config } : p)),
+    });
+    persistSlice(get());
+    return { ok: true, config };
+  },
+
   syncAuthSession: async () => {
     if (!isSupabaseConfigured) return;
     try {
@@ -613,6 +719,84 @@ export const useAppStore = create((set, get) => ({
     }, 3500);
   },
   hideToast: () => set({ toastMessage: null }),
+
+  reviews: persisted.reviews?.length
+    ? persisted.reviews
+    : [
+        {
+          id: 'rev-priya-s10',
+          partnerId: 'partner_rajkumari-beauty',
+          serviceId: 's10',
+          serviceName: 'Custom Organic Glow Facial',
+          clientName: 'Priya Menon',
+          clientPhone: '9876543210',
+          rating: 5,
+          text: 'Quiet, precise, and my skin stayed calm the next morning.',
+          verified: true,
+          createdAt: '2026-09-12T10:00:00.000Z',
+        },
+        {
+          id: 'rev-ananya-s28',
+          partnerId: 'partner_rajkumari-beauty',
+          serviceId: 's28',
+          serviceName: 'Luxury HD / Airbrush Bridal Makeup',
+          clientName: 'Ananya Pattnaik',
+          clientPhone: '9437012345',
+          rating: 5,
+          text: 'The trial felt considered. Nothing overdone.',
+          verified: true,
+          createdAt: '2026-09-08T10:00:00.000Z',
+        },
+      ],
+
+  addReview: (review) => {
+    const row = {
+      id: review.id || `rev-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      verified: Boolean(review.verified),
+      ...review,
+    };
+    set({ reviews: [row, ...get().reviews] });
+    persistSlice(get());
+  },
+
+  updatePartnerPackages: (packages) => {
+    const id = get().currentPartnerId;
+    if (!id) return;
+    set({
+      partners: get().partners.map((p) => (p.id === id ? { ...p, packages } : p)),
+    });
+    persistSlice(get());
+  },
+
+  subscribeVip: (member) => {
+    const id = member.partnerId || get().currentPartnerId;
+    if (!id) return;
+    const row = {
+      id: member.id || `vip-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      ...member,
+      partnerId: id,
+    };
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id ? { ...p, vipMembers: [row, ...(p.vipMembers || []).filter((m) => m.id !== row.id)] } : p
+      ),
+    });
+    persistSlice(get());
+    get().showToast('Monthly membership saved.');
+  },
+
+  removeVipMember: (memberId) => {
+    const id = get().currentPartnerId;
+    if (!id) return;
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id ? { ...p, vipMembers: (p.vipMembers || []).filter((m) => m.id !== memberId) } : p
+      ),
+    });
+    persistSlice(get());
+  },
 
   coverageRadius: 15,
   setCoverageRadius: (radius) => set({ coverageRadius: radius }),

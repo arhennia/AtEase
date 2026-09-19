@@ -29,12 +29,12 @@ export function AddressScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#111111] font-sans antialiased flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FAFAFB] text-[#1C1917] font-heroSans antialiased flex flex-col justify-between">
       {/* Top Header */}
-      <header className="p-6 border-b border-stone-200 flex items-center justify-between">
+      <header className="px-5 sm:px-8 py-5 border-b border-stone-200/70 bg-white/80 backdrop-blur-md flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-bold text-stone-600 hover:text-black"
+          className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-[#1C1917]"
         >
           <ArrowLeft size={13} />
           <span>Back</span>
@@ -45,14 +45,14 @@ export function AddressScreen() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-8 space-y-6">
-        <div className="border border-stone-200 p-6 sm:p-8 space-y-6 shadow-sm bg-[#FFFFFF]">
+        <div className="rounded-[22px] border border-stone-200/70 p-6 sm:p-8 space-y-6 bg-white">
           
-          <div className="border-b border-stone-200 pb-4 space-y-1">
-            <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-              Service Location
+          <div className="space-y-1">
+            <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400">
+              Service location
             </span>
-            <h1 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
-              Where Should We Meet?
+            <h1 className="font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917]">
+              Where should we meet?
             </h1>
             <p className="text-xs text-stone-500 font-light">
               Enter your address for mobile home appointments.
@@ -67,17 +67,17 @@ export function AddressScreen() {
                   setAddressType('home');
                   setCustomAddress('');
                 }}
-                className={`p-3.5 border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all ${
                   addressType === 'home'
-                    ? 'border-[#111111] bg-[#111111] text-white'
-                    : 'border-stone-200 bg-[#F9F9F9] text-[#111111]'
+                    ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                    : 'border-stone-200 bg-[#F7F6F8] text-[#1C1917]'
                 }`}
               >
                 <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
                   <Home size={13} />
                   <span>Residence</span>
                 </div>
-                <p className={`text-[10px] pt-1 truncate ${addressType === 'home' ? 'text-white/80' : 'text-stone-500'}`}>
+                <p className={`text-[10px] pt-1 truncate ${addressType === 'home' ? 'text-[#6D5A8D]' : 'text-stone-500'}`}>
                   Kharabela Nagar, Bhubaneswar
                 </p>
               </button>
@@ -88,17 +88,17 @@ export function AddressScreen() {
                   setAddressType('office');
                   setCustomAddress('DLF Cyber City, Tower B, Infocity, Patia, Bhubaneswar');
                 }}
-                className={`p-3.5 border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all ${
                   addressType === 'office'
-                    ? 'border-[#111111] bg-[#111111] text-white'
-                    : 'border-stone-200 bg-[#F9F9F9] text-[#111111]'
+                    ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                    : 'border-stone-200 bg-[#F7F6F8] text-[#1C1917]'
                 }`}
               >
                 <div className="flex items-center gap-1.5 text-xs font-semibold uppercase">
                   <Building2 size={13} />
                   <span>Office / Suite</span>
                 </div>
-                <p className={`text-[10px] pt-1 truncate ${addressType === 'office' ? 'text-white/80' : 'text-stone-500'}`}>
+                <p className={`text-[10px] pt-1 truncate ${addressType === 'office' ? 'text-[#6D5A8D]' : 'text-stone-500'}`}>
                   DLF Cybercity, Patia
                 </p>
               </button>
@@ -112,7 +112,7 @@ export function AddressScreen() {
                 rows="2"
                 value={customAddress}
                 onChange={(e) => setCustomAddress(e.target.value)}
-                className="w-full bg-[#F9F9F9] border border-stone-200 p-2.5 text-xs text-[#111111] focus:outline-none focus:border-[#111111] resize-none"
+                className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl p-2.5 text-xs text-[#1C1917] focus:outline-none focus:border-[#D4C8E8] resize-none"
               />
             </div>
 
@@ -125,7 +125,7 @@ export function AddressScreen() {
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-[#F9F9F9] border border-stone-200 p-2 text-xs text-[#111111] focus:outline-none"
+                  className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl p-2.5 text-xs text-[#1C1917] focus:outline-none"
                 />
               </div>
               <div>
@@ -136,7 +136,7 @@ export function AddressScreen() {
                   type="tel"
                   value={clientPhone}
                   onChange={(e) => setClientPhone(e.target.value)}
-                  className="w-full bg-[#F9F9F9] border border-stone-200 p-2 text-xs font-mono text-[#111111] focus:outline-none"
+                  className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl p-2.5 text-xs font-mono text-[#1C1917] focus:outline-none"
                 />
               </div>
             </div>
@@ -144,7 +144,7 @@ export function AddressScreen() {
 
           <button
             onClick={handleProceed}
-            className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
           >
             <span>Proceed to Summary</span>
             <ArrowRight size={14} />
@@ -154,7 +154,7 @@ export function AddressScreen() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center border-t border-stone-200 text-[10px] tracking-[0.2em] uppercase text-stone-400">
+      <footer className="p-6 text-center border-t border-stone-200/70 text-[11px] text-stone-400 font-heroSans">
         AtEase • Discovery &amp; Direct Booking
       </footer>
     </div>

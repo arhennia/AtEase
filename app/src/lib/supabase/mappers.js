@@ -1,4 +1,4 @@
-export function mapBrandOwnerFromDb(row, services = [], salon = null) {
+export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig = null) {
   if (!row) return null;
 
   const categoryMap = {};
@@ -12,9 +12,10 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null) {
       duration: s.duration || `${s.duration_mins || 60} mins`,
       inSalonPrice: Number(s.price_salon || s.price_fixed || 0),
       homePrice: Number(s.price_home || s.price_fixed || 0),
+      price: Number(s.price_fixed || s.price_salon || s.price_home || 0),
       uptoPrice: Number(s.price_fixed || s.price_home || s.price_salon || 0),
       imageUrl: s.image_url || '',
-      pricingModel: s.pricing_model || s.price_model || 'starting_at',
+      pricingModel: s.pricing_model || s.price_model || 'fixed',
     });
   }
 
@@ -47,6 +48,7 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null) {
     subscriptionStatus: row.subscription_status || 'trial',
     salonId: salon?.id || null,
     catalog,
+    siteConfig: siteConfig || null,
   };
 }
 

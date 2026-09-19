@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from './client';
 import { mapBrandOwnerFromDb } from './mappers';
 import { fetchServicesByOwnerId } from './services';
 import { fetchPrimarySalon } from './salons';
+import { fetchSiteConfigByOwnerId } from './siteConfigs';
 
 export async function fetchBrandOwnerByUserId(userId) {
   if (!isSupabaseConfigured || !userId) return null;
@@ -25,11 +26,12 @@ export async function fetchBrandOwnerBySlug(slug) {
 
 export async function hydratePartner(brandRow) {
   if (!brandRow) return null;
-  const [services, salon] = await Promise.all([
+  const [services, salon, siteConfig] = await Promise.all([
     fetchServicesByOwnerId(brandRow.id),
     fetchPrimarySalon(brandRow.id),
+    fetchSiteConfigByOwnerId(brandRow.id),
   ]);
-  return mapBrandOwnerFromDb(brandRow, services, salon);
+  return mapBrandOwnerFromDb(brandRow, services, salon, siteConfig);
 }
 
 export async function createBrandOwnerRecord(payload) {

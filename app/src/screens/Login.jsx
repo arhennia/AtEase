@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { ArrowRight, Loader2, ArrowLeft, Store } from 'lucide-react';
+import { ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
 import { PlatformFooter } from '../components/platform/PlatformFooter';
 import { AuthMethods } from '../components/auth/AuthMethods';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { SoftButton, SoftCard, inputClass, mutedClass, pageClass, titleClass } from '../components/platform/ui';
 
 export function Login() {
   const navigate = useNavigate();
@@ -55,25 +56,20 @@ export function Login() {
   };
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen w-full font-sans text-[#111111] antialiased flex flex-col">
+    <div className={`${pageClass} flex flex-col`}>
       <PlatformHeader />
 
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="bg-[#FFFFFF] w-full max-w-md border border-stone-200 p-8 sm:p-10 space-y-6 shadow-lg">
-          <div className="text-center space-y-1.5 border-b border-stone-200 pb-5">
-            <Store size={18} className="mx-auto" />
-            <span className="font-serif text-2xl tracking-tight font-normal text-[#111111] block">
-              Partner login
-            </span>
-            <p className="text-sm text-stone-500 font-light">
-              Google or phone OTP
-            </p>
+      <main className="flex-1 flex items-center justify-center px-5 py-16 sm:py-24">
+        <SoftCard className="w-full max-w-md p-8 sm:p-10 space-y-6">
+          <div className="space-y-2">
+            <h1 className={`${titleClass} text-2xl sm:text-3xl`}>Partner login</h1>
+            <p className={mutedClass}>Google or phone OTP — then your dashboard.</p>
           </div>
 
           {isSupabaseConfigured ? (
             <AuthMethods role="brand_owner" nextPath="/dashboard" onVerified={handleVerified} />
           ) : (
-            <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 p-3">
+            <p className="text-xs text-amber-800/80 bg-amber-50/80 border border-amber-100 rounded-2xl p-3">
               Add Supabase keys to enable Google and phone login. Email demo still works below.
             </p>
           )}
@@ -81,51 +77,50 @@ export function Login() {
           <button
             type="button"
             onClick={() => setShowEmail((v) => !v)}
-            className="w-full text-[10px] tracking-[0.15em] uppercase text-stone-500"
+            className="w-full text-[12px] text-stone-400 hover:text-[#1C1917] font-heroSans"
           >
             {showEmail ? 'Hide email login' : 'Use email & password'}
           </button>
 
           {showEmail && (
-            <form onSubmit={handleEmailLogin} className="space-y-4">
+            <form onSubmit={handleEmailLogin} className="space-y-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@studio.com"
-                className="w-full bg-[#F9F9F9] border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-black"
+                className={inputClass}
               />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full bg-[#F9F9F9] border border-stone-200 px-3 py-2.5 text-sm focus:outline-none focus:border-black"
+                className={inputClass}
               />
-              {error && <p className="text-xs text-red-600">{error}</p>}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2"
-              >
+              {error && <p className="text-xs text-red-500">{error}</p>}
+              <SoftButton type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? <Loader2 size={14} className="animate-spin" /> : <>Open dashboard <ArrowRight size={14} /></>}
-              </button>
+              </SoftButton>
             </form>
           )}
 
-          {error && !showEmail && <p className="text-xs text-red-600">{error}</p>}
+          {error && !showEmail && <p className="text-xs text-red-500">{error}</p>}
 
           <p className="text-xs text-stone-500">
-            New studio? <Link to="/signup" className="underline text-[#111111]">Start a 14-day trial</Link>
+            New studio?{' '}
+            <Link to="/signup" className="underline underline-offset-2 text-[#1C1917]">
+              Get started
+            </Link>
           </p>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-bold text-stone-500"
+            className="flex items-center gap-1.5 text-[12px] text-stone-400 hover:text-[#1C1917]"
           >
-            <ArrowLeft size={13} /> Platform home
+            <ArrowLeft size={13} /> Home
           </button>
-        </div>
+        </SoftCard>
       </main>
       <PlatformFooter />
     </div>

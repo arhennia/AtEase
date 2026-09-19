@@ -5,9 +5,14 @@ import { ServiceCatalogManager } from '../components/provider/ServiceCatalogMana
 import { CoverageRadiusEditor } from '../components/provider/CoverageRadiusEditor';
 import { AvailabilityEditor } from '../components/provider/AvailabilityEditor';
 import { BookingsList } from '../components/provider/BookingsList';
-import { Calendar, Layers, Navigation, Clock, ExternalLink, Copy } from 'lucide-react';
-import { getPlanStatus, getTenantCatalog, tenantPath, tenantSiteUrl } from '../lib/tenancy';
+import { SitePublisher } from '../components/provider/SitePublisher';
+import { PackageManager } from '../components/provider/PackageManager';
+import { ClientInsights } from '../components/provider/ClientInsights';
+import { Calendar, Layers, Navigation, Clock, Globe, Users, Gift } from 'lucide-react';
+import { getPlanStatus, getTenantCatalog } from '../lib/tenancy';
+import { uniqueClients } from '../lib/salonMenu';
 import { isValidWhatsAppNumber, toNationalDigits } from '../lib/whatsapp';
+import { SoftButton, SoftCard, chipOff, chipOn, eyebrowClass, mutedClass, pageClass, shellClass, titleClass } from '../components/platform/ui';
 
 export function ProviderDashboard() {
   const partners = useAppStore((state) => state.partners);
@@ -17,7 +22,7 @@ export function ProviderDashboard() {
   const activateSubscription = useAppStore((state) => state.activateSubscription);
   const updatePartnerWhatsApp = useAppStore((state) => state.updatePartnerWhatsApp);
 
-  const [activeTab, setActiveTab] = useState('bookings');
+  const [activeTab, setActiveTab] = useState('website');
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [whatsappDraft, setWhatsappDraft] = useState('');
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
@@ -25,7 +30,10 @@ export function ProviderDashboard() {
   const allAppointments = useAppStore((state) => state.appointments);
   const showToast = useAppStore((state) => state.showToast);
   const appointments = allAppointments.filter((a) => a.partnerId === partner?.id);
+  const clients = uniqueClients(appointments);
   const serviceCount = getTenantCatalog(partner).reduce((n, cat) => n + (cat.services?.length || 0), 0);
+  const packageCount = partner?.packages?.length || 0;
+  const vipCount = partner?.vipMembers?.length || 0;
 
   useEffect(() => {
     setWhatsappDraft(toNationalDigits(partner?.whatsappNumber || partner?.ownerPhone || ''));
@@ -33,19 +41,13 @@ export function ProviderDashboard() {
 
   if (!partner) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-stone-500">
+      <div className="min-h-screen flex items-center justify-center text-sm text-stone-500 font-heroSans">
         No partner profile on this account.
       </div>
     );
   }
 
-  const sitePath = tenantPath(partner.slug);
-  const siteUrl = tenantSiteUrl(partner.slug);
-
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(siteUrl);
-    showToast('Client site link copied.');
-  };
+  const sitePath = `/s/${partner.slug}`;
 
   const handleViewSite = () => {
     window.open(`${sitePath}?preview=1`, '_blank', 'noopener,noreferrer');
@@ -61,77 +63,75 @@ export function ProviderDashboard() {
   };
 
   const tabs = [
+    { id: 'website', label: 'Website', icon: Globe },
+    { id: 'clients', label: 'Clients', icon: Users, count: clients.length },
     { id: 'bookings', label: 'Bookings', icon: Calendar, count: appointments.length },
     { id: 'catalog', label: 'Menu', icon: Layers, count: serviceCount },
+    { id: 'packages', label: 'Packages', icon: Gift, count: packageCount },
     { id: 'availability', label: 'Hours', icon: Clock },
     { id: 'radius', label: 'Area', icon: Navigation },
   ];
 
   return (
-    <div className="bg-white text-[#111111] min-h-screen">
+    <div className={pageClass}>
       <PlatformHeader />
 
       {plan.status === 'trial' && (
-        <div className="bg-[#111111] text-white text-center py-2.5 px-4 text-[11px]">
+        <div className="bg-[#F3EEF8] text-[#4A3F5C] text-center py-2.5 px-4 text-[13px] font-heroSans">
           {plan.daysLeft} day{plan.daysLeft === 1 ? '' : 's'} left on trial.{' '}
-          <button type="button" onClick={() => setShowPlanModal(true)} className="underline font-semibold">
+          <button type="button" onClick={() => setShowPlanModal(true)} className="underline font-medium">
             Keep the site live
           </button>
         </div>
       )}
 
-      <main className="max-w-[1100px] mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8">
+      <main className={`${shellClass} py-10 sm:py-14 space-y-8`}>
         <section className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
           <div className="space-y-2">
-            <p className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-400">
+            <p className={eyebrowClass}>
               {plan.status === 'active' ? 'Paid plan' : `Trial · ${plan.daysLeft}d left`}
             </p>
-            <h1 className="font-serif text-3xl sm:text-4xl tracking-tight">{partner.brandName}</h1>
-            <p className="text-sm text-stone-500">
+            <h1 className={`${titleClass} text-3xl sm:text-4xl`}>{partner.brandName}</h1>
+            <p className={mutedClass}>
               {[partner.professionalTitle, partner.location].filter(Boolean).join(' · ')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={handleViewSite}
-              className="h-11 px-4 bg-[#111111] text-white text-[11px] tracking-[0.15em] uppercase font-bold inline-flex items-center gap-2"
-            >
-              <ExternalLink size={14} />
+            <SoftButton onClick={handleViewSite}>
               View website
-            </button>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className="h-11 px-4 border border-stone-300 text-[11px] tracking-[0.15em] uppercase font-bold inline-flex items-center gap-2 hover:border-black"
-            >
-              <Copy size={14} />
-              Copy link
-            </button>
+            </SoftButton>
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-3">
-          <div className="p-5 border border-stone-200">
-            <p className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">Bookings</p>
-            <p className="font-mono text-2xl font-bold mt-2">{appointments.length}</p>
-          </div>
-          <div className="p-5 border border-stone-200">
-            <p className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">Menu items</p>
-            <p className="font-mono text-2xl font-bold mt-2">{serviceCount}</p>
-          </div>
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <SoftCard className="p-6">
+            <p className={eyebrowClass}>Clients</p>
+            <p className="font-heroSans text-3xl font-semibold mt-2">{clients.length}</p>
+          </SoftCard>
+          <SoftCard className="p-6">
+            <p className={eyebrowClass}>Bookings</p>
+            <p className="font-heroSans text-3xl font-semibold mt-2">{appointments.length}</p>
+          </SoftCard>
+          <SoftCard className="p-6">
+            <p className={eyebrowClass}>VIP members</p>
+            <p className="font-heroSans text-3xl font-semibold mt-2">{vipCount}</p>
+          </SoftCard>
+          <SoftCard className="p-6">
+            <p className={eyebrowClass}>Menu items</p>
+            <p className="font-heroSans text-3xl font-semibold mt-2">{serviceCount}</p>
+          </SoftCard>
         </section>
 
-        <section className="p-5 border border-stone-200 space-y-3">
+        <SoftCard className="p-6 space-y-3">
           <div>
-            <p className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">WhatsApp for bookings</p>
-            <p className="text-xs text-stone-500 font-light mt-1">
-              Clients send a pre-filled booking message to this number.
+            <p className={eyebrowClass}>WhatsApp for bookings</p>
+            <p className={`${mutedClass} text-xs mt-1`}>
+              After a client picks a date and time, the booking opens a chat with this number.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <div className="flex flex-1 border border-stone-200 focus-within:border-black bg-[#F9F9F9]">
-              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-stone-100">
+            <div className="flex flex-1 rounded-2xl border border-stone-200 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-[#F7F6F8]">
+              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-[#EFECEF] rounded-l-2xl">
                 +91
               </span>
               <input
@@ -139,31 +139,27 @@ export function ProviderDashboard() {
                 value={whatsappDraft}
                 onChange={(e) => setWhatsappDraft(e.target.value.replace(/\D/g, '').slice(0, 10))}
                 placeholder="98765 43210"
-                className="w-full bg-transparent px-3 py-2.5 text-sm outline-none"
+                className="w-full bg-transparent px-3 py-2.5 text-sm outline-none font-heroSans"
               />
             </div>
-            <button
-              type="button"
+            <SoftButton
               disabled={savingWhatsapp || !isValidWhatsAppNumber(whatsappDraft)}
               onClick={handleSaveWhatsApp}
-              className="h-11 px-4 bg-[#111111] text-white text-[11px] tracking-[0.15em] uppercase font-bold disabled:opacity-40"
             >
               {savingWhatsapp ? 'Saving…' : 'Save number'}
-            </button>
+            </SoftButton>
           </div>
-        </section>
+        </SoftCard>
 
-        <section className="border-b border-stone-200">
-          <div className="flex gap-1 sm:gap-6 overflow-x-auto no-scrollbar">
+        <section>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-12 px-1 text-xs tracking-[0.12em] uppercase font-semibold whitespace-nowrap inline-flex items-center gap-1.5 border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-[#111111] text-[#111111]'
-                    : 'border-transparent text-stone-400 hover:text-[#111111]'
+                className={`h-10 px-4 text-[13px] font-heroSans whitespace-nowrap inline-flex items-center gap-1.5 rounded-full transition-colors ${
+                  activeTab === tab.id ? chipOn : chipOff
                 }`}
               >
                 <tab.icon size={14} />
@@ -175,36 +171,38 @@ export function ProviderDashboard() {
         </section>
 
         <section className="min-h-[360px]">
+          {activeTab === 'website' && <SitePublisher partner={partner} />}
+          {activeTab === 'clients' && <ClientInsights partner={partner} />}
           {activeTab === 'bookings' && <BookingsList partnerId={partner.id} />}
           {activeTab === 'catalog' && <ServiceCatalogManager />}
+          {activeTab === 'packages' && <PackageManager partner={partner} />}
           {activeTab === 'radius' && <CoverageRadiusEditor />}
           {activeTab === 'availability' && <AvailabilityEditor />}
         </section>
       </main>
 
       {showPlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white w-full max-w-md border border-stone-200 p-6 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+          <SoftCard className="w-full max-w-md p-7 space-y-5">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-serif text-xl tracking-tight">Keep {partner.brandName} live</h3>
-                <p className="text-sm text-stone-500 mt-1">₹999 / month after the trial.</p>
+                <h3 className={`${titleClass} text-xl`}>Keep {partner.brandName} live</h3>
+                <p className={`${mutedClass} mt-1`}>₹999 / month after the trial.</p>
               </div>
-              <button type="button" onClick={() => setShowPlanModal(false)} className="text-stone-400 hover:text-black">
+              <button type="button" onClick={() => setShowPlanModal(false)} className="text-stone-400 hover:text-[#1C1917]">
                 ✕
               </button>
             </div>
-            <button
-              type="button"
+            <SoftButton
+              className="w-full"
               onClick={() => {
                 activateSubscription(partner.id);
                 setShowPlanModal(false);
               }}
-              className="h-12 w-full bg-[#111111] text-white text-xs tracking-[0.18em] uppercase font-bold"
             >
               Activate plan
-            </button>
-          </div>
+            </SoftButton>
+          </SoftCard>
         </div>
       )}
     </div>

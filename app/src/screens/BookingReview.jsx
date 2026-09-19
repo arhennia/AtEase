@@ -102,12 +102,12 @@ export function BookingReview() {
   };
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen font-sans text-[#111111] antialiased flex flex-col justify-between">
+    <div className="bg-[#FAFAFB] min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between">
       {/* Header */}
-      <header className="p-6 border-b border-stone-200 flex items-center justify-between">
+      <header className="px-5 sm:px-8 py-5 border-b border-stone-200/70 bg-white/80 backdrop-blur-md flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-bold text-stone-600 hover:text-black"
+          className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-[#1C1917]"
         >
           <ArrowLeft size={13} />
           <span>Back</span>
@@ -118,14 +118,14 @@ export function BookingReview() {
 
       {/* Main Review Card */}
       <main className="flex-1 max-w-lg w-full mx-auto p-4 sm:p-8 space-y-6 flex flex-col justify-center">
-        <div className="border border-stone-200 p-6 sm:p-8 space-y-6 shadow-sm bg-[#FFFFFF]">
+        <div className="rounded-[22px] border border-stone-200/70 p-6 sm:p-8 space-y-6 bg-white">
           
-          <div className="border-b border-stone-200 pb-4 space-y-1">
-            <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-              Direct Booking Review
+          <div className="space-y-1">
+            <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400">
+              Review
             </span>
-            <h1 className="font-serif text-2xl tracking-tight font-normal text-[#111111]">
-              Appointment Summary
+            <h1 className="font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917]">
+              Appointment summary
             </h1>
           </div>
 
@@ -153,7 +153,7 @@ export function BookingReview() {
           </div>
 
           {/* EXACT PAYMENT DISCLOSURE BADGE */}
-          <div className="border border-stone-300 bg-stone-50 p-3 rounded-sm text-[11px] text-[#111111] leading-relaxed flex items-start gap-2.5 font-medium shadow-sm">
+          <div className="border border-[#E4D9F0] bg-[#F3EEF8] p-3 rounded-2xl text-[11px] text-[#4A3F5C] leading-relaxed flex items-start gap-2.5">
             <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
             <span>
               Pay directly to the service provider at the time of service via Cash, UPI, or Card.
@@ -163,7 +163,7 @@ export function BookingReview() {
           <button
             onClick={handleConfirm}
             disabled={isProcessing}
-            className="w-full bg-[#111111] text-white py-3.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-black transition-colors flex items-center justify-center gap-2"
+            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <span>{isProcessing ? 'Saving…' : 'Send on WhatsApp'}</span>
             <MessageCircle size={14} />
@@ -173,7 +173,7 @@ export function BookingReview() {
       </main>
 
       {/* Footer */}
-      <footer className="p-6 text-center border-t border-stone-200 text-[10px] tracking-[0.2em] uppercase text-stone-400">
+      <footer className="p-6 text-center border-t border-stone-200/70 text-[11px] text-stone-400 font-heroSans">
         AtEase • Discovery &amp; Direct Booking
       </footer>
     </div>

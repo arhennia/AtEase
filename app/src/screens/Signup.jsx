@@ -6,6 +6,7 @@ import { PlatformHeader } from '../components/platform/PlatformHeader';
 import { PlatformFooter } from '../components/platform/PlatformFooter';
 import { AuthMethods } from '../components/auth/AuthMethods';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { SoftButton, SoftCard, inputClass, mutedClass, pageClass, titleClass } from '../components/platform/ui';
 
 export function Signup() {
   const navigate = useNavigate();
@@ -49,74 +50,77 @@ export function Signup() {
   };
 
   return (
-    <div className="bg-white min-h-screen text-[#111111] flex flex-col">
+    <div className={`${pageClass} flex flex-col`}>
       <PlatformHeader />
-      <main className="flex-1 max-w-md mx-auto w-full px-4 py-16">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-bold text-stone-500 mb-8"
-        >
-          <ArrowLeft size={13} /> Back
-        </button>
-        <h1 className="font-serif text-3xl tracking-tight mb-2">Start your trial</h1>
-        <p className="text-sm text-stone-600 font-light mb-8">
-          After this, a short quiz builds your website and dashboard.
-        </p>
-
-        {isSupabaseConfigured ? (
-          <div className="border border-stone-200 p-6 mb-6">
-            <AuthMethods role="brand_owner" nextPath="/onboarding" onVerified={handleVerified} />
+      <main className="flex-1 flex items-center justify-center px-5 py-16 sm:py-24">
+        <SoftCard className="w-full max-w-md p-8 sm:p-10 space-y-6">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-1.5 text-[12px] text-stone-400 hover:text-[#1C1917]"
+          >
+            <ArrowLeft size={13} /> Home
+          </button>
+          <div className="space-y-2">
+            <h1 className={`${titleClass} text-2xl sm:text-3xl`}>Create your studio</h1>
+            <p className={mutedClass}>After this, a short quiz builds your website and dashboard.</p>
           </div>
-        ) : (
-          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 p-3 mb-6">
-            Connect Supabase to use Google and phone signup.
+
+          {isSupabaseConfigured ? (
+            <AuthMethods role="brand_owner" nextPath="/onboarding" onVerified={handleVerified} />
+          ) : (
+            <p className="text-xs text-amber-800/80 bg-amber-50/80 border border-amber-100 rounded-2xl p-3">
+              Connect Supabase to use Google and phone signup.
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowEmail((v) => !v)}
+            className="text-[12px] text-stone-400 hover:text-[#1C1917]"
+          >
+            {showEmail ? 'Hide email signup' : 'Or create an email account'}
+          </button>
+
+          {showEmail && (
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                className={inputClass}
+                placeholder="Your name"
+              />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                placeholder="you@studio.com"
+                required
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+                placeholder="Password (min 6 characters)"
+                required
+              />
+              {error && <p className="text-xs text-red-500">{error}</p>}
+              <SoftButton type="submit" disabled={loading} className="w-full">
+                {loading ? <Loader2 size={14} className="animate-spin" /> : <>Continue to brand setup <ArrowRight size={14} /></>}
+              </SoftButton>
+            </form>
+          )}
+
+          {error && !showEmail && <p className="text-xs text-red-500">{error}</p>}
+          <p className="text-xs text-stone-500">
+            Already a partner?{' '}
+            <Link to="/login" className="underline underline-offset-2 text-[#1C1917]">
+              Log in
+            </Link>
           </p>
-        )}
-
-        <button type="button" onClick={() => setShowEmail((v) => !v)} className="text-[10px] tracking-[0.15em] uppercase text-stone-500 mb-4">
-          {showEmail ? 'Hide email signup' : 'Or create an email account'}
-        </button>
-
-        {showEmail && (
-          <form onSubmit={handleSubmit} className="space-y-4 border border-stone-200 p-6">
-            <input
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
-              className="w-full border border-stone-200 bg-[#F9F9F9] px-3 py-2.5 text-sm outline-none focus:border-black"
-              placeholder="Your name"
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-stone-200 bg-[#F9F9F9] px-3 py-2.5 text-sm outline-none focus:border-black"
-              placeholder="you@studio.com"
-              required
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-stone-200 bg-[#F9F9F9] px-3 py-2.5 text-sm outline-none focus:border-black"
-              placeholder="Password (min 6 characters)"
-              required
-            />
-            {error && <p className="text-xs text-red-600">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#111111] text-white py-3 text-xs tracking-[0.2em] uppercase font-bold flex items-center justify-center gap-2"
-            >
-              {loading ? <Loader2 size={14} className="animate-spin" /> : <>Continue to brand setup <ArrowRight size={14} /></>}
-            </button>
-          </form>
-        )}
-
-        {error && !showEmail && <p className="text-xs text-red-600 mt-3">{error}</p>}
-        <p className="text-xs text-stone-500 mt-4">
-          Already a partner? <Link to="/login" className="underline text-[#111111]">Log in</Link>
-        </p>
+        </SoftCard>
       </main>
       <PlatformFooter />
     </div>

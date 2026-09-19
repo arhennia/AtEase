@@ -7,6 +7,7 @@ import { LandingFooter, CONTACT_LINKS } from '../components/platform/LandingFoot
 import { HolographicHero } from '../components/platform/HolographicHero';
 import { DashboardPreview } from '../components/platform/DashboardPreview';
 import { PillButton, SectionBadge } from '../components/platform/primitives';
+import { LocalhostDemoBar } from '../components/platform/LocalhostDemoBar';
 
 const FEATURES = [
   {
@@ -75,6 +76,7 @@ export function PlatformLanding() {
 
   return (
     <div className="bg-white min-h-screen text-[#111111] flex flex-col">
+      <LocalhostDemoBar />
       <main className="flex-1">
         <HolographicHero>
           <LandingNav />
@@ -86,7 +88,7 @@ export function PlatformLanding() {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="max-w-lg pointer-events-none"
             >
-              <p className="font-heroSans text-[11px] tracking-[0.18em] uppercase text-[#C084FC] font-semibold mb-3">
+              <p className="font-heroSans text-[11px] tracking-[0.18em] uppercase text-white/55 font-semibold mb-3">
                 AtEase
               </p>
               <h1 className="font-heroSans text-3xl sm:text-4xl lg:text-5xl leading-[1.15] tracking-tight text-white">
@@ -134,7 +136,7 @@ export function PlatformLanding() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10 mb-16 sm:mb-20">
               {FEATURES.map((f) => (
                 <div key={f.title} className="space-y-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F3E8FF] text-[#7C3AED]">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F3EEF8] text-[#6D5A8D]">
                     <f.icon size={18} strokeWidth={1.6} />
                   </span>
                   <h3 className="font-heroSans text-[15px] font-semibold text-[#111111]">{f.title}</h3>
@@ -163,7 +165,7 @@ export function PlatformLanding() {
                   key={plan.eyebrow}
                   className={`relative flex flex-col rounded-[22px] p-7 sm:p-8 min-h-[420px] ${
                     plan.featured
-                      ? 'bg-[#111827] text-white shadow-[0_32px_64px_-28px_rgba(88,28,135,0.45)]'
+                      ? 'bg-[#1C1917] text-white shadow-[0_24px_48px_-28px_rgba(28,25,23,0.35)]'
                       : 'bg-white border border-stone-200/80 text-[#111111]'
                   }`}
                 >
@@ -173,14 +175,14 @@ export function PlatformLanding() {
                       className="absolute inset-0 rounded-[22px] pointer-events-none overflow-hidden"
                       style={{
                         background:
-                          'radial-gradient(420px circle at 90% 0%, rgba(139,92,246,0.35), transparent 55%)',
+                          'radial-gradient(420px circle at 90% 0%, rgba(184,169,212,0.22), transparent 55%)',
                       }}
                     />
                   )}
                   <div className="relative flex flex-col flex-1">
                     <p
                       className={`font-heroSans text-[11px] tracking-[0.16em] uppercase mb-4 ${
-                        plan.featured ? 'text-[#C084FC]' : 'text-stone-400'
+                        plan.featured ? 'text-[#D4C8E8]' : 'text-stone-400'
                       }`}
                     >
                       {plan.eyebrow}
@@ -205,7 +207,7 @@ export function PlatformLanding() {
                           <Check
                             size={15}
                             strokeWidth={2}
-                            className={`mt-0.5 shrink-0 ${plan.featured ? 'text-[#C084FC]' : 'text-[#7C3AED]'}`}
+                            className={`mt-0.5 shrink-0 ${plan.featured ? 'text-[#D4C8E8]' : 'text-[#A898C8]'}`}
                           />
                           <span
                             className={`font-heroSans text-[13px] leading-snug ${
@@ -250,7 +252,7 @@ export function PlatformLanding() {
                   key={link.label}
                   href={link.href}
                   {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  className="group inline-flex items-center gap-1.5 font-heroSans text-[15px] text-[#111111] hover:text-[#7C3AED] transition-colors duration-200"
+                  className="group inline-flex items-center gap-1.5 font-heroSans text-[15px] text-[#1C1917] hover:text-[#6D5A8D] transition-colors duration-200"
                 >
                   {link.label}
                   <ArrowUpRight

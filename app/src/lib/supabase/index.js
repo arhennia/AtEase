@@ -27,6 +27,7 @@ export { fetchServicesByOwnerId, createServicesRecords, updateServiceRecord, del
 export { fetchAppointmentsByOwnerId, createAppointmentRecord } from './appointments';
 export { fetchClientsByOwnerId, fetchAnalyticsByOwnerId } from './clients';
 export { uploadOwnerImage } from './storage';
+export { fetchPublishedSiteBySlug, fetchSiteConfigByOwnerId, upsertSiteConfigRecord } from './siteConfigs';
 
 /** @deprecated Use signUpWithEmail */
 export { signUpWithEmail as signUpProvider } from './auth';

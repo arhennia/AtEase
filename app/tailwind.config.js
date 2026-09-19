@@ -73,8 +73,10 @@ export default {
         "stack-xl": "80px"
       },
       fontFamily: {
-        heroSans: ['"Inter"', '"Lexend Giga"', 'sans-serif'],
-        sans: ['"Lexend Giga"', 'sans-serif'],
+        heroSans: ['"Inter"', 'system-ui', 'sans-serif'],
+        studio: ['"Inter"', 'system-ui', 'sans-serif'],
+        studioSerif: ['"Instrument Serif"', 'Georgia', 'serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
         serif: ['"Noto Serif Grantha"', 'serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
         display: ['"Faculty Glyphic"', 'serif'],

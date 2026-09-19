@@ -38,9 +38,18 @@ export function tenantPath(slug, rest = '') {
   return `/p/${slug}${suffix}`;
 }
 
+export function publicSitePath(slug) {
+  return `/s/${slug}`;
+}
+
 export function tenantSiteUrl(slug) {
   if (typeof window === 'undefined') return `/p/${slug}`;
   return `${window.location.origin}/p/${slug}`;
+}
+
+export function publicSiteUrl(slug) {
+  if (typeof window === 'undefined') return `/s/${slug}`;
+  return `${window.location.origin}/s/${slug}`;
 }
 
 export function getTenantBySlug(partners, slug) {
