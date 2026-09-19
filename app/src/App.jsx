@@ -22,6 +22,8 @@ import { CartDrawer } from './components/common/CartDrawer';
 import { BookingModal } from './components/common/BookingModal';
 import { Toast } from './components/common/Toast';
 import { AuthCallback } from './screens/AuthCallback';
+import { PublishedSite } from './screens/PublishedSite';
+import { DemoEntry } from './screens/DemoEntry';
 
 function LegacyStorefrontRedirect() {
   const { providerId } = useParams();
@@ -37,7 +39,7 @@ function App() {
   }, [syncAuthSession]);
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen text-[#111111] antialiased font-sans selection:bg-[#111111] selection:text-white">
+    <div className="bg-[#FAFAFB] min-h-screen text-[#1C1917] antialiased font-heroSans selection:bg-[#EDE9FE] selection:text-[#1C1917]">
       <AuthModal />
       <LocationModal />
       <CartDrawer />
@@ -63,6 +65,8 @@ function App() {
             }
           />
 
+          <Route path="/demo" element={<DemoEntry />} />
+          <Route path="/s/:slug" element={<PublishedSite />} />
           <Route path="/p/:partnerSlug" element={<ProviderStorefront />} />
           <Route path="/p/:partnerSlug/date-time" element={<DateTimeSelection />} />
           <Route path="/p/:partnerSlug/address" element={<AddressScreen />} />
