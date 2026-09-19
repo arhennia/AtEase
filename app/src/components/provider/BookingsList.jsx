@@ -27,7 +27,7 @@ export function BookingsList({ partnerId }) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-200 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-serif text-lg tracking-tight font-normal text-[#111111]">
+            <h3 className="font-heroSans text-lg font-semibold tracking-tight text-[#1C1917]">
               Live client appointments ({appointments.length})
             </h3>
             {isSupabaseConfigured && (
@@ -48,10 +48,10 @@ export function BookingsList({ partnerId }) {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1 text-[10px] tracking-wider uppercase font-bold border transition-colors ${
+              className={`px-3 py-1.5 text-[11px] font-heroSans rounded-full border transition-colors ${
                 filter === f
-                  ? 'bg-[#111111] text-white border-[#111111]'
-                  : 'bg-[#F9F9F9] text-stone-600 border-stone-200 hover:border-stone-400'
+                  ? 'bg-[#F3EEF8] text-[#4A3F5C] border-[#E4D9F0]'
+                  : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
               }`}
             >
               {f}
@@ -61,7 +61,7 @@ export function BookingsList({ partnerId }) {
       </div>
 
       {/* Direct Payment Reminder Banner */}
-      <div className="p-3.5 border border-stone-300 bg-[#FFFFFF] flex items-start gap-3 shadow-sm">
+      <div className="p-4 rounded-2xl border border-stone-200/70 bg-white flex items-start gap-3">
         <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
         <div className="space-y-0.5 text-xs text-stone-700">
           <p className="font-semibold text-[#111111]">
@@ -75,7 +75,7 @@ export function BookingsList({ partnerId }) {
 
       {/* Bookings List */}
       {filteredAppointments.length === 0 ? (
-        <div className="p-12 border border-dashed border-stone-200 text-center space-y-2 bg-[#F9F9F9]">
+        <div className="p-12 rounded-[22px] border border-dashed border-stone-200 text-center space-y-2 bg-[#F7F6F8]">
           <p className="text-xs tracking-wider uppercase font-bold text-stone-600">
             No bookings under this filter
           </p>
@@ -141,7 +141,7 @@ export function BookingsList({ partnerId }) {
               <div className="flex flex-col items-start md:items-end gap-2 md:w-1/4">
                 <button
                   onClick={() => delayAppointment(appt.id, 15)}
-                  className="bg-[#111111] text-white px-4 py-2 text-[10px] tracking-[0.15em] uppercase font-bold hover:bg-black transition-colors"
+                  className="rounded-full bg-[#1C1917] text-white px-4 py-2 text-[12px] font-heroSans font-medium hover:bg-black transition-colors"
                 >
                   Delay 15 Mins
                 </button>
