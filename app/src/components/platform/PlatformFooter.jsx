@@ -6,37 +6,33 @@ export function PlatformFooter() {
   const navigate = useNavigate();
 
   return (
-    <footer className="border-t border-stone-200 bg-white">
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-8 py-12 grid sm:grid-cols-3 gap-8">
-        <div className="space-y-3">
-          <AtEaseLogo className="text-[1.45rem]" />
-          <p className="text-sm text-stone-500 font-light leading-relaxed max-w-xs">
+    <footer className="bg-[#0B0B14] text-white mt-auto">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-12 sm:py-16 grid sm:grid-cols-2 gap-10">
+        <div className="space-y-3 max-w-xs">
+          <AtEaseLogo className="text-[1.4rem] text-white" />
+          <p className="font-heroSans text-sm text-white/50 leading-relaxed">
             A booking website and dashboard for independent beauty studios.
           </p>
         </div>
-        <div className="space-y-3">
-          <p className="text-[11px] tracking-[0.16em] uppercase text-stone-400">Product</p>
-          <div className="flex flex-col gap-2 text-sm text-stone-600">
-            <button type="button" onClick={() => navigate('/signup')} className="text-left hover:text-black">
-              Start free trial
-            </button>
-            <button type="button" onClick={() => navigate('/login')} className="text-left hover:text-black">
-              Owner login
-            </button>
-            <a href="/#how-it-works" className="hover:text-black">
-              How it works
-            </a>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <p className="text-[11px] tracking-[0.16em] uppercase text-stone-400">For owners</p>
-          <p className="text-sm text-stone-600 font-light leading-relaxed">
-            Your clients book on your site. They never see another studio.
-          </p>
+        <div className="flex flex-col sm:items-end gap-2.5 justify-center">
+          <button
+            type="button"
+            onClick={() => navigate('/signup')}
+            className="font-heroSans text-sm text-white/70 hover:text-white text-left"
+          >
+            Get started
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="font-heroSans text-sm text-white/70 hover:text-white text-left"
+          >
+            Owner login
+          </button>
         </div>
       </div>
-      <div className="border-t border-stone-100">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-8 py-4 text-[11px] text-stone-400">
+      <div className="border-t border-white/10">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5 text-[11px] text-white/35 font-heroSans">
           © {new Date().getFullYear()} AtEase
         </div>
       </div>
