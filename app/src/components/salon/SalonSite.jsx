@@ -207,7 +207,7 @@ export function SalonSite({ partner, preview = false }) {
           <div className="h-full w-full bg-gradient-to-br from-[#EDE9FE] via-stone-100 to-[#F6F4F1]" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-[1080px] px-5 pb-16 sm:px-8 sm:pb-20">
+        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-[1080px] px-5 pb-6 sm:px-8 sm:pb-8">
           <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/70">Private studio</p>
           <h1 className="max-w-2xl font-studioSerif text-[36px] leading-[1.05] text-white sm:text-[52px] lg:text-[60px]">
             {appearance.businessName}
@@ -216,9 +216,9 @@ export function SalonSite({ partner, preview = false }) {
       </section>
 
       <main className="relative mx-auto max-w-[1080px] px-4 pb-36 sm:px-8">
-        <section className="-mt-12 rounded-[28px] bg-white p-5 shadow-[0_18px_50px_rgba(28,25,23,0.08)] sm:-mt-16 sm:p-7">
+        <section className="pt-8 sm:pt-10">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-stone-100 ring-4 ring-white sm:h-28 sm:w-28">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-stone-100 sm:h-28 sm:w-28">
               {ownerPhoto ? <img src={ownerPhoto} alt="" className="h-full w-full object-cover" /> : null}
             </div>
             <div className="min-w-0 flex-1 pb-1">
