@@ -31,7 +31,7 @@ export function CoverageRadiusEditor() {
       </div>
 
       {/* Radius Slider Section */}
-      <div className="p-6 rounded-[22px] border border-stone-200/70 bg-white space-y-4">
+      <div className="p-6 rounded-[22px] glass space-y-4">
         <div className="flex justify-between items-center">
           <div className="space-y-0.5">
             <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500">
