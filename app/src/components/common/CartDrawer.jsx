@@ -53,7 +53,7 @@ export function CartDrawer() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setCartDrawerOpen(false)}
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 bg-stone-900/30 backdrop-blur-md"
         />
 
         {/* Slide-out Drawer */}
@@ -62,7 +62,7 @@ export function CartDrawer() {
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="bg-[#FFFFFF] w-full max-w-md h-full z-10 shadow-2xl flex flex-col justify-between rounded-l-[22px] border-l border-stone-200/70"
+          className="glass-modal w-full max-w-md h-full z-10 flex flex-col justify-between rounded-l-[22px] rounded-r-none"
         >
           {/* Header */}
           <div className="p-6 border-b border-stone-200 flex items-center justify-between">
@@ -141,7 +141,7 @@ export function CartDrawer() {
                 return (
                   <div 
                     key={item.id}
-                    className="p-4 rounded-2xl border border-stone-200/70 bg-white space-y-3"
+                    className="p-4 rounded-2xl glass space-y-3"
                   >
                     <div className="flex justify-between items-start gap-2">
                       <div className="space-y-0.5">
