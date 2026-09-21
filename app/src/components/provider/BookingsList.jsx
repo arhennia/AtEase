@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Clock, Phone, MapPin, Navigation, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
-import { isSupabaseConfigured } from '../../lib/supabase';
+import { Phone, MapPin, Navigation, ShieldCheck } from 'lucide-react';
 
 export function BookingsList({ partnerId }) {
   const allAppointments = useAppStore((state) => state.appointments);
@@ -30,12 +29,6 @@ export function BookingsList({ partnerId }) {
             <h3 className="font-heroSans text-lg font-semibold tracking-tight text-[#1C1917]">
               Live client appointments ({appointments.length})
             </h3>
-            {isSupabaseConfigured && (
-              <span className="text-[9px] tracking-wider uppercase font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 border border-emerald-200 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping inline-block"></span>
-                Supabase Synced
-              </span>
-            )}
           </div>
           <p className="text-xs text-stone-500 font-light mt-0.5">
             Bookings from your isolated client website only.
@@ -61,7 +54,7 @@ export function BookingsList({ partnerId }) {
       </div>
 
       {/* Direct Payment Reminder Banner */}
-      <div className="p-4 rounded-2xl border border-stone-200/70 bg-white flex items-start gap-3">
+      <div className="p-4 rounded-2xl glass flex items-start gap-3">
         <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
         <div className="space-y-0.5 text-xs text-stone-700">
           <p className="font-semibold text-[#111111]">
@@ -109,11 +102,7 @@ export function BookingsList({ partnerId }) {
                   <h4 className="text-sm font-bold text-[#111111] tracking-wide">
                     {appt.clientName}
                   </h4>
-                  <span className={`text-[9px] tracking-wider uppercase font-semibold px-1.5 py-0.2 border ${
-                    String(appt.status).toLowerCase() === 'pending'
-                      ? 'text-amber-800 bg-amber-50 border-amber-200'
-                      : 'text-emerald-800 bg-emerald-50 border-emerald-200'
-                  }`}>
+                  <span className="text-[9px] tracking-wider uppercase font-semibold px-1.5 py-0.5 border text-[#6D5A8D] bg-[#EDE9FE] border-[#E4D9F0]">
                     {appt.status || 'pending'}
                   </span>
                 </div>
