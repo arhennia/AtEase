@@ -16,7 +16,7 @@ export function RequireActivePlan({ children }) {
   if (plan.active) return children;
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-5 bg-[#FAFAFB]">
+    <div className="min-h-[70vh] flex items-center justify-center px-5">
       <SoftCard className="max-w-md w-full p-8 space-y-5">
         <div className="flex items-center gap-2 text-[#6D5A8D]">
           <ShieldAlert size={20} />
