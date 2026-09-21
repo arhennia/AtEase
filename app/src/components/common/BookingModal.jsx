@@ -191,7 +191,7 @@ export function BookingModal() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={closeBookingModal}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 bg-stone-900/30 backdrop-blur-md"
         />
 
         {/* Modal Window */}
@@ -200,7 +200,7 @@ export function BookingModal() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2 }}
-          className="bg-[#FFFFFF] w-full max-w-lg border border-stone-200 shadow-2xl relative z-10 p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto"
+          className="glass-modal w-full max-w-lg relative z-10 p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto"
         >
           {/* Close button */}
           <button
