@@ -68,4 +68,24 @@ export function ShaderBackground({ children, className = '' }) {
   );
 }
 
+export function PastelShaderBackground({ className = '' }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('relative overflow-hidden bg-[#F3F2F5] pointer-events-none', className)}
+    >
+      <MeshGradient
+        className="absolute inset-0 w-full h-full"
+        colors={['#F4F4F6', '#D8D8DC', '#DDD6FE', '#FFFFFF', '#E9D5FF']}
+        speed={0.35}
+      />
+      <MeshGradient
+        className="absolute inset-0 w-full h-full opacity-70"
+        colors={['#FFFFFF', '#C4B5FD', '#E6E6E9', '#EDE9FE']}
+        speed={0.22}
+      />
+    </div>
+  );
+}
+
 export default ShaderBackground;
