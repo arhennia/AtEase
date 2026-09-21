@@ -31,10 +31,10 @@ function Option({ selected, onClick, children, className = '' }) {
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-[52px] px-4 py-3 text-sm text-left rounded-2xl border transition-colors font-heroSans ${
+      className={`min-h-[52px] px-4 py-3 text-sm text-left rounded-2xl border transition-all font-heroSans ${
         selected
-          ? 'bg-[#F3EEF8] text-[#4A3F5C] border-[#E4D9F0]'
-          : 'bg-white text-[#1C1917] border-stone-200 hover:border-stone-300'
+          ? 'bg-[#F3EEF8]/90 text-[#4A3F5C] border-[#E4D9F0]'
+          : 'bg-white/50 text-[#1C1917] border-white/70 hover:border-[#D4C8E8] backdrop-blur-md'
       } ${className}`}
     >
       <span className="flex items-center justify-between gap-3">
@@ -211,7 +211,7 @@ export function Onboarding() {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center text-sm text-stone-500">
+      <div className="min-h-screen flex items-center justify-center text-sm text-stone-500">
         Loading…
       </div>
     );
@@ -219,7 +219,7 @@ export function Onboarding() {
 
   if (!canOnboard) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen flex items-center justify-center p-6 text-center">
         <div className="space-y-3">
           <p className="text-sm text-stone-600">Start with an account first.</p>
           <button type="button" onClick={() => navigate('/signup')} className="underline text-sm">
@@ -231,7 +231,7 @@ export function Onboarding() {
   }
 
   return (
-    <div className="bg-[#FAFAFB] min-h-screen text-[#1C1917] flex flex-col font-heroSans">
+    <div className="relative z-10 min-h-screen text-[#1C1917] flex flex-col font-heroSans">
       <PlatformHeader />
       <div className="h-1 bg-stone-100">
         <div className="h-full bg-[#D4C8E8] transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -272,7 +272,7 @@ export function Onboarding() {
                   <input
                     value={brandName}
                     onChange={(e) => setBrandName(e.target.value)}
-                    className="w-full rounded-2xl border border-stone-200 bg-[#F7F6F8] px-4 py-3.5 text-base outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE]"
+                    className="w-full rounded-2xl border border-white/70 bg-white/50 px-4 py-3.5 text-base outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE] backdrop-blur-md"
                     placeholder="Luxe Studio"
                     autoFocus
                   />
