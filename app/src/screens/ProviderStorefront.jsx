@@ -101,7 +101,7 @@ export function ProviderStorefront() {
   };
 
   return (
-    <div className="bg-[#FAFAFB] text-[#1C1917] font-heroSans antialiased min-h-screen selection:bg-[#EDE9FE] selection:text-[#1C1917]">
+    <div className="text-[#1C1917] font-heroSans antialiased min-h-screen selection:bg-[#EDE9FE] selection:text-[#1C1917] relative z-10">
       <TenantHeader partner={partner} />
 
       {previewMode && (
@@ -146,7 +146,7 @@ export function ProviderStorefront() {
       </section>
 
       <main className="max-w-[1100px] mx-auto px-5 sm:px-8 py-10 sm:py-16 space-y-12">
-        <div className="p-6 sm:p-8 rounded-[22px] border border-stone-200/70 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="p-6 sm:p-8 rounded-[22px] glass glass-interactive flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-semibold uppercase text-stone-600">
               <MapPin size={14} className="text-[#111111]" />
@@ -228,7 +228,7 @@ export function ProviderStorefront() {
                       return (
                         <div
                           key={service.id}
-                          className="rounded-[22px] border border-stone-200/70 bg-white flex flex-col hover:border-stone-300 transition-colors overflow-hidden"
+                          className="rounded-[22px] glass glass-interactive flex flex-col overflow-hidden"
                         >
                           {service.imageUrl ? (
                             <div className="h-40 bg-stone-100 overflow-hidden">
@@ -304,7 +304,7 @@ export function ProviderStorefront() {
           </>
         )}
 
-        <section className="p-6 sm:p-8 rounded-[22px] border border-stone-200/70 bg-white space-y-2">
+        <section className="p-6 sm:p-8 rounded-[22px] glass space-y-2">
           <div className="flex items-center gap-2 text-[13px] font-medium text-[#1C1917]">
             <ShieldCheck size={16} />
             <span>Pay {partner.brandName} directly</span>
