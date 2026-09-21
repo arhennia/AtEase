@@ -24,6 +24,7 @@ import { Toast } from './components/common/Toast';
 import { AuthCallback } from './screens/AuthCallback';
 import { PublishedSite } from './screens/PublishedSite';
 import { DemoEntry } from './screens/DemoEntry';
+import { GlassAmbient } from './components/platform/GlassAmbient';
 
 function LegacyStorefrontRedirect() {
   const { providerId } = useParams();
@@ -40,6 +41,7 @@ function App() {
 
   return (
     <div className="bg-[#FAFAFB] min-h-screen text-[#1C1917] antialiased font-heroSans selection:bg-[#EDE9FE] selection:text-[#1C1917]">
+      {location.pathname !== '/' && location.pathname !== '/dashboard' && <GlassAmbient />}
       <AuthModal />
       <LocationModal />
       <CartDrawer />
