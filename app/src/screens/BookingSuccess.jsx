@@ -32,9 +32,10 @@ export function BookingSuccess() {
   }, []);
 
   return (
-    <div className="bg-[#FAFAFB] min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between">
+    <div className="min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between relative z-10">
       {/* Header */}
-      <header className="px-5 sm:px-8 py-5 border-b border-stone-200/70 bg-white/80 backdrop-blur-md flex items-center justify-between">
+      <header className="px-5 sm:px-8 py-4">
+        <div className="glass-nav rounded-full px-4 sm:px-5 h-[56px] flex items-center justify-between">
         <AtEaseLogo className="text-xl" />
         <button
           onClick={() => navigate(backToSite)}
@@ -42,11 +43,12 @@ export function BookingSuccess() {
         >
           Studio site →
         </button>
+        </div>
       </header>
 
       {/* Main Container */}
       <main className="flex-1 max-w-lg w-full mx-auto p-4 sm:p-8 space-y-6 flex flex-col justify-center text-center">
-        <div className="rounded-[22px] border border-stone-200/70 p-8 sm:p-10 space-y-6 bg-white">
+        <div className="glass rounded-[22px] p-8 sm:p-10 space-y-6">
           
           <div className="w-14 h-14 bg-[#EDE9FE] text-[#6D5A8D] rounded-full flex items-center justify-center mx-auto">
             <CheckCircle2 size={28} />
