@@ -72,7 +72,7 @@ export function AuthMethods({
           type="button"
           onClick={handleGoogle}
           disabled={loading}
-          className="w-full rounded-full border border-stone-200 bg-white py-3 text-[13px] font-heroSans font-medium hover:border-stone-400 flex items-center justify-center gap-2 disabled:opacity-70"
+          className="w-full rounded-full border border-white/80 bg-white/55 py-3 text-[13px] font-heroSans font-medium hover:border-[#D4C8E8] hover:bg-white/80 flex items-center justify-center gap-2 disabled:opacity-70 backdrop-blur-md"
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <GoogleIcon />}
           Continue with Google
@@ -89,8 +89,8 @@ export function AuthMethods({
         <form onSubmit={handleSendOtp} className="space-y-3">
           <label className="block space-y-1">
             <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans">Mobile number</span>
-            <div className="flex rounded-2xl border border-stone-200 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-[#F7F6F8]">
-              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-[#EFECEF] rounded-l-2xl">+91</span>
+            <div className="flex rounded-2xl border border-white/70 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-white/50 backdrop-blur-md">
+              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200/70 font-mono bg-white/40 rounded-l-2xl">+91</span>
               <input
                 type="tel"
                 value={phone}
@@ -118,7 +118,7 @@ export function AuthMethods({
             inputMode="numeric"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="w-full rounded-2xl border border-stone-200 bg-[#F7F6F8] px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE]"
+            className="w-full rounded-2xl border border-white/70 bg-white/50 px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE] backdrop-blur-md"
             placeholder="000000"
             required
           />
