@@ -60,7 +60,7 @@ export function AvailabilityEditor() {
       </div>
 
       {/* Days Selector */}
-      <div className="p-6 rounded-[22px] border border-stone-200/70 bg-white space-y-4">
+      <div className="p-6 rounded-[22px] glass space-y-4">
         <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
           Operating Days
         </span>
@@ -162,7 +162,7 @@ export function AvailabilityEditor() {
       {/* Quick Block Modal */}
       {showBlockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-[22px] border border-stone-200/70 p-6 space-y-4 shadow-2xl">
+          <div className="glass-modal w-full max-w-sm p-6 space-y-4">
             <div className="flex justify-between items-center border-b border-stone-200 pb-3">
               <h4 className="font-heroSans text-base font-semibold tracking-tight">Block Slot</h4>
               <button onClick={() => setShowBlockModal(false)}>✕</button>
