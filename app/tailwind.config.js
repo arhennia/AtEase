@@ -90,6 +90,19 @@ export default {
         "headline-lg-mobile": ['"Noto Serif Grantha"', 'serif'],
         "button-text": ['"Lexend Giga"', 'sans-serif']
       },
+      boxShadow: {
+        glass: "0 24px 60px -28px rgba(0, 0, 0, 0.6)",
+        glow: "0 0 80px -20px rgba(139, 92, 246, 0.55)",
+      },
+      keyframes: {
+        floaty: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-14px)" },
+        },
+      },
+      animation: {
+        floaty: "floaty 7s ease-in-out infinite",
+      },
       fontSize: {
         "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "0.05em", "fontWeight": "400" }],
         "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "-0.01em", "fontWeight": "400" }],
