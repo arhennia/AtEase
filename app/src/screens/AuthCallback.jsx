@@ -28,7 +28,7 @@ export function AuthCallback() {
   }, [applyAuthenticatedUser, navigate, params]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white text-[#111111] px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center space-y-3">
         <Loader2 size={22} className="animate-spin mx-auto" />
         <p className="text-sm text-stone-600">{error || 'Finishing sign-in…'}</p>
