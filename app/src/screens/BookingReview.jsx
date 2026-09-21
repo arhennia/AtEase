@@ -102,9 +102,10 @@ export function BookingReview() {
   };
 
   return (
-    <div className="bg-[#FAFAFB] min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between">
+    <div className="min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between relative z-10">
       {/* Header */}
-      <header className="px-5 sm:px-8 py-5 border-b border-stone-200/70 bg-white/80 backdrop-blur-md flex items-center justify-between">
+      <header className="px-5 sm:px-8 py-4">
+        <div className="glass-nav rounded-full px-4 sm:px-5 h-[56px] flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-[13px] text-stone-500 hover:text-[#1C1917]"
@@ -114,11 +115,12 @@ export function BookingReview() {
         </button>
         <AtEaseLogo className="text-xl" />
         <div className="w-16" />
+        </div>
       </header>
 
       {/* Main Review Card */}
       <main className="flex-1 max-w-lg w-full mx-auto p-4 sm:p-8 space-y-6 flex flex-col justify-center">
-        <div className="rounded-[22px] border border-stone-200/70 p-6 sm:p-8 space-y-6 bg-white">
+        <div className="glass rounded-[22px] p-6 sm:p-8 space-y-6">
           
           <div className="space-y-1">
             <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400">
