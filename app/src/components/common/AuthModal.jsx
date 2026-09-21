@@ -37,7 +37,7 @@ export function AuthModal() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={closeAuthModal}
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 bg-stone-900/30 backdrop-blur-md"
         />
 
         <motion.div
@@ -45,7 +45,7 @@ export function AuthModal() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2 }}
-          className="bg-[#FFFFFF] w-full max-w-md border border-stone-200 shadow-2xl relative z-10 p-6 sm:p-8 space-y-6"
+          className="glass-modal w-full max-w-md relative z-10 p-6 sm:p-8 space-y-6"
         >
           <button
             onClick={closeAuthModal}
