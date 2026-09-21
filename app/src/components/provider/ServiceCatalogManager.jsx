@@ -275,7 +275,7 @@ export function ServiceCatalogManager() {
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white w-full max-w-md rounded-[22px] border border-stone-200/70 p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="glass-modal w-full max-w-md p-6 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <h4 className="font-heroSans text-lg font-semibold tracking-tight">Add a service</h4>
               <button type="button" onClick={() => setShowAddModal(false)} className="text-stone-400 hover:text-black">
