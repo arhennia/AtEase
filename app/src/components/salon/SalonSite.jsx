@@ -158,12 +158,13 @@ export function SalonSite({ partner, preview = false }) {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 border-b border-stone-200/60 bg-[#F6F4F1]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1080px] items-center gap-3 px-4 py-3 sm:px-8">
+      <header className="sticky top-0 z-40">
+        <div className="mx-auto max-w-[1080px] px-4 sm:px-8 pt-3 pb-2">
+        <div className="glass-nav rounded-full flex items-center gap-3 px-3 py-2">
           <button
             type="button"
             onClick={() => (activeService ? setActiveService(null) : navigate('/'))}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-stone-200/80"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 ring-1 ring-white/80 backdrop-blur-md"
             aria-label="Back"
           >
             <ArrowLeft size={16} />
@@ -174,7 +175,7 @@ export function SalonSite({ partner, preview = false }) {
           <button
             type="button"
             onClick={() => setSearchOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-stone-200/80"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 ring-1 ring-white/80 backdrop-blur-md"
             aria-label="Search"
           >
             <Search size={15} />
@@ -182,22 +183,23 @@ export function SalonSite({ partner, preview = false }) {
           <button
             type="button"
             onClick={handleShare}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-stone-200/80"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 ring-1 ring-white/80 backdrop-blur-md"
             aria-label="Share"
           >
             <Share2 size={15} />
           </button>
         </div>
         {searchOpen && (
-          <div className="mx-auto max-w-[1080px] px-4 pb-3 sm:px-8">
+          <div className="px-2 pb-3">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search the menu"
-              className="w-full rounded-full bg-white px-4 py-2.5 text-sm outline-none ring-1 ring-stone-200"
+              className="w-full rounded-full bg-white/70 px-4 py-2.5 text-sm outline-none ring-1 ring-white/80 backdrop-blur-md"
             />
           </div>
         )}
+        </div>
       </header>
 
       <section className="relative h-[240px] overflow-hidden bg-stone-200 sm:h-[340px] lg:h-[420px]">
