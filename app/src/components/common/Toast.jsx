@@ -15,13 +15,13 @@ export function Toast() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="fixed top-20 right-4 sm:right-8 z-50 max-w-md bg-[#1C1917] text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-heroSans"
+          className="fixed top-20 right-4 sm:right-8 z-50 max-w-md glass-strong text-[#1C1917] px-5 py-3.5 rounded-2xl flex items-center gap-3 text-sm font-heroSans"
         >
-          <Info size={16} className="text-white/80 shrink-0" />
+          <Info size={16} className="text-[#6D5A8D] shrink-0" />
           <span className="flex-1 font-sans">{toastMessage}</span>
           <button
             onClick={hideToast}
-            className="text-white/60 hover:text-white transition-colors p-1"
+            className="text-stone-400 hover:text-[#1C1917] transition-colors p-1"
             aria-label="Close notification"
           >
             <X size={14} />
