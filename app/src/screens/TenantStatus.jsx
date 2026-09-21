@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export function TenantNotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFB] px-5 font-heroSans">
+    <div className="min-h-screen flex items-center justify-center px-5 font-heroSans">
       <div className="max-w-md text-center space-y-4">
         <p className="text-[11px] tracking-[0.16em] uppercase text-stone-400">Unknown brand site</p>
         <h1 className="font-heroSans text-3xl font-semibold tracking-tight text-[#1C1917]">This page is private</h1>
@@ -17,7 +17,7 @@ export function TenantNotFound() {
 
 export function TenantOffline({ brandName, isOwnerPreview }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFB] px-5 font-heroSans">
+    <div className="min-h-screen flex items-center justify-center px-5 font-heroSans">
       <div className="max-w-md text-center space-y-4">
         <p className="text-[11px] tracking-[0.16em] uppercase text-stone-400">Site paused</p>
         <h1 className="font-heroSans text-3xl font-semibold tracking-tight text-[#1C1917]">
