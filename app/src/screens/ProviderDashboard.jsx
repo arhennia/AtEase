@@ -12,7 +12,8 @@ import { Calendar, Layers, Navigation, Clock, Globe, Users, Gift } from 'lucide-
 import { getPlanStatus, getTenantCatalog } from '../lib/tenancy';
 import { uniqueClients } from '../lib/salonMenu';
 import { isValidWhatsAppNumber, toNationalDigits } from '../lib/whatsapp';
-import { SoftButton, SoftCard, chipOff, chipOn, eyebrowClass, mutedClass, pageClass, shellClass, titleClass } from '../components/platform/ui';
+import { SoftButton, SoftCard, chipOff, chipOn, eyebrowClass, mutedClass, shellClass, titleClass } from '../components/platform/ui';
+import { PastelShaderBackground } from '../components/ui/hero-shader';
 
 export function ProviderDashboard() {
   const partners = useAppStore((state) => state.partners);
@@ -73,11 +74,13 @@ export function ProviderDashboard() {
   ];
 
   return (
-    <div className={pageClass}>
+    <div className="relative min-h-screen text-[#1C1917] font-heroSans antialiased">
+      <PastelShaderBackground className="fixed inset-0 z-0" />
+      <div className="relative z-10">
       <PlatformHeader />
 
       {plan.status === 'trial' && (
-        <div className="bg-[#F3EEF8] text-[#4A3F5C] text-center py-2.5 px-4 text-[13px] font-heroSans">
+        <div className="bg-white/55 backdrop-blur-md text-[#4A3F5C] text-center py-2.5 px-4 text-[13px] font-heroSans border-b border-white/50">
           {plan.daysLeft} day{plan.daysLeft === 1 ? '' : 's'} left on trial.{' '}
           <button type="button" onClick={() => setShowPlanModal(true)} className="underline font-medium">
             Keep the site live
@@ -130,8 +133,8 @@ export function ProviderDashboard() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <div className="flex flex-1 rounded-2xl border border-stone-200 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-[#F7F6F8]">
-              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200 font-mono bg-[#EFECEF] rounded-l-2xl">
+            <div className="flex flex-1 rounded-2xl border border-white/70 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-white/50 backdrop-blur-md">
+              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200/70 font-mono bg-white/40 rounded-l-2xl">
                 +91
               </span>
               <input
@@ -182,7 +185,7 @@ export function ProviderDashboard() {
       </main>
 
       {showPlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/30 backdrop-blur-md">
           <SoftCard className="w-full max-w-md p-7 space-y-5">
             <div className="flex justify-between items-start">
               <div>
@@ -205,6 +208,7 @@ export function ProviderDashboard() {
           </SoftCard>
         </div>
       )}
+    </div>
     </div>
   );
 }
