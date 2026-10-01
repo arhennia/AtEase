@@ -23,7 +23,6 @@ import { BookingModal } from './components/common/BookingModal';
 import { Toast } from './components/common/Toast';
 import { AuthCallback } from './screens/AuthCallback';
 import { PublishedSite } from './screens/PublishedSite';
-import { DemoEntry } from './screens/DemoEntry';
 import { GlassAmbient } from './components/platform/GlassAmbient';
 
 function LegacyStorefrontRedirect() {
@@ -67,7 +66,6 @@ function App() {
             }
           />
 
-          <Route path="/demo" element={<DemoEntry />} />
           <Route path="/s/:slug" element={<PublishedSite />} />
           <Route path="/p/:partnerSlug" element={<ProviderStorefront />} />
           <Route path="/p/:partnerSlug/date-time" element={<DateTimeSelection />} />
