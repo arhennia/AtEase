@@ -1,4 +1,14 @@
-export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig = null) {
+import { normalizeServiceArea, normalizeWorkingHours } from '../availability';
+import { mapPackageFromDb } from '../packages';
+import { mapVipMemberFromDb } from '../vip';
+
+function storedRadius(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isInteger(n) ? n : null;
+}
+
+export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig = null, packageRows = [], vipRows = []) {
   if (!row) return null;
 
   const categoryMap = {};
@@ -43,11 +53,15 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig
     typeLabel: row.type_label || 'Private Brand Site',
     rating: '—',
     reviewCount: '0',
-    coverageRadiusKm: row.coverage_radius_km || salon?.coverage_radius_km || 10,
+    coverageRadiusKm: storedRadius(row.coverage_radius_km) ?? storedRadius(salon?.coverage_radius_km) ?? 10,
+    serviceArea: normalizeServiceArea(row.service_area),
+    workingHours: normalizeWorkingHours(row.working_hours),
     trialEndsAt: row.trial_ends_at,
     subscriptionStatus: row.subscription_status || 'trial',
     salonId: salon?.id || null,
     catalog,
+    packages: (packageRows || []).map(mapPackageFromDb).filter(Boolean),
+    vipMembers: (vipRows || []).map(mapVipMemberFromDb).filter(Boolean),
     siteConfig: siteConfig || null,
   };
 }
