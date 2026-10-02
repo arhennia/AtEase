@@ -8,7 +8,6 @@ const LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Studio', href: '#studio' },
-  { label: 'Connect', href: '#connect' },
 ];
 
 export function LandingNav() {
