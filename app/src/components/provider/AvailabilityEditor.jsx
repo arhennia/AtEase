@@ -1,39 +1,59 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { Clock, Calendar, ShieldAlert, Check, Plus, Ban } from 'lucide-react';
+import { normalizeWorkingHours } from '../../lib/availability';
+import { Ban } from 'lucide-react';
 
 export function AvailabilityEditor() {
-  const businessHours = useAppStore((state) => state.businessHours);
-  const updateBusinessHours = useAppStore((state) => state.updateBusinessHours);
+  const partners = useAppStore((state) => state.partners);
+  const currentPartnerId = useAppStore((state) => state.currentPartnerId);
+  const saveWorkingHours = useAppStore((state) => state.saveWorkingHours);
   const showToast = useAppStore((state) => state.showToast);
+  const partner = partners.find((p) => p.id === currentPartnerId);
+  const savedHours = normalizeWorkingHours(partner?.workingHours);
+  const savedKey = `${partner?.id || ''}|${savedHours.start}|${savedHours.end}|${savedHours.daysOpen.join(',')}`;
 
-  const [startTime, setStartTime] = useState(businessHours.start || '09:00 AM');
-  const [endTime, setEndTime] = useState(businessHours.end || '08:00 PM');
-  const [selectedDays, setSelectedDays] = useState(businessHours.daysOpen || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
-  const [blockedSlots, setBlockedSlots] = useState([
-    { id: 'b1', date: 'Today', time: '02:00 PM - 03:30 PM', reason: 'Travel buffer & prep' }
-  ]);
+  const [startTime, setStartTime] = useState(savedHours.start);
+  const [endTime, setEndTime] = useState(savedHours.end);
+  const [selectedDays, setSelectedDays] = useState(savedHours.daysOpen);
+  const [blockedSlots, setBlockedSlots] = useState([]);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [newBlockTime, setNewBlockTime] = useState('04:00 PM - 05:00 PM');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const [, start, end, days] = savedKey.split('|');
+    setStartTime(start || '09:00 AM');
+    setEndTime(end || '08:00 PM');
+    setSelectedDays(days ? days.split(',').filter(Boolean) : []);
+  }, [savedKey]);
 
   const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const closedDays = daysOfWeek.filter((day) => !selectedDays.includes(day));
 
   const toggleDay = (day) => {
     if (selectedDays.includes(day)) {
-      if (selectedDays.length === 1) return; // Must have at least 1 day
       setSelectedDays(selectedDays.filter((d) => d !== day));
     } else {
       setSelectedDays([...selectedDays, day]);
     }
   };
 
-  const handleSaveHours = () => {
-    updateBusinessHours({
+  const handleSaveHours = async () => {
+    setSaving(true);
+    setError('');
+    const res = await saveWorkingHours({
       start: startTime,
       end: endTime,
-      daysOpen: selectedDays
+      daysOpen: selectedDays,
     });
-    showToast('Operating schedule updated.');
+    setSaving(false);
+    if (!res.ok) {
+      setError(res.error || 'Could not save hours.');
+      showToast(res.error || 'Could not save hours.');
+      return;
+    }
+    showToast('Operating schedule saved.');
   };
 
   const handleAddBlock = (e) => {
@@ -83,6 +103,13 @@ export function AvailabilityEditor() {
             );
           })}
         </div>
+        <p className="text-xs text-stone-500 font-light">
+          {closedDays.length === 0
+            ? 'Open every day.'
+            : closedDays.length === 7
+              ? 'Every day is closed. Clients will not see booking times.'
+              : `Closed: ${closedDays.join(', ')}. Those days will not offer booking times.`}
+        </p>
 
         {/* Operating Time Range */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -110,12 +137,15 @@ export function AvailabilityEditor() {
           </div>
         </div>
 
+        {error && <p className="text-xs text-red-700">{error}</p>}
+
         <button
           type="button"
           onClick={handleSaveHours}
-          className="rounded-full bg-[#1C1917] text-white px-5 py-2.5 text-[13px] font-heroSans font-medium hover:bg-black transition-colors"
+          disabled={saving}
+          className="rounded-full bg-[#1C1917] text-white px-5 py-2.5 text-[13px] font-heroSans font-medium hover:bg-black transition-colors disabled:opacity-40"
         >
-          Save Operating Schedule
+          {saving ? 'Saving…' : 'Save Operating Schedule'}
         </button>
       </div>
 
@@ -135,6 +165,11 @@ export function AvailabilityEditor() {
         </div>
 
         <div className="space-y-2">
+          {blockedSlots.length === 0 && (
+            <p className="text-xs text-stone-500 font-light">
+              No extra breaks. Closed days are the days turned off above.
+            </p>
+          )}
           {blockedSlots.map((block) => (
             <div
               key={block.id}
