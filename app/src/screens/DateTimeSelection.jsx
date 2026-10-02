@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Sun, Sunrise, Moon, Calendar, Clock, ShieldCheck } from 'lucide-react';
 import { AtEaseLogo } from '../components/platform/AtEaseLogo';
+import { useAppStore } from '../store/useAppStore';
+import { isDayOpen, normalizeWorkingHours, slotLabels, slotsForDay } from '../lib/availability';
 
 export function DateTimeSelection() {
   const navigate = useNavigate();
   const location = useLocation();
   const { partnerSlug } = useParams();
-  
-  const [selectedDate, setSelectedDate] = useState(0); // index 0 is today
-  const [selectedTime, setSelectedTime] = useState('11:30 AM');
+  const partners = useAppStore((state) => state.partners);
+  const fetchPartnerBySlug = useAppStore((state) => state.fetchPartnerBySlug);
+  const partner = partners.find((p) => p.slug === partnerSlug);
+  const hours = normalizeWorkingHours(partner?.workingHours);
+
+  const [selectedDate, setSelectedDate] = useState(0);
+  const [selectedTime, setSelectedTime] = useState('');
+
+  useEffect(() => {
+    if (partnerSlug) fetchPartnerBySlug(partnerSlug);
+  }, [partnerSlug, fetchPartnerBySlug]);
 
   // Generate next 14 days
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -26,16 +36,25 @@ export function DateTimeSelection() {
     };
   });
 
-  const timeSlots = {
-    morning: ['09:00 AM', '10:30 AM', '11:45 AM', '12:15 PM'],
-    afternoon: ['01:00 PM', '02:30 PM', '04:00 PM', '05:15 PM'],
-    evening: ['06:30 PM', '07:45 PM', '08:30 PM']
-  };
-
   const activeDateObj = dates[selectedDate];
+  const dayName = activeDateObj.dayName;
+  const hoursKey = `${hours.start}|${hours.end}|${hours.daysOpen.join(',')}`;
+  const dayClosed = !isDayOpen(hours, dayName);
+  const timeSlots = slotsForDay(hours, dayName);
+  const openSlots = slotLabels(timeSlots);
+
+  useEffect(() => {
+    const [start, end, days] = hoursKey.split('|');
+    const slots = slotLabels(slotsForDay({
+      start,
+      end,
+      daysOpen: days ? days.split(',').filter(Boolean) : [],
+    }, dayName));
+    if (selectedTime && !slots.includes(selectedTime)) setSelectedTime('');
+  }, [hoursKey, selectedTime, dayName]);
 
   const handleConfirm = () => {
-    if (!selectedTime) return;
+    if (dayClosed || !openSlots.includes(selectedTime)) return;
 
     navigate(partnerSlug ? `/p/${partnerSlug}/address` : '/', {
       state: {
@@ -124,78 +143,49 @@ export function DateTimeSelection() {
               2. Choose Time Slot ({activeDateObj.formatted})
             </span>
 
-            <div className="space-y-3">
-              <div>
-                <span className="text-[9px] tracking-[0.15em] uppercase font-semibold text-stone-400 block mb-1">
-                  Morning
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {timeSlots.morning.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedTime(slot)}
-                      className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
-                        selectedTime === slot
-                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
-                          : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
+            {dayClosed || openSlots.length === 0 ? (
+              <p className="text-xs text-stone-500 font-light">
+                Closed on {activeDateObj.dayName}. No booking times that day.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {[
+                  ['Morning', timeSlots.morning],
+                  ['Afternoon', timeSlots.afternoon],
+                  ['Evening', timeSlots.evening],
+                ].map(([label, slots]) =>
+                  slots.length === 0 ? null : (
+                    <div key={label}>
+                      <span className="text-[9px] tracking-[0.15em] uppercase font-semibold text-stone-400 block mb-1">
+                        {label}
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {slots.map((slot) => (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setSelectedTime(slot)}
+                            className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
+                              selectedTime === slot
+                                ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                                : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
-
-              <div>
-                <span className="text-[9px] tracking-[0.15em] uppercase font-semibold text-stone-400 block mb-1">
-                  Afternoon
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {timeSlots.afternoon.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedTime(slot)}
-                      className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
-                        selectedTime === slot
-                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
-                          : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-[9px] tracking-[0.15em] uppercase font-semibold text-stone-400 block mb-1">
-                  Evening
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {timeSlots.evening.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setSelectedTime(slot)}
-                      className={`p-2 text-xs font-mono font-medium rounded-full border text-center transition-all ${
-                        selectedTime === slot
-                          ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
-                          : 'border-stone-200 bg-[#F7F6F8] hover:border-stone-300 text-[#1C1917]'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           <button
             onClick={handleConfirm}
-            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
+            disabled={dayClosed || !openSlots.includes(selectedTime)}
+            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <span>Continue to Address &amp; Review</span>
             <ArrowRight size={14} />
