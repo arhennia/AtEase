@@ -4,7 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 import { TenantHeader } from '../components/tenant/TenantHeader';
 import { TenantNotFound, TenantOffline } from './TenantStatus';
 import { tenantToStorefrontProfile } from '../data/tenants';
-import { getPlanStatus, getTenantBySlug, getTenantCatalog } from '../lib/tenancy';
+import { getPlanStatus, getTenantCatalog } from '../lib/tenancy';
 import {
   MapPin,
   Star,
@@ -20,29 +20,24 @@ import { formatUptoPrice, serviceUptoPrice } from '../data/onboardingQuiz';
 export function ProviderStorefront() {
   const { partnerSlug } = useParams();
   const [searchParams] = useSearchParams();
-  const partners = useAppStore((state) => state.partners);
   const currentPartnerId = useAppStore((state) => state.currentPartnerId);
   const isAuthenticated = useAppStore((state) => state.isAuthenticated);
   const userRole = useAppStore((state) => state.userRole);
-  const fetchPartnerBySlug = useAppStore((state) => state.fetchPartnerBySlug);
-
-  const partner = getTenantBySlug(partners, partnerSlug);
-  const [loadingPartner, setLoadingPartner] = useState(!partner);
+  const [partner, setPartner] = useState(null);
+  const [loadingPartner, setLoadingPartner] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    if (!partner && partnerSlug) {
-      setLoadingPartner(true);
-      fetchPartnerBySlug(partnerSlug).then(() => {
-        if (isMounted) setLoadingPartner(false);
-      });
-    } else {
+    setLoadingPartner(true);
+    useAppStore.getState().fetchPartnerBySlug(partnerSlug).then((loaded) => {
+      if (!isMounted) return;
+      setPartner(loaded || null);
       setLoadingPartner(false);
-    }
+    });
     return () => {
       isMounted = false;
     };
-  }, [partnerSlug, partner, fetchPartnerBySlug]);
+  }, [partnerSlug]);
 
   const plan = getPlanStatus(partner);
   const isOwner =
