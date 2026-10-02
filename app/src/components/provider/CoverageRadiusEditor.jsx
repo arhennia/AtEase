@@ -1,24 +1,64 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { Check } from 'lucide-react';
-import { BHUBANESWAR_LOCALITIES } from '../../data/mockProviders';
+import { BHUBANESWAR_LOCALITIES } from '../../data/localities';
+import { validateRadius } from '../../lib/availability';
+
+function sliderRadius(value) {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 3 || n > 35) return 10;
+  return n;
+}
 
 export function CoverageRadiusEditor() {
-  const coverageRadius = useAppStore((state) => state.coverageRadius);
-  const setCoverageRadius = useAppStore((state) => state.setCoverageRadius);
-  const coverageAreas = useAppStore((state) => state.coverageAreas);
-  const toggleCoverageArea = useAppStore((state) => state.toggleCoverageArea);
+  const saveServiceArea = useAppStore((state) => state.saveServiceArea);
   const showToast = useAppStore((state) => state.showToast);
   const partners = useAppStore((state) => state.partners);
   const currentPartnerId = useAppStore((state) => state.currentPartnerId);
   const partner = partners.find((p) => p.id === currentPartnerId);
+  const savedAreas = partner?.serviceArea || [];
+  const savedKey = `${partner?.id || ''}|${partner?.coverageRadiusKm ?? ''}|${savedAreas.join(',')}`;
+
+  const [coverageRadius, setCoverageRadius] = useState(sliderRadius(partner?.coverageRadiusKm));
+  const [coverageAreas, setCoverageAreas] = useState(savedAreas);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const [, radius, areas] = savedKey.split('|');
+    setCoverageRadius(sliderRadius(radius));
+    setCoverageAreas(areas ? areas.split(',').filter(Boolean) : []);
+  }, [savedKey]);
 
   const handleSliderChange = (e) => {
     setCoverageRadius(Number(e.target.value));
   };
 
-  const handleSave = () => {
-    showToast(`Coverage radius saved at ${coverageRadius} km.`);
+  const toggleCoverageArea = (area) => {
+    setCoverageAreas((current) =>
+      current.includes(area) ? current.filter((name) => name !== area) : [...current, area]
+    );
+  };
+
+  const handleSave = async () => {
+    const check = validateRadius(coverageRadius);
+    if (!check.ok) {
+      setError(check.error);
+      showToast(check.error);
+      return;
+    }
+    setSaving(true);
+    setError('');
+    const res = await saveServiceArea({ radius: coverageRadius, areas: coverageAreas });
+    setSaving(false);
+    if (!res.ok) {
+      setError(res.error || 'Could not save the service area.');
+      showToast(res.error || 'Could not save the service area.');
+      return;
+    }
+    const place = partner?.location || 'your city';
+    const areaNote = res.areas.length === 0 ? ' No localities selected.' : ` ${res.areas.length} localities.`;
+    showToast(`Coverage saved at ${res.radius} km from ${place}.${areaNote}`);
   };
 
   return (
@@ -68,6 +108,12 @@ export function CoverageRadiusEditor() {
         <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-600 block">
           Covered Localities ({coverageAreas.length} Selected)
         </span>
+        {coverageAreas.length === 0 && (
+          <p className="text-xs text-stone-500 font-light">
+            No localities selected. The radius still saves, and home visits stay limited to {coverageRadius} km
+            {partner?.location ? ` from ${partner.location}` : ''}.
+          </p>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {BHUBANESWAR_LOCALITIES.map((loc) => {
@@ -98,12 +144,14 @@ export function CoverageRadiusEditor() {
       </div>
 
       {/* Save Trigger */}
-      <div className="pt-2">
+      <div className="pt-2 space-y-3">
+        {error && <p className="text-xs text-red-700">{error}</p>}
         <button
           onClick={handleSave}
-          className="rounded-full bg-[#1C1917] text-white px-6 py-3 text-[13px] font-heroSans font-medium hover:bg-black transition-colors"
+          disabled={saving}
+          className="rounded-full bg-[#1C1917] text-white px-6 py-3 text-[13px] font-heroSans font-medium hover:bg-black transition-colors disabled:opacity-40"
         >
-          Save Coverage Preferences
+          {saving ? 'Saving…' : 'Save Coverage Preferences'}
         </button>
       </div>
     </div>
