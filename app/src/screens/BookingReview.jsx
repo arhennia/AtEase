@@ -83,7 +83,7 @@ export function BookingReview() {
         showToast(result.error || 'Could not save booking.');
         return;
       }
-      bookingPayload.id = result.data?.id;
+      bookingPayload.id = result.data?.id || `saved-${Date.now()}`;
     }
 
     const created = addAppointment(bookingPayload);
