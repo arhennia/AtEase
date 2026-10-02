@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -22,6 +22,7 @@ import {
 import { formatUptoPrice } from '../../data/onboardingQuiz';
 import { createAppointmentRecord, isSupabaseConfigured } from '../../lib/supabase';
 import { buildWhatsAppBookingUrl, openWhatsApp } from '../../lib/whatsapp';
+import { isDayOpen, normalizeWorkingHours, slotLabels, slotsForDay } from '../../lib/availability';
 
 export function BookingModal() {
   const bookingModalOpen = useAppStore((state) => state.bookingModalOpen);
@@ -35,12 +36,13 @@ export function BookingModal() {
   const userName = useAppStore((state) => state.userName);
   const userPhone = useAppStore((state) => state.userPhone);
   const partners = useAppStore((state) => state.partners);
+  const fetchPartnerBySlug = useAppStore((state) => state.fetchPartnerBySlug);
 
   // Scheduler Steps: 1: Service/Mode, 2: Date, 3: Time, 4: Confirm, 5: Success
   const [step, setStep] = useState(1);
   const [serviceType, setServiceType] = useState('at-home'); // 'at-home' | 'in-studio'
   const [selectedDateIdx, setSelectedDateIdx] = useState(0);
-  const [selectedTime, setSelectedTime] = useState('11:30 AM');
+  const [selectedTime, setSelectedTime] = useState('');
   
   // Client input details
   const [clientName, setClientName] = useState('');
@@ -63,11 +65,29 @@ export function BookingModal() {
     };
   });
 
-  const timeSlots = {
-    morning: ['09:30 AM', '10:45 AM', '11:30 AM', '12:15 PM'],
-    afternoon: ['01:30 PM', '02:45 PM', '04:00 PM', '05:15 PM'],
-    evening: ['06:30 PM', '07:30 PM', '08:15 PM']
-  };
+  const ownerId = bookingModalData?.partnerId || bookingModalData?.provider?.partnerId;
+  const partnerSlug = bookingModalData?.partnerSlug || bookingModalData?.provider?.slug;
+  const bookingPartner = partners.find((p) => p.id === ownerId || (partnerSlug && p.slug === partnerSlug));
+  const hours = normalizeWorkingHours(bookingPartner?.workingHours);
+  const activeDayName = dates[selectedDateIdx]?.dayName;
+  const hoursKey = `${hours.start}|${hours.end}|${hours.daysOpen.join(',')}`;
+  const dayClosed = !isDayOpen(hours, activeDayName);
+  const timeSlots = slotsForDay(hours, activeDayName);
+  const openSlots = slotLabels(timeSlots);
+
+  useEffect(() => {
+    if (partnerSlug) fetchPartnerBySlug(partnerSlug);
+  }, [partnerSlug, fetchPartnerBySlug]);
+
+  useEffect(() => {
+    const [start, end, days] = hoursKey.split('|');
+    const slots = slotLabels(slotsForDay({
+      start,
+      end,
+      daysOpen: days ? days.split(',').filter(Boolean) : [],
+    }, activeDayName));
+    if (selectedTime && !slots.includes(selectedTime)) setSelectedTime('');
+  }, [hoursKey, selectedTime, activeDayName]);
 
   // Pre-fill initial data when opened
   React.useEffect(() => {
@@ -116,8 +136,8 @@ export function BookingModal() {
       showToast('Enter a valid 10-digit phone number.');
       return;
     }
-    if (!selectedTime) {
-      showToast('Pick a time slot.');
+    if (dayClosed || !openSlots.includes(selectedTime)) {
+      showToast(dayClosed ? `Closed on ${activeDayName}.` : 'Pick a time during business hours.');
       return;
     }
 
@@ -160,6 +180,7 @@ export function BookingModal() {
       partnerId: ownerId,
       salonId: bookingModalData?.salonId || bookingModalData?.provider?.salonId,
       serviceId: bookingModalData?.serviceId,
+      packageId: bookingModalData?.packageId,
       status: 'pending',
       bookingSource: 'whatsapp',
     };
@@ -171,7 +192,7 @@ export function BookingModal() {
         showToast(result.error || 'Could not save booking.');
         return;
       }
-      bookingPayload.id = result.data?.id;
+      bookingPayload.id = result.data?.id || `saved-${Date.now()}`;
     }
 
     const created = addAppointment(bookingPayload);
@@ -382,73 +403,43 @@ export function BookingModal() {
                 </h3>
               </div>
 
+              {dayClosed || openSlots.length === 0 ? (
+                <p className="text-xs text-stone-500 font-light">
+                  Closed on {activeDayName}. No booking times that day.
+                </p>
+              ) : (
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                <div>
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500 block mb-1.5">
-                    Morning
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {timeSlots.morning.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedTime(slot)}
-                        className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
-                          selectedTime === slot
-                            ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
-                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500 block mb-1.5">
-                    Afternoon
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {timeSlots.afternoon.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedTime(slot)}
-                        className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
-                          selectedTime === slot
-                            ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
-                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500 block mb-1.5">
-                    Evening
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {timeSlots.evening.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setSelectedTime(slot)}
-                        className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
-                          selectedTime === slot
-                            ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
-                            : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {[
+                  ['Morning', timeSlots.morning],
+                  ['Afternoon', timeSlots.afternoon],
+                  ['Evening', timeSlots.evening],
+                ].map(([label, slots]) =>
+                  slots.length === 0 ? null : (
+                    <div key={label}>
+                      <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-stone-500 block mb-1.5">
+                        {label}
+                      </span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {slots.map((slot) => (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setSelectedTime(slot)}
+                            className={`p-2.5 text-xs font-mono font-medium border text-center transition-all ${
+                              selectedTime === slot
+                                ? 'border-[#E4D9F0] bg-[#F3EEF8] text-[#4A3F5C]'
+                                : 'border-stone-200 bg-[#F9F9F9] hover:border-stone-400 text-[#1C1917]'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                )}
               </div>
+              )}
 
               <div className="flex gap-3">
                 <button
@@ -460,8 +451,12 @@ export function BookingModal() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStep(4)}
-                  className="flex-1 rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
+                  onClick={() => {
+                    if (dayClosed || !openSlots.includes(selectedTime)) return;
+                    setStep(4);
+                  }}
+                  disabled={dayClosed || !openSlots.includes(selectedTime)}
+                  className="flex-1 rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
                 >
                   <span>Review &amp; Confirm</span>
                   <ArrowRight size={14} />
