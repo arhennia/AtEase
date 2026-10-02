@@ -24,6 +24,8 @@ export {
 
 export { fetchPrimarySalon, createSalonRecord } from './salons';
 export { fetchServicesByOwnerId, createServicesRecords, updateServiceRecord, deleteServiceRecord } from './services';
+export { fetchPackagesByOwnerId, createPackageRecord, updatePackageRecord, deletePackageRecord } from './packages';
+export { fetchVipMembersByOwnerId, upsertVipMemberRecord, deleteVipMemberRecord, subscribeVipAsGuest } from './vipMembers';
 export { fetchAppointmentsByOwnerId, createAppointmentRecord } from './appointments';
 export { fetchClientsByOwnerId, fetchAnalyticsByOwnerId } from './clients';
 export { uploadOwnerImage } from './storage';
