@@ -47,7 +47,7 @@ export function SalonSite({ partner, preview = false }) {
 
   const appearance = buildSiteConfigFromPartner(partner);
   const catalog = decorateCatalog(getTenantCatalog(partner));
-  const packages = partner?.packages?.length ? partner.packages : [];
+  const packages = (partner?.packages || []).filter((pkg) => pkg.isActive !== false);
   const providerObj = tenantToStorefrontProfile(partner);
 
   const tiles = useMemo(() => {
@@ -120,7 +120,8 @@ export function SalonSite({ partner, preview = false }) {
       partnerSlug: partner.slug,
       serviceName: item.name,
       amount: servicePrice(item),
-      serviceId: item.id,
+      serviceId: item.isPackage ? null : item.id,
+      packageId: item.isPackage ? item.id : null,
       salonId: partner.salonId || null,
       whatsappNumber: partner.whatsappNumber || partner.ownerPhone || appearance.contactPhone || '',
     });
