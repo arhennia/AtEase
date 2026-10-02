@@ -91,8 +91,12 @@ export function SitePublisher({ partner }) {
   };
 
   const handleSaveDraft = async () => {
-    await saveSiteDraft(draft);
-    showToast('Draft saved on this device.');
+    const result = await saveSiteDraft(draft);
+    if (!result?.ok) {
+      showToast(result?.error || 'Could not save the draft.');
+      return;
+    }
+    showToast('Draft saved to your account.');
   };
 
   return (
