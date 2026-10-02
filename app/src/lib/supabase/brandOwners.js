@@ -3,6 +3,8 @@ import { mapBrandOwnerFromDb } from './mappers';
 import { fetchServicesByOwnerId } from './services';
 import { fetchPrimarySalon } from './salons';
 import { fetchSiteConfigByOwnerId } from './siteConfigs';
+import { fetchPackagesByOwnerId } from './packages';
+import { fetchVipMembersByOwnerId } from './vipMembers';
 
 export async function fetchBrandOwnerByUserId(userId) {
   if (!isSupabaseConfigured || !userId) return null;
@@ -26,12 +28,14 @@ export async function fetchBrandOwnerBySlug(slug) {
 
 export async function hydratePartner(brandRow) {
   if (!brandRow) return null;
-  const [services, salon, siteConfig] = await Promise.all([
+  const [services, salon, siteConfig, packages, vipMembers] = await Promise.all([
     fetchServicesByOwnerId(brandRow.id),
     fetchPrimarySalon(brandRow.id),
     fetchSiteConfigByOwnerId(brandRow.id),
+    fetchPackagesByOwnerId(brandRow.id),
+    fetchVipMembersByOwnerId(brandRow.id),
   ]);
-  return mapBrandOwnerFromDb(brandRow, services, salon, siteConfig);
+  return mapBrandOwnerFromDb(brandRow, services, salon, siteConfig, packages, vipMembers);
 }
 
 export async function createBrandOwnerRecord(payload) {
