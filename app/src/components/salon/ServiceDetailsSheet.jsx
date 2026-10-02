@@ -51,13 +51,13 @@ export function ServiceDetailsSheet({
     showToast('Review added.');
   };
 
-  const submitVip = (e) => {
+  const submitVip = async (e) => {
     e.preventDefault();
     if (!vipName.trim() || String(vipPhone).replace(/\D/g, '').length < 10) {
       showToast('Enter your name and a 10-digit WhatsApp number.');
       return;
     }
-    subscribeVip({
+    const res = await subscribeVip({
       partnerId: partner.id,
       clientName: vipName.trim(),
       clientPhone: vipPhone,
@@ -65,6 +65,11 @@ export function ServiceDetailsSheet({
       packageName: item.name,
       dayOfMonth: item.vipDayOfMonth || 5,
     });
+    if (!res?.ok) {
+      showToast(res?.error || 'Could not save this VIP membership.');
+      return;
+    }
+    showToast('VIP membership saved.');
     onBook();
   };
 
