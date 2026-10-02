@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createSeedPartners } from '../data/tenants';
+import { isSeedFixture, localSeedFixturesEnabled } from '../data/seedGuard';
 import {
   addDaysIso,
   getPlanStatus,
@@ -28,71 +28,100 @@ import {
   getAuthUser,
   isSupabaseConfigured,
   updateBrandOwnerRecord,
+  createPackageRecord,
+  updatePackageRecord,
+  deletePackageRecord,
+  upsertVipMemberRecord,
+  deleteVipMemberRecord,
+  subscribeVipAsGuest,
 } from '../lib/supabase';
 import { isValidWhatsAppNumber, toWhatsAppDigits } from '../lib/whatsapp';
+import {
+  defaultWorkingHours,
+  normalizeServiceArea,
+  normalizeWorkingHours,
+  validateRadius,
+  validateWorkingHours,
+  workingHoursToDb,
+} from '../lib/availability';
+import { mapPackageFromDb, packageToDb, validatePackage } from '../lib/packages';
+import { mapVipMemberFromDb, validateVipMember } from '../lib/vip';
 import { normalizeSiteConfig, siteConfigIsReady } from '../lib/siteConfig';
 
 const PERSIST_KEY = 'atease-whitelabel-v1';
 
+function withoutSecrets(pending) {
+  if (!pending || typeof pending !== 'object') return pending ?? null;
+  const { password, ...rest } = pending;
+  return rest;
+}
+
+function dropSeedFixtures(list) {
+  return (list || []).filter((row) => !isSeedFixture(row));
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value) {
+  return UUID_RE.test(String(value || ''));
+}
+
 function loadPersisted() {
   if (typeof window === 'undefined') return {};
   try {
-    return JSON.parse(window.localStorage.getItem(PERSIST_KEY)) || {};
+    const data = JSON.parse(window.localStorage.getItem(PERSIST_KEY)) || {};
+    const pendingSignup = withoutSecrets(data.pendingSignup);
+    const slice = { pendingSignup };
+    const hadBusinessData = ['partners', 'appointments', 'reviews', 'isAuthenticated', 'userRole', 'currentPartnerId', 'userName', 'userEmail', 'userPhone'].some(
+      (key) => Object.prototype.hasOwnProperty.call(data, key)
+    );
+    const hadPassword = Boolean(data.pendingSignup && Object.prototype.hasOwnProperty.call(data.pendingSignup, 'password'));
+    if (hadBusinessData || hadPassword) {
+      window.localStorage.setItem(PERSIST_KEY, JSON.stringify(slice));
+    }
+    return slice;
   } catch {
     return {};
   }
 }
 
+/** Only the in-progress signup handoff. Studios, bookings, menus, and reviews live in Supabase. */
 function persistSlice(state) {
   if (typeof window === 'undefined') return;
   const slice = {
-    isAuthenticated: state.isAuthenticated,
-    userRole: state.userRole,
-    userName: state.userName,
-    userEmail: state.userEmail,
-    userPhone: state.userPhone,
-    currentPartnerId: state.currentPartnerId,
-    partners: state.partners,
-    appointments: state.appointments,
-    reviews: state.reviews || [],
-    pendingSignup: state.pendingSignup,
+    pendingSignup: withoutSecrets(state.pendingSignup),
   };
   window.localStorage.setItem(PERSIST_KEY, JSON.stringify(slice));
 }
 
 const persisted = loadPersisted();
-const seedPartners = createSeedPartners();
 
-function mergeSeedSiteConfigs(partners) {
-  return (partners || []).map((partner) => {
-    const seed = seedPartners.find((s) => s.slug === partner.slug);
-    if (!seed) return partner;
-    const stalePackages = (partner.packages || []).some((pkg) => pkg.id === 'pkg-make-your-own');
-    return {
-      ...partner,
-      packages: stalePackages || !partner.packages?.length ? seed.packages || [] : partner.packages,
-      vipMembers: partner.vipMembers?.length ? partner.vipMembers : seed.vipMembers || [],
-      siteConfig: partner.siteConfig
-        ? {
-            ...seed.siteConfig,
-            ...partner.siteConfig,
-            about: { ...(seed.siteConfig?.about || {}), ...(partner.siteConfig?.about || {}) },
-            bannerUrl: partner.siteConfig.bannerUrl || seed.siteConfig?.bannerUrl || partner.coverUrl,
-          }
-        : seed.siteConfig,
-    };
-  });
-}
+export const useAppStore = create((set, get) => {
+  const replaceOwnerPartner = (partner) => {
+    if (!partner) return;
+    const others = get().partners.filter((p) => p.id !== partner.id);
+    set({ partners: [partner, ...others], currentPartnerId: partner.id });
+  };
 
-export const useAppStore = create((set, get) => ({
-  userRole: persisted.userRole ?? null,
-  isAuthenticated: persisted.isAuthenticated ?? false,
-  userName: persisted.userName ?? 'Aisha',
-  userEmail: persisted.userEmail ?? '',
-  userPhone: persisted.userPhone ?? '',
+  const reloadOwnerFromServer = async () => {
+    const user = await getAuthUser();
+    if (!user) return null;
+    const brandRow = await fetchBrandOwnerByUserId(user.id);
+    if (!brandRow) return null;
+    const partner = await hydratePartner(brandRow);
+    replaceOwnerPartner(partner);
+    return partner;
+  };
 
-  partners: mergeSeedSiteConfigs(persisted.partners?.length ? persisted.partners : seedPartners),
-  currentPartnerId: persisted.currentPartnerId ?? null,
+  return ({
+  userRole: null,
+  isAuthenticated: false,
+  userName: '',
+  userEmail: '',
+  userPhone: '',
+
+  partners: [],
+  currentPartnerId: null,
 
   setUserRole: (role) => {
     set({ userRole: role });
@@ -123,14 +152,14 @@ export const useAppStore = create((set, get) => ({
         const partner = await hydratePartner(brandRow);
         const appointments = await fetchAppointmentsByOwnerId(partner.id);
         set({
-          partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
+          partners: [partner],
           isAuthenticated: true,
           userRole: 'partner',
           userName: partner.ownerName || partner.brandName,
           userEmail: partner.ownerEmail || user.email || '',
           userPhone: partner.ownerPhone || user.phone || '',
           currentPartnerId: partner.id,
-          appointments: appointments.length ? appointments : get().appointments,
+          appointments,
           pendingSignup: null,
           authModalOpen: false,
         });
@@ -167,41 +196,16 @@ export const useAppStore = create((set, get) => ({
     return { ok: true, role: 'client', redirectTo: nextPath || '/' };
   },
 
-  loginPartner: async ({ email, password, partnerId } = {}) => {
-    if (isSupabaseConfigured && email && password) {
-      const authRes = await signInWithEmail({ email, password });
-      if (!authRes.ok) {
-        if (email === 'aisha@rajkumari.studio') {
-          // fall through to local demo
-        } else {
-          return { ok: false, error: authRes.error };
-        }
-      } else {
-        return get().applyAuthenticatedUser({ intendedRole: 'brand_owner', nextPath: '/dashboard' });
-      }
+  loginPartner: async ({ email, password } = {}) => {
+    if (!isSupabaseConfigured) {
+      return { ok: false, error: 'Supabase is not configured.' };
     }
-
-    // 2. Local / Demo partner fallback
-    const partners = get().partners;
-    const partner =
-      getTenantById(partners, partnerId) ||
-      getTenantByEmail(partners, email) ||
-      getTenantByEmail(partners, 'aisha@rajkumari.studio');
-
-    if (!partner) {
-      return { ok: false, error: 'No partner account found for that email.' };
+    if (!email || !password) {
+      return { ok: false, error: 'Enter your email and password.' };
     }
-
-    set({
-      isAuthenticated: true,
-      userRole: 'partner',
-      userName: partner.ownerName || partner.brandName,
-      userEmail: partner.ownerEmail,
-      currentPartnerId: partner.id,
-      authModalOpen: false,
-    });
-    persistSlice(get());
-    return { ok: true, partner };
+    const authRes = await signInWithEmail({ email, password });
+    if (!authRes.ok) return { ok: false, error: authRes.error };
+    return get().applyAuthenticatedUser({ intendedRole: 'brand_owner', nextPath: '/dashboard' });
   },
 
   signupPartner: async ({ email, password, ownerName }) => {
@@ -216,7 +220,6 @@ export const useAppStore = create((set, get) => ({
       set({
         pendingSignup: {
           email: email.trim().toLowerCase(),
-          password: password || '',
           ownerName: ownerName?.trim() || email.split('@')[0],
           userId: res.user?.id,
         },
@@ -236,7 +239,6 @@ export const useAppStore = create((set, get) => ({
     set({
       pendingSignup: {
         email: email.trim().toLowerCase(),
-        password: password || '',
         ownerName: ownerName?.trim() || email.split('@')[0],
       },
     });
@@ -382,6 +384,8 @@ export const useAppStore = create((set, get) => ({
       rating: '—',
       reviewCount: '0',
       coverageRadiusKm: 10,
+      serviceArea: [],
+      workingHours: defaultWorkingHours(),
       trialEndsAt: addDaysIso(TRIAL_DAYS),
       subscriptionStatus: 'trial',
       whatsappNumber: toWhatsAppDigits(whatsappNumber || get().userPhone),
@@ -407,17 +411,11 @@ export const useAppStore = create((set, get) => ({
 
   updatePartnerCatalog: async (catalog) => {
     const id = get().currentPartnerId;
-    if (!id) return;
-    set({
-      partners: get().partners.map((p) => (p.id === id ? { ...p, catalog } : p)),
-    });
-    persistSlice(get());
+    if (!id) return { ok: false, error: 'No studio on this account.' };
+    if (!isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
 
-    if (!isSupabaseConfigured) return;
-    const partner = get().partners.find((p) => p.id === id);
-    if (!partner) return;
-
-    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const flat = (catalog || []).flatMap((cat, catIdx) =>
       (cat.services || []).map((svc, idx) => ({
         ...svc,
@@ -426,7 +424,6 @@ export const useAppStore = create((set, get) => ({
       }))
     );
 
-    let inserted = false;
     for (const svc of flat) {
       const cap = Number(svc.price || svc.uptoPrice || svc.inSalonPrice || svc.homePrice || 0);
       const patch = {
@@ -442,31 +439,35 @@ export const useAppStore = create((set, get) => ({
         sort_order: svc.sortOrder,
         is_active: true,
       };
-      if (uuidRe.test(svc.id)) {
-        await updateServiceRecord(svc.id, patch);
-      } else {
-        const res = await createServicesRecords([{ ...patch, owner_id: partner.id }]);
-        if (res.ok) inserted = true;
+      const res = isUuid(svc.id)
+        ? await updateServiceRecord(svc.id, patch)
+        : await createServicesRecords([{ ...patch, owner_id: id }]);
+      if (!res.ok) {
+        await reloadOwnerFromServer();
+        get().showToast(res.error || 'Could not save the menu.');
+        return res;
       }
     }
-    if (inserted) {
-      const user = await getAuthUser();
-      const brandRow = user ? await fetchBrandOwnerByUserId(user.id) : null;
-      if (brandRow) {
-        const hydrated = await hydratePartner(brandRow);
-        set({
-          partners: get().partners.map((p) => (p.id === id ? hydrated : p)),
-        });
-        persistSlice(get());
-      }
-    }
+
+    const partner = await reloadOwnerFromServer();
+    if (!partner) return { ok: false, error: 'Could not reload the menu.' };
+    return { ok: true };
   },
 
   removePartnerService: async (serviceId) => {
     const id = get().currentPartnerId;
-    if (!id || !serviceId) return;
+    if (!id || !serviceId) return { ok: false, error: 'Missing service.' };
+    if (isSupabaseConfigured && isUuid(serviceId)) {
+      const res = await deleteServiceRecord(serviceId);
+      if (!res.ok) {
+        get().showToast(res.error || 'Could not remove that service.');
+        return res;
+      }
+      await reloadOwnerFromServer();
+      return { ok: true };
+    }
     const partner = get().partners.find((p) => p.id === id);
-    if (!partner) return;
+    if (!partner) return { ok: false, error: 'No studio on this account.' };
     const catalog = (partner.catalog || []).map((cat) => ({
       ...cat,
       services: (cat.services || []).filter((s) => s.id !== serviceId),
@@ -474,11 +475,7 @@ export const useAppStore = create((set, get) => ({
     set({
       partners: get().partners.map((p) => (p.id === id ? { ...p, catalog } : p)),
     });
-    persistSlice(get());
-    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (isSupabaseConfigured && uuidRe.test(serviceId)) {
-      await deleteServiceRecord(serviceId);
-    }
+    return { ok: true };
   },
 
   updatePartnerWhatsApp: async (whatsappNumber) => {
@@ -488,15 +485,14 @@ export const useAppStore = create((set, get) => ({
       return { ok: false, error: 'Enter a valid 10-digit WhatsApp number.' };
     }
     const digits = toWhatsAppDigits(whatsappNumber);
+    if (!isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    const res = await updateBrandOwnerRecord(id, { whatsapp_number: digits });
+    if (!res.ok) return res;
     set({
       partners: get().partners.map((p) => (p.id === id ? { ...p, whatsappNumber: digits } : p)),
     });
-    persistSlice(get());
-    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (isSupabaseConfigured && uuidRe.test(id)) {
-      const res = await updateBrandOwnerRecord(id, { whatsapp_number: digits });
-      if (!res.ok) return res;
-    }
     get().showToast('WhatsApp number saved. Client bookings will message this number.');
     return { ok: true };
   },
@@ -511,7 +507,6 @@ export const useAppStore = create((set, get) => ({
         p.id === id ? { ...p, subscriptionStatus: 'active' } : p
       ),
     });
-    persistSlice(get());
     get().showToast('Subscription activated. Your brand site stays live.');
   },
 
@@ -522,41 +517,51 @@ export const useAppStore = create((set, get) => ({
     set({
       isAuthenticated: false,
       userRole: null,
-      currentPartnerId: null,
-      cart: [],
+      userName: '',
       userEmail: '',
       userPhone: '',
+      currentPartnerId: null,
+      partners: [],
+      appointments: [],
+      reviews: [],
+      cart: [],
+      pendingSignup: null,
     });
     persistSlice(get());
   },
 
   fetchPartnerBySlug: async (slug) => {
     if (!slug) return null;
-    const local = getTenantBySlug(get().partners, slug);
-    if (local) return local;
 
     if (isSupabaseConfigured) {
       const brandRow = await fetchBrandOwnerBySlug(slug);
-      if (brandRow) {
-        const partner = await hydratePartner(brandRow);
-        set({
-          partners: [...get().partners.filter((p) => p.id !== partner.id), partner],
-        });
-        return partner;
-      }
+      if (!brandRow) return null;
+      const partner = await hydratePartner(brandRow);
+      if (!partner) return null;
+      set({
+        partners: [...dropSeedFixtures(get().partners).filter((p) => p.id !== partner.id && p.slug !== partner.slug), partner],
+      });
+      return partner;
     }
+
+    if (localSeedFixturesEnabled() && isSeedFixture({ slug })) {
+      return getTenantBySlug(get().partners, slug);
+    }
+
+    const local = getTenantBySlug(get().partners, slug);
+    if (local && !isSeedFixture(local)) return local;
     return null;
   },
 
   fetchPublishedSite: async (slug) => {
     if (!slug) return null;
-    const local = getTenantBySlug(get().partners, slug);
-    if (local?.siteConfig?.published) {
-      return normalizeSiteConfig(local.siteConfig, slug);
-    }
     if (isSupabaseConfigured) {
-      const remote = await fetchPublishedSiteBySlug(slug);
-      if (remote) return remote;
+      return fetchPublishedSiteBySlug(slug);
+    }
+    if (!localSeedFixturesEnabled()) return null;
+    const local = getTenantBySlug(get().partners, slug);
+    if (local?.siteConfig?.published && isSeedFixture(local)) {
+      return normalizeSiteConfig(local.siteConfig, slug);
     }
     return null;
   },
@@ -578,39 +583,38 @@ export const useAppStore = create((set, get) => ({
     );
     const ready = siteConfigIsReady(config);
     if (!ready.ok) return ready;
+    if (!isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
 
+    const res = await upsertSiteConfigRecord(id, config);
+    if (!res.ok) return res;
+    await updateBrandOwnerRecord(id, {
+      brand_name: config.businessName,
+      professional_title: config.subtitle || partner.professionalTitle,
+      whatsapp_number: config.contactPhone,
+    });
+    const saved = res.data || config;
     set({
       partners: get().partners.map((p) =>
         p.id === id
           ? {
               ...p,
-              brandName: config.businessName || p.brandName,
-              professionalTitle: config.subtitle || p.professionalTitle,
-              whatsappNumber: config.contactPhone || p.whatsappNumber,
-              coverUrl: config.bannerUrl || p.coverUrl,
-              logoUrl: config.about?.ownerPhotoUrl || p.logoUrl,
-              description: config.about?.bio || p.description,
-              location: config.about?.location || p.location,
-              siteConfig: config,
+              brandName: saved.businessName || p.brandName,
+              professionalTitle: saved.subtitle || p.professionalTitle,
+              whatsappNumber: saved.contactPhone || p.whatsappNumber,
+              coverUrl: saved.bannerUrl || p.coverUrl,
+              logoUrl: saved.about?.ownerPhotoUrl || p.logoUrl,
+              description: saved.about?.bio || p.description,
+              location: saved.about?.location || p.location,
+              siteConfig: saved,
             }
           : p
       ),
     });
-    persistSlice(get());
-
-    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (isSupabaseConfigured && uuidRe.test(id)) {
-      const res = await upsertSiteConfigRecord(id, config);
-      if (!res.ok) return res;
-      await updateBrandOwnerRecord(id, {
-        brand_name: config.businessName,
-        professional_title: config.subtitle || partner.professionalTitle,
-        whatsapp_number: config.contactPhone,
-      });
-    }
 
     get().showToast('Website published. Share the public link with clients.');
-    return { ok: true, config };
+    return { ok: true, config: saved };
   },
 
   saveSiteDraft: async (draft) => {
@@ -618,12 +622,26 @@ export const useAppStore = create((set, get) => ({
     if (!id) return { ok: false, error: 'No studio on this account.' };
     const partner = get().partners.find((p) => p.id === id);
     if (!partner) return { ok: false, error: 'No studio on this account.' };
-    const config = normalizeSiteConfig({ ...draft, slug: partner.slug, published: Boolean(draft.published) }, partner.slug);
+    if (!isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    const alreadyPublished = Boolean(partner.siteConfig?.published);
+    const config = normalizeSiteConfig(
+      {
+        ...draft,
+        slug: partner.slug,
+        published: alreadyPublished,
+        publishedAt: alreadyPublished ? partner.siteConfig?.publishedAt || null : null,
+      },
+      partner.slug
+    );
+    const res = await upsertSiteConfigRecord(id, config);
+    if (!res.ok) return res;
+    const saved = res.data || config;
     set({
-      partners: get().partners.map((p) => (p.id === id ? { ...p, siteConfig: config } : p)),
+      partners: get().partners.map((p) => (p.id === id ? { ...p, siteConfig: saved } : p)),
     });
-    persistSlice(get());
-    return { ok: true, config };
+    return { ok: true, config: saved };
   },
 
   syncAuthSession: async () => {
@@ -631,8 +649,21 @@ export const useAppStore = create((set, get) => ({
     try {
       const user = await getAuthUser();
       if (user) {
-        await get().applyAuthenticatedUser({ intendedRole: 'client' });
+        const intendedRole = get().pendingSignup?.userId ? 'brand_owner' : 'client';
+        await get().applyAuthenticatedUser({ intendedRole });
+        return;
       }
+      set({
+        isAuthenticated: false,
+        userRole: null,
+        userName: '',
+        userEmail: '',
+        userPhone: '',
+        currentPartnerId: null,
+        partners: [],
+        appointments: [],
+        reviews: [],
+      });
     } catch (e) {
       console.warn('Session sync failed:', e);
     }
@@ -720,34 +751,7 @@ export const useAppStore = create((set, get) => ({
   },
   hideToast: () => set({ toastMessage: null }),
 
-  reviews: persisted.reviews?.length
-    ? persisted.reviews
-    : [
-        {
-          id: 'rev-priya-s10',
-          partnerId: 'partner_rajkumari-beauty',
-          serviceId: 's10',
-          serviceName: 'Custom Organic Glow Facial',
-          clientName: 'Priya Menon',
-          clientPhone: '9876543210',
-          rating: 5,
-          text: 'Quiet, precise, and my skin stayed calm the next morning.',
-          verified: true,
-          createdAt: '2026-09-12T10:00:00.000Z',
-        },
-        {
-          id: 'rev-ananya-s28',
-          partnerId: 'partner_rajkumari-beauty',
-          serviceId: 's28',
-          serviceName: 'Luxury HD / Airbrush Bridal Makeup',
-          clientName: 'Ananya Pattnaik',
-          clientPhone: '9437012345',
-          rating: 5,
-          text: 'The trial felt considered. Nothing overdone.',
-          verified: true,
-          createdAt: '2026-09-08T10:00:00.000Z',
-        },
-      ],
+  reviews: [],
 
   addReview: (review) => {
     const row = {
@@ -757,114 +761,185 @@ export const useAppStore = create((set, get) => ({
       ...review,
     };
     set({ reviews: [row, ...get().reviews] });
-    persistSlice(get());
   },
 
-  updatePartnerPackages: (packages) => {
+  createPartnerPackage: async () => {
     const id = get().currentPartnerId;
-    if (!id) return;
-    set({
-      partners: get().partners.map((p) => (p.id === id ? { ...p, packages } : p)),
+    if (!id || !isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    const sortOrder = (get().partners.find((p) => p.id === id)?.packages || []).length;
+    const res = await createPackageRecord({
+      owner_id: id,
+      name: 'New package',
+      description: '',
+      price: 0,
+      duration: '',
+      image_url: '',
+      included_items: [],
+      is_active: true,
+      vip_monthly: false,
+      sort_order: sortOrder,
     });
-    persistSlice(get());
-  },
-
-  subscribeVip: (member) => {
-    const id = member.partnerId || get().currentPartnerId;
-    if (!id) return;
-    const row = {
-      id: member.id || `vip-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      ...member,
-      partnerId: id,
-    };
+    if (!res.ok) return res;
+    const created = mapPackageFromDb(res.data);
     set({
       partners: get().partners.map((p) =>
-        p.id === id ? { ...p, vipMembers: [row, ...(p.vipMembers || []).filter((m) => m.id !== row.id)] } : p
+        p.id === id ? { ...p, packages: [...(p.packages || []), created] } : p
       ),
     });
-    persistSlice(get());
-    get().showToast('Monthly membership saved.');
+    return { ok: true, package: created };
   },
 
-  removeVipMember: (memberId) => {
+  savePartnerPackage: async (pkg) => {
+    const check = validatePackage(pkg);
+    if (!check.ok) return check;
     const id = get().currentPartnerId;
-    if (!id) return;
+    if (!id || !isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    if (!isUuid(pkg?.id)) return { ok: false, error: 'This package is not saved to your account yet.' };
+    const res = await updatePackageRecord(pkg.id, packageToDb(check.package));
+    if (!res.ok) return res;
+    const saved = mapPackageFromDb(res.data);
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id
+          ? { ...p, packages: (p.packages || []).map((row) => (row.id === saved.id ? saved : row)) }
+          : p
+      ),
+    });
+    return { ok: true, package: saved };
+  },
+
+  deletePartnerPackage: async (packageId) => {
+    const id = get().currentPartnerId;
+    if (!id || !packageId) return { ok: false, error: 'Missing package.' };
+    if (!isSupabaseConfigured || !isUuid(id) || !isUuid(packageId)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    const res = await deletePackageRecord(packageId);
+    if (!res.ok) return res;
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id ? { ...p, packages: (p.packages || []).filter((row) => row.id !== packageId) } : p
+      ),
+    });
+    return { ok: true };
+  },
+
+  subscribeVip: async (member) => {
+    const check = validateVipMember(member);
+    if (!check.ok) return check;
+    const partnerId = member.partnerId || get().currentPartnerId;
+    if (!partnerId || !isSupabaseConfigured || !isUuid(partnerId)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+
+    const isOwner = get().currentPartnerId === partnerId;
+    if (isOwner) {
+      const res = await upsertVipMemberRecord(partnerId, check.member);
+      if (!res.ok) return res;
+      const row = mapVipMemberFromDb(res.data);
+      set({
+        partners: get().partners.map((p) =>
+          p.id === partnerId
+            ? {
+                ...p,
+                vipMembers: [
+                  row,
+                  ...(p.vipMembers || []).filter((m) => m.id !== row.id && m.clientPhone !== row.clientPhone),
+                ],
+              }
+            : p
+        ),
+      });
+      return { ok: true, member: row };
+    }
+
+    if (!isUuid(check.member.packageId)) {
+      return { ok: false, error: 'This membership is not available.' };
+    }
+    return subscribeVipAsGuest({
+      ownerId: partnerId,
+      packageId: check.member.packageId,
+      clientName: check.member.clientName,
+      clientPhone: check.member.clientPhone,
+      dayOfMonth: check.member.dayOfMonth,
+    });
+  },
+
+  removeVipMember: async (memberId) => {
+    const id = get().currentPartnerId;
+    if (!id || !memberId) return { ok: false, error: 'Missing membership.' };
+    if (!isSupabaseConfigured || !isUuid(id) || !isUuid(memberId)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    const res = await deleteVipMemberRecord(memberId);
+    if (!res.ok) return res;
     set({
       partners: get().partners.map((p) =>
         p.id === id ? { ...p, vipMembers: (p.vipMembers || []).filter((m) => m.id !== memberId) } : p
       ),
     });
-    persistSlice(get());
+    return { ok: true };
   },
 
-  coverageRadius: 15,
-  setCoverageRadius: (radius) => set({ coverageRadius: radius }),
-
-  coverageAreas: [
-    'Patia',
-    'Chandrasekharpur',
-    'Jaydev Vihar',
-    'Nayapalli',
-    'Saheed Nagar',
-    'Khandagiri',
-    'Old Town',
-    'KIIT Square',
-  ],
-  toggleCoverageArea: (area) => {
-    const { coverageAreas } = get();
-    if (coverageAreas.includes(area)) {
-      set({ coverageAreas: coverageAreas.filter((a) => a !== area) });
-    } else {
-      set({ coverageAreas: [...coverageAreas, area] });
+  saveWorkingHours: async (hours) => {
+    const check = validateWorkingHours(hours);
+    if (!check.ok) return check;
+    const id = get().currentPartnerId;
+    if (!id) return { ok: false, error: 'No studio on this account.' };
+    if (!isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
     }
+    const res = await updateBrandOwnerRecord(id, { working_hours: workingHoursToDb(check.hours) });
+    if (!res.ok) return res;
+    const workingHours = normalizeWorkingHours(res.data?.working_hours);
+    set({
+      partners: get().partners.map((p) => (p.id === id ? { ...p, workingHours } : p)),
+    });
+    return { ok: true, hours: workingHours };
   },
 
-  businessHours: {
-    start: '09:00 AM',
-    end: '08:00 PM',
-    daysOpen: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  saveServiceArea: async ({ radius, areas } = {}) => {
+    const check = validateRadius(radius);
+    if (!check.ok) return check;
+    const id = get().currentPartnerId;
+    if (!id) return { ok: false, error: 'No studio on this account.' };
+    if (!isSupabaseConfigured || !isUuid(id)) {
+      return { ok: false, error: 'Supabase is not configured.' };
+    }
+    const serviceArea = normalizeServiceArea(areas);
+    const res = await updateBrandOwnerRecord(id, {
+      coverage_radius_km: check.value,
+      service_area: serviceArea,
+    });
+    if (!res.ok) return res;
+    const savedRadius = Number(res.data?.coverage_radius_km);
+    const savedAreas = normalizeServiceArea(res.data?.service_area);
+    set({
+      partners: get().partners.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              coverageRadiusKm: Number.isInteger(savedRadius) ? savedRadius : check.value,
+              serviceArea: savedAreas,
+            }
+          : p
+      ),
+    });
+    return { ok: true, radius: Number.isInteger(savedRadius) ? savedRadius : check.value, areas: savedAreas };
   },
-  updateBusinessHours: (hours) => set({ businessHours: { ...get().businessHours, ...hours } }),
 
-  appointments: persisted.appointments?.length
-    ? persisted.appointments
-    : [
-      {
-        id: 'ATEASE-84920',
-        partnerId: 'partner_rajkumari-beauty',
-        clientName: 'Priya Menon',
-        clientPhone: '+91 98765 43210',
-        serviceName: 'Keratin Smoothing Treatment, Organic Glow Facial',
-        date: 'Today',
-        time: '11:30 AM',
-        location: 'Plot No. 42, Unit-III, Kharabela Nagar, Bhubaneswar',
-        serviceType: 'at-home',
-        status: 'confirmed',
-        amount: 4300,
-        paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: 'ATEASE-71829',
-        partnerId: 'partner_rajkumari-beauty',
-        clientName: 'Ananya Pattnaik',
-        clientPhone: '+91 94370 12345',
-        serviceName: 'Luxury HD Bridal Makeover Trial',
-        date: 'Tomorrow',
-        time: '02:00 PM',
-        location: 'Flat 402, Royal Palms, Patia, Bhubaneswar',
-        serviceType: 'at-home',
-        status: 'confirmed',
-        amount: 5500,
-        paymentMethod: 'Direct Payment (Cash/UPI/Card)',
-        createdAt: new Date().toISOString(),
-      },
-    ],
+  appointments: [],
 
   addAppointment: (newAppt) => {
     const partnerId =
       newAppt.partnerId || get().bookingModalData?.provider?.partnerId || get().currentPartnerId;
+    if (isSupabaseConfigured && isUuid(partnerId) && !newAppt.id) {
+      return null;
+    }
     const appt = {
       id: newAppt.id || `ATEASE-${Math.floor(10000 + Math.random() * 90000)}`,
       createdAt: new Date().toISOString(),
@@ -873,8 +948,9 @@ export const useAppStore = create((set, get) => ({
       ...newAppt,
       partnerId,
     };
-    set({ appointments: [appt, ...get().appointments] });
-    persistSlice(get());
+    set({
+      appointments: [appt, ...get().appointments.filter((row) => row.id !== appt.id)],
+    });
     if (appt.status !== 'pending') {
       get().showToast('Booking confirmed! Direct payment details recorded.');
     }
@@ -893,7 +969,20 @@ export const useAppStore = create((set, get) => ({
       return a;
     });
     set({ appointments: updated });
-    persistSlice(get());
     get().showToast(`Appointment delayed by ${minutes} mins. Client notified.`);
   },
-}));
+});
+});
+
+if (
+  import.meta.env.DEV === true &&
+  import.meta.env.VITE_USE_LOCAL_FIXTURES === 'true' &&
+  !isSupabaseConfigured &&
+  typeof window !== 'undefined'
+) {
+  import('../data/seedFixtures').then(({ createSeedPartners }) => {
+    const fixtures = createSeedPartners();
+    const existing = dropSeedFixtures(useAppStore.getState().partners);
+    useAppStore.setState({ partners: [...fixtures, ...existing] });
+  });
+}
