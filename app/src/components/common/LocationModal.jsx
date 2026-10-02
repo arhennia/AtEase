@@ -2,7 +2,7 @@ import React from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MapPin, Check, Compass } from 'lucide-react';
-import { BHUBANESWAR_LOCALITIES } from '../../data/mockProviders';
+import { BHUBANESWAR_LOCALITIES } from '../../data/localities';
 
 export function LocationModal() {
   const locationModalOpen = useAppStore((state) => state.locationModalOpen);
