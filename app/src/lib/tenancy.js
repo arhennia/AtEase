@@ -1,8 +1,4 @@
-import { RAJKUMARI_PROVIDER_DATA } from '../data/providerData';
-
 export const TRIAL_DAYS = 14;
-export const DEMO_PARTNER_EMAIL = 'aisha@rajkumari.studio';
-export const DEMO_PARTNER_PASSWORD = 'demo';
 
 export function slugify(value) {
   return String(value || '')
@@ -68,14 +64,10 @@ export function getTenantByEmail(partners, email) {
   return partners.find((p) => p.ownerEmail?.toLowerCase() === needle) || null;
 }
 
-/** Strict catalog lookup — never falls back to another tenant. */
+/** Catalog stored on the studio. No demo-studio fallback. */
 export function getTenantCatalog(partner) {
-  if (!partner) return [];
-  if (partner.catalog?.length) return partner.catalog;
-  if (partner.slug === 'rajkumari-beauty') {
-    return RAJKUMARI_PROVIDER_DATA.serviceCategories;
-  }
-  return [];
+  if (!partner?.catalog?.length) return [];
+  return partner.catalog;
 }
 
 export function assertSameTenant(recordPartnerId, tenantId) {
