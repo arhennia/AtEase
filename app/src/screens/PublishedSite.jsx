@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { getTenantBySlug } from '../lib/tenancy';
 import { mutedClass, pageClass, titleClass } from '../components/platform/ui';
 import { SalonSite } from '../components/salon/SalonSite';
 
 export function PublishedSite() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
-  const partners = useAppStore((s) => s.partners);
   const currentPartnerId = useAppStore((s) => s.currentPartnerId);
-  const fetchPartnerBySlug = useAppStore((s) => s.fetchPartnerBySlug);
 
   const [partner, setPartner] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,15 +17,23 @@ export function PublishedSite() {
     let active = true;
     (async () => {
       setLoading(true);
-      await fetchPartnerBySlug(slug);
+      const { fetchPartnerBySlug, fetchPublishedSite } = useAppStore.getState();
+      const [loaded, publishedConfig] = await Promise.all([
+        fetchPartnerBySlug(slug),
+        fetchPublishedSite(slug),
+      ]);
       if (!active) return;
-      setPartner(getTenantBySlug(useAppStore.getState().partners, slug) || null);
+      if (loaded && publishedConfig) {
+        setPartner({ ...loaded, siteConfig: publishedConfig });
+      } else {
+        setPartner(loaded || null);
+      }
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [slug, preview, fetchPartnerBySlug, partners, currentPartnerId]);
+  }, [slug]);
 
   if (loading) {
     return (
