@@ -18,15 +18,13 @@ export function ClientInsights({ partner }) {
   const [vipPhone, setVipPhone] = useState('');
   const [vipPackageId, setVipPackageId] = useState(packages.find((pkg) => pkg.vipMonthly)?.id || packages[0]?.id || '');
   const [vipDay, setVipDay] = useState(5);
+  const [savingVip, setSavingVip] = useState(false);
 
-  const addVip = (e) => {
+  const addVip = async (e) => {
     e.preventDefault();
     const pkg = packages.find((row) => row.id === vipPackageId);
-    if (!vipName.trim()) {
-      showToast('Enter the client name.');
-      return;
-    }
-    subscribeVip({
+    setSavingVip(true);
+    const res = await subscribeVip({
       partnerId: partner.id,
       clientName: vipName.trim(),
       clientPhone: vipPhone,
@@ -34,8 +32,14 @@ export function ClientInsights({ partner }) {
       packageName: pkg?.name || 'Monthly package',
       dayOfMonth: vipDay,
     });
+    setSavingVip(false);
+    if (!res?.ok) {
+      showToast(res?.error || 'Could not save this VIP membership.');
+      return;
+    }
     setVipName('');
     setVipPhone('');
+    showToast('VIP membership saved.');
   };
 
   return (
@@ -92,8 +96,8 @@ export function ClientInsights({ partner }) {
             onChange={(e) => setVipDay(Number(e.target.value))}
             className={inputClass}
           />
-          <SoftButton type="submit" className="sm:col-span-2">
-            Save VIP
+          <SoftButton type="submit" className="sm:col-span-2" disabled={savingVip}>
+            {savingVip ? 'Saving…' : 'Save VIP'}
           </SoftButton>
         </form>
       </SoftCard>
@@ -135,7 +139,14 @@ export function ClientInsights({ partner }) {
                       Day {member.dayOfMonth} · next {nextVipDate(member.dayOfMonth)}
                     </p>
                   </div>
-                  <button type="button" onClick={() => removeVipMember(member.id)} className="text-xs text-stone-400">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const res = await removeVipMember(member.id);
+                      if (!res?.ok) showToast(res?.error || 'Could not remove this VIP membership.');
+                    }}
+                    className="text-xs text-stone-400"
+                  >
                     Remove
                   </button>
                 </li>
