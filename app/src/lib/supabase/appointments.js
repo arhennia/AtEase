@@ -47,11 +47,13 @@ export async function createAppointmentRecord(bookingData) {
   const amount = Number(bookingData.amount || 0);
   const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const serviceId = bookingData.serviceId || bookingData.service_id || null;
+  const packageId = bookingData.packageId || bookingData.package_id || null;
   const salonId = bookingData.salonId || null;
+  const packageUuid = uuidRe.test(String(packageId || '')) ? packageId : null;
   const payload = {
     owner_id: ownerId,
     salon_id: uuidRe.test(String(salonId || '')) ? salonId : null,
-    service_id: uuidRe.test(String(serviceId || '')) ? serviceId : null,
+    service_id: packageUuid ? null : uuidRe.test(String(serviceId || '')) ? serviceId : null,
     client_user_id: user?.id || null,
     client_name: clientName,
     client_phone: clientPhone,
@@ -66,6 +68,7 @@ export async function createAppointmentRecord(bookingData) {
     payment_method: 'direct',
     booking_source: bookingData.bookingSource || 'whatsapp',
   };
+  if (packageUuid) payload.package_id = packageUuid;
 
   // Guests cannot SELECT the row they just inserted (RLS). Insert without returning.
   const { data, error } = user
