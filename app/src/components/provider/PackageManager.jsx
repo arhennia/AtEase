@@ -1,42 +1,64 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { formatInr } from '../../lib/salonMenu';
 import { SoftButton, SoftCard, eyebrowClass, inputClass, mutedClass, titleClass } from '../platform/ui';
 
-const emptyPackage = () => ({
-  id: `pkg-${Date.now()}`,
-  categoryId: 'packages',
-  name: '',
-  description: '',
-  duration: '2 hrs',
-  price: 1999,
-  originalPrice: 2499,
-  discountPercent: 20,
-  imageUrl: '',
-  badge: 'package',
-  isPackage: true,
-  vipMonthly: false,
-  vipDayOfMonth: 5,
-  highlights: [],
-  detailImages: [],
-  packageItems: [''],
-});
+const EMPTY_PACKAGES = [];
 
 export function PackageManager({ partner }) {
-  const updatePartnerPackages = useAppStore((s) => s.updatePartnerPackages);
+  const createPartnerPackage = useAppStore((s) => s.createPartnerPackage);
+  const savePartnerPackage = useAppStore((s) => s.savePartnerPackage);
+  const deletePartnerPackage = useAppStore((s) => s.deletePartnerPackage);
   const showToast = useAppStore((s) => s.showToast);
-  const packages = partner.packages || [];
+  const packages = partner?.packages || EMPTY_PACKAGES;
 
-  const write = (next) => updatePartnerPackages(next);
+  const [drafts, setDrafts] = useState(packages);
+  const [savingId, setSavingId] = useState('');
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setDrafts((current) => {
+      const byId = new Map(current.map((pkg) => [pkg.id, pkg]));
+      return packages.map((pkg) => byId.get(pkg.id) || pkg);
+    });
+  }, [packages]);
 
   const patch = (id, partial) => {
-    write(packages.map((pkg) => (pkg.id === id ? { ...pkg, ...partial } : pkg)));
+    setDrafts((current) => current.map((pkg) => (pkg.id === id ? { ...pkg, ...partial } : pkg)));
   };
 
-  const add = () => {
-    write([...packages, emptyPackage()]);
-    showToast('Package added. Fill the details, then publish the site.');
+  const add = async () => {
+    const res = await createPartnerPackage();
+    if (!res.ok) {
+      showToast(res.error || 'Could not add a package.');
+      return;
+    }
+    showToast('Package added. Fill the details and save.');
+  };
+
+  const save = async (pkg) => {
+    setSavingId(pkg.id);
+    const res = await savePartnerPackage(pkg);
+    setSavingId('');
+    if (!res.ok) {
+      setErrors((current) => ({ ...current, [pkg.id]: res.error || 'Could not save this package.' }));
+      showToast(res.error || 'Could not save this package.');
+      return;
+    }
+    setErrors((current) => ({ ...current, [pkg.id]: '' }));
+    setDrafts((current) => current.map((row) => (row.id === res.package.id ? res.package : row)));
+    showToast('Package saved.');
+  };
+
+  const remove = async (packageId) => {
+    const res = await deletePartnerPackage(packageId);
+    if (!res.ok) {
+      showToast(res.error || 'Could not remove this package.');
+      return;
+    }
+    setDrafts((current) => current.filter((row) => row.id !== packageId));
+    showToast('Package removed. Existing bookings stay on the calendar.');
   };
 
   return (
@@ -45,7 +67,7 @@ export function PackageManager({ partner }) {
         <div>
           <h3 className={`${titleClass} text-xl`}>Super saver & VIP packages</h3>
           <p className={`${mutedClass} mt-1`}>
-            These appear as the first menu tile on the mobile site. VIP packages let a client book the same visit on a chosen date every month.
+            These appear as the first menu tile on the mobile site. Save each package to keep it on your account. VIP packages let a client book the same visit on a chosen date every month.
           </p>
         </div>
         <SoftButton onClick={add}>
@@ -54,11 +76,11 @@ export function PackageManager({ partner }) {
         </SoftButton>
       </div>
 
-      {packages.length === 0 ? (
+      {drafts.length === 0 ? (
         <SoftCard className="p-8 text-sm text-stone-500">No packages yet. Add a bundle or a monthly VIP plan.</SoftCard>
       ) : (
         <div className="space-y-4">
-          {packages.map((pkg) => (
+          {drafts.map((pkg) => (
             <SoftCard key={pkg.id} className="p-5 space-y-3">
               <div className="flex justify-between gap-3">
                 <input
@@ -69,7 +91,7 @@ export function PackageManager({ partner }) {
                 />
                 <button
                   type="button"
-                  onClick={() => write(packages.filter((row) => row.id !== pkg.id))}
+                  onClick={() => remove(pkg.id)}
                   className="px-3 text-stone-400 hover:text-[#111]"
                   aria-label="Remove package"
                 >
@@ -144,6 +166,14 @@ export function PackageManager({ partner }) {
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
+                  checked={pkg.isActive !== false}
+                  onChange={(e) => patch(pkg.id, { isActive: e.target.checked })}
+                />
+                Visible on the public site
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
                   checked={Boolean(pkg.vipMonthly)}
                   onChange={(e) => patch(pkg.id, { vipMonthly: e.target.checked })}
                 />
@@ -162,10 +192,16 @@ export function PackageManager({ partner }) {
                   />
                 </label>
               )}
-              <p className="text-xs text-stone-400">
-                Shows as {formatInr(pkg.price)}
-                {pkg.originalPrice ? ` (was ${formatInr(pkg.originalPrice)})` : ''} on the public menu.
-              </p>
+              {errors[pkg.id] ? <p className="text-xs text-red-700">{errors[pkg.id]}</p> : null}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-xs text-stone-400">
+                  Shows as {formatInr(pkg.price)}
+                  {pkg.originalPrice ? ` (was ${formatInr(pkg.originalPrice)})` : ''} on the public menu.
+                </p>
+                <SoftButton onClick={() => save(pkg)} disabled={savingId === pkg.id}>
+                  {savingId === pkg.id ? 'Saving…' : 'Save package'}
+                </SoftButton>
+              </div>
             </SoftCard>
           ))}
         </div>
