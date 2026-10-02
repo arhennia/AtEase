@@ -70,7 +70,7 @@ export function Login() {
             <AuthMethods role="brand_owner" nextPath="/dashboard" onVerified={handleVerified} />
           ) : (
             <p className="text-xs text-amber-800/80 bg-amber-50/80 border border-amber-100 rounded-2xl p-3">
-              Add Supabase keys to enable Google and phone login. Email demo still works below.
+              Add Supabase keys to enable Google, phone, and email login.
             </p>
           )}
 
