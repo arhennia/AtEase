@@ -1,13 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, CalendarClock, Check, Globe, MessageCircle, Users } from 'lucide-react';
+import { CalendarClock, Check, Globe, MessageCircle, Users } from 'lucide-react';
 import { LandingNav } from '../components/platform/LandingNav';
-import { LandingFooter, CONTACT_LINKS } from '../components/platform/LandingFooter';
+import { LandingFooter } from '../components/platform/LandingFooter';
 import { HolographicHero } from '../components/platform/HolographicHero';
 import { DashboardPreview } from '../components/platform/DashboardPreview';
 import { PillButton, SectionBadge } from '../components/platform/primitives';
-import { LocalhostDemoBar } from '../components/platform/LocalhostDemoBar';
 
 const FEATURES = [
   {
@@ -67,7 +66,7 @@ const PLANS = [
     cta: 'Talk to us',
     tone: 'purple',
     featured: true,
-    href: '#connect',
+    href: '/signup',
   },
 ];
 
@@ -75,8 +74,7 @@ export function PlatformLanding() {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white min-h-screen text-[#111111] flex flex-col">
-      <LocalhostDemoBar />
+    <div className="bg-white min-h-screen text-[#111111] flex flex-col overflow-x-hidden">
       <main className="flex-1">
         <HolographicHero>
           <LandingNav />
@@ -230,36 +228,6 @@ export function PlatformLanding() {
                     </div>
                   </div>
                 </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="connect" className="bg-white">
-          <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-16 sm:py-20 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-10">
-            <div>
-              <SectionBadge index={4} label="Let's talk" />
-              <h2 className="font-heroSans text-3xl sm:text-4xl font-semibold text-[#111111] tracking-tight max-w-md">
-                Say hello.
-              </h2>
-              <p className="font-heroSans text-[15px] text-stone-500 leading-relaxed mt-3 max-w-sm">
-                Founder-direct — email, GitHub, Instagram, or X. No form, no waitlist.
-              </p>
-            </div>
-            <div className="flex flex-col gap-2.5 sm:items-end min-w-[200px]">
-              {CONTACT_LINKS.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  className="group inline-flex items-center gap-1.5 font-heroSans text-[15px] text-[#1C1917] hover:text-[#6D5A8D] transition-colors duration-200"
-                >
-                  {link.label}
-                  <ArrowUpRight
-                    size={14}
-                    className="opacity-40 transition-opacity duration-200 group-hover:opacity-100"
-                  />
-                </a>
               ))}
             </div>
           </div>
