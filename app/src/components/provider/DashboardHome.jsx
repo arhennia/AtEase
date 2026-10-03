@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatInr } from '../../lib/salonMenu';
+import { bookingDaysInMonth } from '../../lib/studioStats';
 
 function initials(name) {
   return String(name || 'G')
@@ -74,26 +75,58 @@ function MonthCalendar({ marked }) {
   );
 }
 
-export function DashboardHome({ partner, plan, appointments, clientCount, vipCount, serviceCount, onOpenBookings }) {
-  const visitValue = appointments.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
-  const amounts = appointments.map((row) => Number(row.amount) || 0);
-  const bars = appointments.map((row) => ({
-    name: String(row.serviceName || 'Visit').split(',')[0].trim(),
-    amount: Number(row.amount) || 0,
-    client: row.clientName,
+function upcomingBookings(bookings) {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  return (bookings || [])
+    .filter((row) => {
+      if (!row.bookingTime) return true;
+      const date = new Date(row.bookingTime);
+      return Number.isNaN(date.getTime()) || date >= start;
+    })
+    .sort((a, b) => String(a.bookingTime || '').localeCompare(String(b.bookingTime || '')));
+}
+
+function periodLabel(value) {
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return String(value || 'Period');
+  return date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+}
+
+export function DashboardHome({
+  partner,
+  plan,
+  bookings = [],
+  stats,
+  vipCount,
+  serviceCount,
+  loading,
+  error,
+  onOpenBookings,
+  onManagePlan,
+}) {
+  const summary = stats || {
+    clientCount: 0,
+    bookingCount: 0,
+    visitValue: 0,
+    bookingSeries: [],
+    revenueSeries: [],
+    clientSeries: [],
+    periods: [],
+  };
+  const seriesOrEmpty = (series) => (series.length ? series : [0, 0]);
+  const bars = summary.periods.map((row) => ({
+    name: periodLabel(row.period_start),
+    amount: Number(row.revenue) || 0,
   }));
   const maxBar = Math.max(...bars.map((bar) => bar.amount), 1);
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const marked = new Set([new Date().getDate()]);
-  if (appointments.some((row) => String(row.date).toLowerCase().includes('tomorrow'))) {
-    marked.add(tomorrow.getDate());
-  }
+  const marked = bookingDaysInMonth(bookings);
+  const upcoming = upcomingBookings(bookings);
 
-  const stats = [
-    { label: 'Clients', value: clientCount, series: [0, clientCount || 0] },
-    { label: 'Bookings', value: appointments.length, series: [0, appointments.length] },
-    { label: 'Visit value', value: formatInr(visitValue), series: amounts.length ? amounts : [0, 0] },
+  const cards = [
+    { label: 'Clients', value: summary.clientCount, series: seriesOrEmpty(summary.clientSeries) },
+    { label: 'Bookings', value: summary.bookingCount, series: seriesOrEmpty(summary.bookingSeries) },
+    { label: 'Visit value', value: formatInr(summary.visitValue), series: seriesOrEmpty(summary.revenueSeries) },
     { label: 'VIP members', value: vipCount, series: [0, vipCount || 0] },
   ];
 
@@ -101,9 +134,20 @@ export function DashboardHome({ partner, plan, appointments, clientCount, vipCou
     <div className="space-y-4">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-heroSans text-[11px] uppercase tracking-[0.16em] text-stone-400">
-            {plan.status === 'active' ? 'Paid plan' : `Trial · ${plan.daysLeft}d left`}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="font-heroSans text-[11px] uppercase tracking-[0.16em] text-stone-400">
+              {plan.status === 'active' ? 'Paid plan' : `Trial · ${plan.daysLeft}d left`}
+            </p>
+            {onManagePlan && (
+              <button
+                type="button"
+                onClick={onManagePlan}
+                className="font-heroSans text-[12px] text-[#6D5A8D] hover:text-[#5C4B78]"
+              >
+                {plan.status === 'active' ? 'Manage plan' : 'Choose a plan'}
+              </button>
+            )}
+          </div>
           <h1 className="mt-1 font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917] sm:text-3xl">
             {partner.brandName}
           </h1>
@@ -113,8 +157,11 @@ export function DashboardHome({ partner, plan, appointments, clientCount, vipCou
         </p>
       </div>
 
+      {loading && <p className="font-heroSans text-sm text-stone-500">Loading your studio numbers…</p>}
+      {error && <p className="font-heroSans text-sm text-red-700">{error}</p>}
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => (
+        {cards.map((stat) => (
           <article key={stat.label} className="rounded-2xl border border-[#EDE9FE] bg-white/80 p-4 shadow-[0_12px_30px_-24px_rgba(88,28,135,0.45)]">
             <p className="font-heroSans text-[12px] text-stone-500">{stat.label}</p>
             <p className="mt-1 font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917]">{stat.value}</p>
@@ -131,11 +178,11 @@ export function DashboardHome({ partner, plan, appointments, clientCount, vipCou
               View all
             </button>
           </div>
-          {appointments.length === 0 ? (
-            <p className="font-heroSans text-sm text-stone-500">No bookings yet. They will show up here.</p>
+          {upcoming.length === 0 ? (
+            <p className="font-heroSans text-sm text-stone-500">No upcoming bookings.</p>
           ) : (
             <ul className="space-y-2">
-              {appointments.map((row) => (
+              {upcoming.map((row) => (
                 <li key={row.id} className="flex items-center gap-3 rounded-2xl bg-[#F7F4FB] px-3 py-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EDE9FE] font-heroSans text-[12px] font-semibold text-[#5C4E78]">
                     {initials(row.clientName)}
@@ -165,7 +212,7 @@ export function DashboardHome({ partner, plan, appointments, clientCount, vipCou
                 <p className="font-heroSans text-sm text-stone-500">Nothing recorded yet.</p>
               ) : (
                 bars.map((bar) => (
-                  <div key={`${bar.client}-${bar.name}`}>
+                  <div key={bar.name}>
                     <div className="mb-1 flex items-center justify-between gap-3">
                       <span className="truncate font-heroSans text-[12px] text-stone-600">{bar.name}</span>
                       <span className="font-heroSans text-[12px] font-medium text-[#1C1917]">{formatInr(bar.amount)}</span>
