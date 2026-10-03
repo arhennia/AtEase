@@ -1,0 +1,19 @@
+project_id = "atease"
+
+[functions.create-subscription-order]
+verify_jwt = true
+
+[functions.verify-subscription-payment]
+verify_jwt = true
+
+[functions.report-payment-failure]
+verify_jwt = true
+
+[functions.cancel-subscription-checkout]
+verify_jwt = true
+
+[functions.cancel-subscription]
+verify_jwt = true
+
+[functions.razorpay-webhook]
+verify_jwt = false
