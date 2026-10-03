@@ -56,11 +56,21 @@ export function buildWhatsAppBookingUrl({ phone, ...details }) {
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
 
-export function openWhatsApp(url) {
+export function buildWhatsAppDelayUrl({ phone, studioName, serviceName, date, time, minutes }) {
+  const digits = toWhatsAppDigits(phone);
+  if (!isValidWhatsAppNumber(digits)) return null;
+  const text = [
+    `Hi, this is ${studioName || 'your studio'}.`,
+    `Your ${serviceName || 'appointment'} on ${date || 'the booked day'} at ${time || 'the booked time'} is delayed by ${minutes} minutes.`,
+  ].join(' ');
+  return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
+}
+
+export function openWhatsApp(url, { replace = true } = {}) {
   if (!url || typeof window === 'undefined') return false;
   const opened = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!opened) {
-    window.location.href = url;
-  }
+  if (opened) return true;
+  if (!replace) return false;
+  window.location.href = url;
   return true;
 }
