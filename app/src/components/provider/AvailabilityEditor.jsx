@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { normalizeWorkingHours } from '../../lib/availability';
-import { Ban } from 'lucide-react';
 
 export function AvailabilityEditor() {
   const partners = useAppStore((state) => state.partners);
@@ -15,9 +14,6 @@ export function AvailabilityEditor() {
   const [startTime, setStartTime] = useState(savedHours.start);
   const [endTime, setEndTime] = useState(savedHours.end);
   const [selectedDays, setSelectedDays] = useState(savedHours.daysOpen);
-  const [blockedSlots, setBlockedSlots] = useState([]);
-  const [showBlockModal, setShowBlockModal] = useState(false);
-  const [newBlockTime, setNewBlockTime] = useState('04:00 PM - 05:00 PM');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -56,21 +52,6 @@ export function AvailabilityEditor() {
     showToast('Operating schedule saved.');
   };
 
-  const handleAddBlock = (e) => {
-    e.preventDefault();
-    setBlockedSlots([
-      ...blockedSlots,
-      { id: `b-${Date.now()}`, date: 'Today', time: newBlockTime, reason: 'Private block' }
-    ]);
-    setShowBlockModal(false);
-    showToast(`Blocked slot: ${newBlockTime}`);
-  };
-
-  const handleRemoveBlock = (id) => {
-    setBlockedSlots(blockedSlots.filter((b) => b.id !== id));
-    showToast('Slot unblocked and reopened.');
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -84,7 +65,7 @@ export function AvailabilityEditor() {
         <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-500 block">
           Operating Days
         </span>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="flex flex-wrap gap-2">
           {daysOfWeek.map((day) => {
             const isActive = selectedDays.includes(day);
             return (
@@ -92,7 +73,7 @@ export function AvailabilityEditor() {
                 key={day}
                 type="button"
                 onClick={() => toggleDay(day)}
-                className={`py-3 text-xs font-semibold uppercase tracking-wider rounded-2xl border transition-all ${
+                className={`min-w-[3.25rem] px-2 py-3 text-xs font-semibold uppercase tracking-wider rounded-2xl border transition-all ${
                   isActive
                     ? 'bg-[#F3EEF8] text-[#4A3F5C] border-[#E4D9F0]'
                     : 'bg-[#F7F6F8] text-stone-400 border-stone-200 hover:border-stone-300'
@@ -148,97 +129,6 @@ export function AvailabilityEditor() {
           {saving ? 'Saving…' : 'Save Operating Schedule'}
         </button>
       </div>
-
-      {/* Blocked Slots Section */}
-      <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-stone-600 block">
-            Blocked Time Slots &amp; Travel Breaks
-          </span>
-          <button
-            onClick={() => setShowBlockModal(true)}
-            className="text-[10px] tracking-wider uppercase font-bold text-stone-600 hover:text-[#111111] border-b border-stone-400 pb-0.5 flex items-center gap-1"
-          >
-            <Ban size={12} />
-            <span>+ Quick Block Slot</span>
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {blockedSlots.length === 0 && (
-            <p className="text-xs text-stone-500 font-light">
-              No extra breaks. Closed days are the days turned off above.
-            </p>
-          )}
-          {blockedSlots.map((block) => (
-            <div
-              key={block.id}
-              className="p-3.5 rounded-2xl border border-stone-200 bg-[#F7F6F8] flex items-center justify-between text-xs"
-            >
-              <div className="space-y-0.5">
-                <div className="font-mono font-bold text-[#111111]">
-                  {block.date} • {block.time}
-                </div>
-                <div className="text-[10px] text-stone-500">
-                  Reason: {block.reason}
-                </div>
-              </div>
-              <button
-                onClick={() => handleRemoveBlock(block.id)}
-                className="text-[10px] tracking-wider uppercase font-semibold text-stone-500 hover:text-red-700"
-              >
-                Unblock
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick Block Modal */}
-      {showBlockModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="glass-modal w-full max-w-sm p-6 space-y-4">
-            <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-              <h4 className="font-heroSans text-base font-semibold tracking-tight">Block Slot</h4>
-              <button onClick={() => setShowBlockModal(false)}>✕</button>
-            </div>
-
-            <form onSubmit={handleAddBlock} className="space-y-3">
-              <div>
-                <label className="block text-[10px] tracking-wider uppercase font-semibold mb-1">
-                  Time Slot to Block
-                </label>
-                <select
-                  value={newBlockTime}
-                  onChange={(e) => setNewBlockTime(e.target.value)}
-                  className="w-full bg-[#F9F9F9] border border-stone-200 p-2 text-xs text-[#111111]"
-                >
-                  <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM (Lunch Break)</option>
-                  <option value="03:00 PM - 04:30 PM">03:00 PM - 04:30 PM (Travel Transit)</option>
-                  <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM (Private Appointment)</option>
-                  <option value="07:00 PM - 08:30 PM">07:00 PM - 08:30 PM (Evening Maintenance)</option>
-                </select>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowBlockModal(false)}
-                  className="w-1/3 rounded-full border border-stone-200 text-xs py-2 font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 rounded-full bg-[#1C1917] text-white text-xs py-2 font-medium"
-                >
-                  Confirm Block
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
