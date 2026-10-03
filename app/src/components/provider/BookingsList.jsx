@@ -5,16 +5,28 @@ import { Phone, MapPin, Navigation, ShieldCheck } from 'lucide-react';
 export function BookingsList({ partnerId }) {
   const allAppointments = useAppStore((state) => state.appointments);
   const delayAppointment = useAppStore((state) => state.delayAppointment);
-  const showToast = useAppStore((state) => state.showToast);
   const currentPartnerId = useAppStore((state) => state.currentPartnerId);
   const scopeId = partnerId || currentPartnerId;
   const appointments = allAppointments.filter((a) => a.partnerId === scopeId);
 
   const [filter, setFilter] = useState('ALL'); // 'ALL' | 'TODAY' | 'TOMORROW'
+  const [movingId, setMovingId] = useState('');
+
+  const onCalendarDay = (appt, offset) => {
+    if (!appt.bookingTime) return false;
+    const date = new Date(appt.bookingTime);
+    if (Number.isNaN(date.getTime())) return false;
+    const target = new Date();
+    target.setHours(0, 0, 0, 0);
+    target.setDate(target.getDate() + offset);
+    return date.getFullYear() === target.getFullYear()
+      && date.getMonth() === target.getMonth()
+      && date.getDate() === target.getDate();
+  };
 
   const filteredAppointments = appointments.filter((appt) => {
-    if (filter === 'TODAY') return appt.date.toLowerCase().includes('today') || appt.date.toLowerCase().includes(new Date().getDate().toString());
-    if (filter === 'TOMORROW') return appt.date.toLowerCase().includes('tomorrow');
+    if (filter === 'TODAY') return onCalendarDay(appt, 0);
+    if (filter === 'TOMORROW') return onCalendarDay(appt, 1);
     return true;
   });
 
@@ -73,7 +85,7 @@ export function BookingsList({ partnerId }) {
             No bookings under this filter
           </p>
           <p className="text-xs text-stone-400 font-light">
-            New client reservations will automatically synchronize here in real time.
+            Open this tab again to load bookings saved for the studio.
           </p>
         </div>
       ) : (
@@ -92,7 +104,7 @@ export function BookingsList({ partnerId }) {
                   {appt.date}
                 </div>
                 <div className="inline-block px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider bg-stone-100 border border-stone-300 text-stone-800">
-                  Ref: {appt.id}
+                  Ref: {appt.bookingRef || 'Pending'}
                 </div>
               </div>
 
@@ -129,13 +141,20 @@ export function BookingsList({ partnerId }) {
               {/* Action Buttons */}
               <div className="flex flex-col items-start md:items-end gap-2 md:w-1/4">
                 <button
-                  onClick={() => delayAppointment(appt.id, 15)}
-                  className="rounded-full bg-[#1C1917] text-white px-4 py-2 text-[12px] font-heroSans font-medium hover:bg-black transition-colors"
+                  type="button"
+                  disabled={movingId === appt.id}
+                  onClick={async () => {
+                    setMovingId(appt.id);
+                    await delayAppointment(appt.id, 15);
+                    setMovingId('');
+                  }}
+                  className="rounded-full bg-[#1C1917] text-white px-4 py-2 text-[12px] font-heroSans font-medium hover:bg-black transition-colors disabled:opacity-40"
                 >
-                  Delay 15 Mins
+                  {movingId === appt.id ? 'Moving…' : 'Delay 15 Mins'}
                 </button>
+                {appt.location ? (
                 <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(appt.location || 'Bhubaneswar')}`}
+                  href={`https://maps.google.com/?q=${encodeURIComponent(appt.location)}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-[10px] tracking-wider uppercase font-semibold text-stone-600 hover:text-[#111111] flex items-center gap-1 underline underline-offset-2"
@@ -143,6 +162,7 @@ export function BookingsList({ partnerId }) {
                   <Navigation size={11} />
                   <span>Directions &amp; Map →</span>
                 </a>
+                ) : null}
               </div>
             </div>
           ))}
