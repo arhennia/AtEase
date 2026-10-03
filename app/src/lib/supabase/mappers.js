@@ -1,6 +1,7 @@
-import { normalizeServiceArea, normalizeWorkingHours } from '../availability';
+import { formatMinutes, normalizeServiceArea, normalizeWorkingHours } from '../availability';
 import { mapPackageFromDb } from '../packages';
 import { mapVipMemberFromDb } from '../vip';
+import { mapSubscriptionFromDb } from './subscriptions';
 
 function storedRadius(value) {
   if (value == null || value === '') return null;
@@ -8,7 +9,15 @@ function storedRadius(value) {
   return Number.isInteger(n) ? n : null;
 }
 
-export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig = null, packageRows = [], vipRows = []) {
+export function mapBrandOwnerFromDb(
+  row,
+  services = [],
+  salon = null,
+  siteConfig = null,
+  packageRows = [],
+  vipRows = [],
+  subscriptionRow = null
+) {
   if (!row) return null;
 
   const categoryMap = {};
@@ -35,6 +44,11 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig
     services: categoryMap[catName],
   }));
 
+  const subscription =
+    subscriptionRow && (subscriptionRow.plan_id || subscriptionRow.owner_id)
+      ? mapSubscriptionFromDb(subscriptionRow)
+      : subscriptionRow || null;
+
   return {
     id: row.id,
     userId: row.user_id,
@@ -56,8 +70,9 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig
     coverageRadiusKm: storedRadius(row.coverage_radius_km) ?? storedRadius(salon?.coverage_radius_km) ?? 10,
     serviceArea: normalizeServiceArea(row.service_area),
     workingHours: normalizeWorkingHours(row.working_hours),
-    trialEndsAt: row.trial_ends_at,
-    subscriptionStatus: row.subscription_status || 'trial',
+    trialEndsAt: subscription?.currentPeriodEnd || row.trial_ends_at,
+    subscriptionStatus: subscription?.status || row.subscription_status || 'trial',
+    subscription,
     salonId: salon?.id || null,
     catalog,
     packages: (packageRows || []).map(mapPackageFromDb).filter(Boolean),
@@ -69,25 +84,22 @@ export function mapBrandOwnerFromDb(row, services = [], salon = null, siteConfig
 export function normalizeAppointment(record) {
   if (!record) return null;
 
-  const serviceName = record.service_name || record.service_title || 'Booked service';
+  const serviceName = record.service_name || record.service_title || record.serviceName || 'Booked service';
   const amount = Number(record.amount || record.service_price || record.price || 0);
   let dateStr = record.slot_date || record.date || record.booking_date;
   let timeStr = record.slot_time || record.time || record.appointment_time;
 
-  if (record.booking_time) {
-    const d = new Date(record.booking_time);
+  if (record.booking_time || record.bookingTime) {
+    const d = new Date(record.booking_time || record.bookingTime);
     if (!Number.isNaN(d.getTime())) {
-      if (!dateStr) {
-        dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      }
-      if (!timeStr) {
-        timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-      }
+      dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      timeStr = formatMinutes(d.getHours() * 60 + d.getMinutes());
     }
   }
 
   return {
-    id: record.booking_ref || record.id,
+    id: record.id,
+    bookingRef: record.booking_ref || record.bookingRef || '',
     partnerId: record.owner_id,
     ownerId: record.owner_id,
     salonId: record.salon_id,
@@ -104,5 +116,6 @@ export function normalizeAppointment(record) {
     amount,
     bookingSource: record.booking_source || 'storefront',
     createdAt: record.created_at || new Date().toISOString(),
+    bookingTime: record.booking_time || null,
   };
 }
