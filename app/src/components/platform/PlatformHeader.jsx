@@ -34,10 +34,11 @@ export function PlatformHeader() {
                     logout();
                     navigate('/');
                   }}
-                  className="font-heroSans text-[13px] text-stone-400 hover:text-[#1C1917] px-3 py-2 rounded-full inline-flex items-center gap-1.5 hover:bg-white/60 transition-all duration-200"
+                  aria-label="Log out"
+                  className="font-heroSans text-[13px] text-stone-400 hover:text-[#1C1917] px-2.5 sm:px-3 py-2 rounded-full inline-flex items-center gap-1.5 hover:bg-white/60 transition-all duration-200"
                 >
                   <LogOut size={13} />
-                  Logout
+                  <span className="hidden sm:inline">Logout</span>
                 </button>
               </>
             ) : (

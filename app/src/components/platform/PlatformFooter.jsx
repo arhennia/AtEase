@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AtEaseLogo } from './AtEaseLogo';
 
 export function PlatformFooter() {
@@ -37,8 +37,16 @@ export function PlatformFooter() {
         </div>
       </div>
       <div className="border-t border-white/60">
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5 text-[11px] text-stone-400 font-heroSans">
-          © {new Date().getFullYear()} AtEase
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5 flex flex-wrap items-center justify-between gap-3 text-[11px] text-stone-400 font-heroSans">
+          <span>© {new Date().getFullYear()} AtEase</span>
+          <span className="inline-flex items-center gap-3">
+            <Link to="/privacy" className="hover:text-[#1C1917]">
+              Privacy
+            </Link>
+            <Link to="/terms" className="hover:text-[#1C1917]">
+              Terms
+            </Link>
+          </span>
         </div>
       </div>
     </footer>

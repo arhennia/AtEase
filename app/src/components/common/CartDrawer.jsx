@@ -193,7 +193,7 @@ export function CartDrawer() {
               </div>
 
               {/* Exact Payment Disclosure Badge */}
-              <div className="border border-stone-300 bg-white p-2.5 rounded-sm text-[10px] text-stone-700 leading-relaxed flex items-start gap-2">
+              <div className="border border-[#E4D9F0] bg-[#F3EEF8] p-2.5 rounded-2xl text-[10px] text-[#4A3F5C] leading-relaxed flex items-start gap-2">
                 <ShieldCheck size={14} className="text-[#111111] shrink-0 mt-0.5" />
                 <span>
                   Pay directly to the service provider at the time of service via Cash, UPI, or Card.

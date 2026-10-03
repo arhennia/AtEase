@@ -20,9 +20,9 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { formatUptoPrice } from '../../data/onboardingQuiz';
-import { createAppointmentRecord, isSupabaseConfigured } from '../../lib/supabase';
+import { createAppointmentRecord, fetchTakenSlotLabels, isSupabaseConfigured } from '../../lib/supabase';
 import { buildWhatsAppBookingUrl, openWhatsApp } from '../../lib/whatsapp';
-import { isDayOpen, normalizeWorkingHours, slotLabels, slotsForDay } from '../../lib/availability';
+import { isDayOpen, normalizeWorkingHours, omitTakenSlots, slotInstant, slotLabels, slotsForDay } from '../../lib/availability';
 
 export function BookingModal() {
   const bookingModalOpen = useAppStore((state) => state.bookingModalOpen);
@@ -43,6 +43,7 @@ export function BookingModal() {
   const [serviceType, setServiceType] = useState('at-home'); // 'at-home' | 'in-studio'
   const [selectedDateIdx, setSelectedDateIdx] = useState(0);
   const [selectedTime, setSelectedTime] = useState('');
+  const [takenLabels, setTakenLabels] = useState([]);
   
   // Client input details
   const [clientName, setClientName] = useState('');
@@ -70,9 +71,13 @@ export function BookingModal() {
   const bookingPartner = partners.find((p) => p.id === ownerId || (partnerSlug && p.slug === partnerSlug));
   const hours = normalizeWorkingHours(bookingPartner?.workingHours);
   const activeDayName = dates[selectedDateIdx]?.dayName;
+  const activeDayDate = dates[selectedDateIdx]?.full;
+  const dayKey = activeDayDate
+    ? `${activeDayDate.getFullYear()}-${activeDayDate.getMonth()}-${activeDayDate.getDate()}`
+    : '';
   const hoursKey = `${hours.start}|${hours.end}|${hours.daysOpen.join(',')}`;
   const dayClosed = !isDayOpen(hours, activeDayName);
-  const timeSlots = slotsForDay(hours, activeDayName);
+  const timeSlots = omitTakenSlots(slotsForDay(hours, activeDayName, activeDayDate), takenLabels);
   const openSlots = slotLabels(timeSlots);
 
   useEffect(() => {
@@ -80,14 +85,27 @@ export function BookingModal() {
   }, [partnerSlug, fetchPartnerBySlug]);
 
   useEffect(() => {
+    if (!ownerId || !dayKey) return undefined;
+    const [year, month, date] = dayKey.split('-').map(Number);
+    let active = true;
+    fetchTakenSlotLabels(ownerId, new Date(year, month, date)).then((labels) => {
+      if (active) setTakenLabels(labels);
+    });
+    return () => {
+      active = false;
+    };
+  }, [ownerId, dayKey]);
+
+  useEffect(() => {
     const [start, end, days] = hoursKey.split('|');
-    const slots = slotLabels(slotsForDay({
+    const [year, month, date] = dayKey.split('-').map(Number);
+    const slots = slotLabels(omitTakenSlots(slotsForDay({
       start,
       end,
       daysOpen: days ? days.split(',').filter(Boolean) : [],
-    }, activeDayName));
+    }, activeDayName, new Date(year, month, date)), takenLabels));
     if (selectedTime && !slots.includes(selectedTime)) setSelectedTime('');
-  }, [hoursKey, selectedTime, activeDayName]);
+  }, [hoursKey, selectedTime, activeDayName, takenLabels, dayKey]);
 
   // Pre-fill initial data when opened
   React.useEffect(() => {
@@ -113,14 +131,13 @@ export function BookingModal() {
   if (!bookingModalOpen) return null;
 
   const activeProvider = bookingModalData?.provider || {
-    name: "Rajkumari Beauty & Aesthetics",
-    title: "Master Hair & Skin Specialist",
-    location: "Home Services • Bhubaneswar",
-    phone: "+91 90000 00000"
+    name: bookingPartner?.brandName || 'Studio',
+    title: bookingPartner?.professionalTitle || '',
+    location: bookingPartner?.location || '',
   };
 
-  const serviceName = bookingModalData?.serviceName || 
-    (bookingModalData?.services ? bookingModalData.services.map(s => s.name).join(', ') : 'Keratin Smoothing & Hair Spa');
+  const serviceName = bookingModalData?.serviceName ||
+    (bookingModalData?.services ? bookingModalData.services.map((s) => s.name).filter(Boolean).join(', ') : '');
 
   const amount = bookingModalData?.totalAmount || bookingModalData?.amount || 2500;
   const activeDate = dates[selectedDateIdx];
@@ -128,6 +145,10 @@ export function BookingModal() {
   const handleFinalBooking = async () => {
     const name = clientName.trim();
     const phone = clientPhone.trim();
+    if (!serviceName) {
+      showToast('Pick a service or package first.');
+      return;
+    }
     if (!name) {
       showToast('Enter your name.');
       return;
@@ -136,31 +157,23 @@ export function BookingModal() {
       showToast('Enter a valid 10-digit phone number.');
       return;
     }
-    if (dayClosed || !openSlots.includes(selectedTime)) {
+    const when = slotInstant(activeDate.full, selectedTime);
+    if (dayClosed || !openSlots.includes(selectedTime) || !when) {
       showToast(dayClosed ? `Closed on ${activeDayName}.` : 'Pick a time during business hours.');
       return;
     }
 
     const ownerId = bookingModalData?.partnerId || bookingModalData?.provider?.partnerId;
     const partner = partners.find((p) => p.id === ownerId);
+    const studioName = partner?.brandName || activeProvider.name;
     const ownerWhatsApp =
+      partner?.whatsappNumber ||
       bookingModalData?.whatsappNumber ||
       bookingModalData?.provider?.whatsappNumber ||
-      partner?.whatsappNumber ||
       partner?.ownerPhone;
 
-    const waUrl = buildWhatsAppBookingUrl({
-      phone: ownerWhatsApp,
-      clientName: name,
-      services: serviceName,
-      date: activeDate.formatted,
-      time: selectedTime,
-      total: amount,
-      studioName: activeProvider.name,
-    });
-
-    if (!waUrl) {
-      showToast('This studio has not set a WhatsApp number yet.');
+    if (!isSupabaseConfigured || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerId || '')) {
+      showToast('This studio cannot take a booking right now.');
       return;
     }
 
@@ -172,34 +185,49 @@ export function BookingModal() {
       serviceName,
       date: activeDate.formatted,
       time: selectedTime,
-      location: serviceType === 'at-home' ? clientAddress : activeProvider.location,
+      bookingTime: when.toISOString(),
+      workingHours: hours,
+      location: serviceType === 'at-home' ? clientAddress : (partner?.location || activeProvider.location),
       serviceType,
       amount,
-      providerName: activeProvider.name,
+      providerName: studioName,
       ownerId,
       partnerId: ownerId,
-      salonId: bookingModalData?.salonId || bookingModalData?.provider?.salonId,
+      salonId: bookingModalData?.salonId || bookingModalData?.provider?.salonId || partner?.salonId,
       serviceId: bookingModalData?.serviceId,
       packageId: bookingModalData?.packageId,
       status: 'pending',
       bookingSource: 'whatsapp',
     };
 
-    if (isSupabaseConfigured && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownerId || '')) {
-      const result = await createAppointmentRecord(bookingPayload);
-      if (!result.success) {
-        setIsSubmitting(false);
-        showToast(result.error || 'Could not save booking.');
-        return;
-      }
-      bookingPayload.id = result.data?.id || `saved-${Date.now()}`;
+    const result = await createAppointmentRecord(bookingPayload);
+    if (!result.success) {
+      setIsSubmitting(false);
+      showToast(result.error || 'Could not save booking.');
+      return;
     }
 
-    const created = addAppointment(bookingPayload);
-    setConfirmedBooking({ ...created, whatsappUrl: waUrl });
+    const waUrl = buildWhatsAppBookingUrl({
+      phone: ownerWhatsApp,
+      clientName: name,
+      services: serviceName,
+      date: activeDate.formatted,
+      time: selectedTime,
+      total: amount,
+      studioName,
+    });
+    const whatsappOpened = waUrl ? openWhatsApp(waUrl) : false;
+    if (result.data?.id) {
+      addAppointment({ ...bookingPayload, id: result.data.id, bookingRef: result.data.bookingRef });
+    }
+    setConfirmedBooking({
+      ...bookingPayload,
+      id: result.data?.bookingRef || result.data?.id || '',
+      whatsappUrl: waUrl,
+      whatsappOpened,
+    });
     clearCart();
     setIsSubmitting(false);
-    openWhatsApp(waUrl);
     setStep(5);
   };
 
@@ -405,7 +433,9 @@ export function BookingModal() {
 
               {dayClosed || openSlots.length === 0 ? (
                 <p className="text-xs text-stone-500 font-light">
-                  Closed on {activeDayName}. No booking times that day.
+                  {dayClosed
+                    ? `Closed on ${activeDayName}. No booking times that day.`
+                    : 'No open times left that day.'}
                 </p>
               ) : (
               <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
@@ -543,7 +573,7 @@ export function BookingModal() {
               </div>
 
               {/* MANDATORY PAYMENT DISCLOSURE BADGE (Exact Copy) */}
-              <div className="border border-stone-300 bg-stone-50 p-3 rounded-sm text-[11px] text-[#1C1917] leading-relaxed flex items-start gap-2.5 font-medium shadow-sm">
+              <div className="border border-[#E4D9F0] bg-[#F3EEF8] p-3 rounded-2xl text-[11px] text-[#4A3F5C] leading-relaxed flex items-start gap-2.5">
                 <ShieldCheck size={16} className="text-[#1C1917] shrink-0 mt-0.5" />
                 <span>
                   Pay directly to the service provider at the time of service via Cash, UPI, or Card.
@@ -583,13 +613,19 @@ export function BookingModal() {
                   WhatsApp booking started
                 </span>
                 <h3 className="font-heroSans text-2xl font-semibold tracking-tight text-[#1C1917]">
-                  Message ready
+                  {confirmedBooking.whatsappOpened ? 'Message ready' : 'Booking saved'}
                 </h3>
-                <p className="text-xs font-mono text-stone-600">
-                  Reference: <strong>{confirmedBooking.id}</strong>
-                </p>
+                {confirmedBooking.id && (
+                  <p className="text-xs font-mono text-stone-600">
+                    Reference: <strong>{confirmedBooking.id}</strong>
+                  </p>
+                )}
                 <p className="text-xs text-stone-500 font-light">
-                  We saved this as pending and opened WhatsApp with the booking details.
+                  {confirmedBooking.whatsappOpened
+                    ? 'We saved this as pending and opened WhatsApp with the booking details.'
+                    : confirmedBooking.whatsappUrl
+                      ? 'We saved this as pending. WhatsApp did not open, so the studio has not been messaged yet.'
+                      : 'We saved this as pending. This studio has no WhatsApp number on file, so no message was opened.'}
                 </p>
               </div>
 

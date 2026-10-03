@@ -31,7 +31,7 @@ export function SoftButton({
     ghost: 'bg-white/55 border border-white/80 text-[#1C1917] hover:border-[#D4C8E8] hover:bg-white/80 backdrop-blur-md',
     lavender: 'bg-[#EDE9FE]/80 text-[#5C4E72] hover:bg-[#E4D9F8] border border-white/70',
   };
-  const cls = `inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-medium font-heroSans transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 ${tones[tone] || tones.ink} ${className}`;
+  const cls = `inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-medium font-heroSans transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100 disabled:opacity-40 ${tones[tone] || tones.ink} ${className}`;
   if (href) {
     return (
       <a href={href} className={cls} {...props}>
@@ -46,8 +46,8 @@ export function SoftButton({
   );
 }
 
-export function SoftCard({ children, className = '' }) {
-  return <div className={`${cardClass} ${className}`}>{children}</div>;
+export function SoftCard({ children, className = '', ...props }) {
+  return <div className={`${cardClass} ${className}`} {...props}>{children}</div>;
 }
 
 export function FlowHeader({ left, right }) {

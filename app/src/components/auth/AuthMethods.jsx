@@ -18,14 +18,16 @@ export function AuthMethods({
   nextPath = '/',
   onVerified,
   showGoogle = true,
+  variant = 'glass',
 }) {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState('phone');
-  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
 
   const intendedRole = role === 'partner' ? 'brand_owner' : role;
+  const panel = variant === 'panel';
 
   const handleGoogle = async () => {
     setError('');
@@ -33,18 +35,18 @@ export function AuthMethods({
       setError('Connect Supabase to use Google login.');
       return;
     }
-    setLoading(true);
+    setBusy('google');
     const res = await signInWithGoogle({ role: intendedRole, nextPath });
-    setLoading(false);
+    setBusy('');
     if (!res.ok) setError(res.error);
   };
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setBusy('otp');
     const res = await sendPhoneOtp(phone, { role: intendedRole });
-    setLoading(false);
+    setBusy('');
     if (!res.ok) {
       setError(res.error);
       return;
@@ -55,9 +57,9 @@ export function AuthMethods({
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setBusy('verify');
     const res = await verifyPhoneOtp(phone, otp);
-    setLoading(false);
+    setBusy('');
     if (!res.ok) {
       setError(res.error);
       return;
@@ -71,26 +73,52 @@ export function AuthMethods({
         <button
           type="button"
           onClick={handleGoogle}
-          disabled={loading}
-          className="w-full rounded-full border border-white/80 bg-white/55 py-3 text-[13px] font-heroSans font-medium hover:border-[#D4C8E8] hover:bg-white/80 flex items-center justify-center gap-2 disabled:opacity-70 backdrop-blur-md"
+          disabled={Boolean(busy)}
+          className={
+            panel
+              ? 'flex w-full items-center justify-center gap-2 rounded-xl border border-[#E7E3EE] bg-white py-3 text-[13px] font-heroSans font-medium text-[#1C1917] hover:border-[#D4C8E8] hover:bg-[#FBF9FD] disabled:opacity-70'
+              : 'w-full rounded-full border border-white/80 bg-white/55 py-3 text-[13px] font-heroSans font-medium hover:border-[#D4C8E8] hover:bg-white/80 flex items-center justify-center gap-2 disabled:opacity-70 backdrop-blur-md'
+          }
         >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : <GoogleIcon />}
+          {busy === 'google' ? <Loader2 size={14} className="animate-spin" /> : <GoogleIcon />}
           Continue with Google
         </button>
       )}
 
-      <div className="flex items-center gap-3 text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans">
-        <span className="flex-1 h-px bg-stone-200" />
-        or phone OTP
-        <span className="flex-1 h-px bg-stone-200" />
+      <div
+        className={
+          panel
+            ? 'flex items-center gap-3 text-[12px] text-stone-400 font-heroSans'
+            : 'flex items-center gap-3 text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans'
+        }
+      >
+        <span className={`h-px flex-1 ${panel ? 'bg-[#E7E3EE]' : 'bg-stone-200'}`} />
+        {panel ? 'or continue with phone' : 'or phone OTP'}
+        <span className={`h-px flex-1 ${panel ? 'bg-[#E7E3EE]' : 'bg-stone-200'}`} />
       </div>
 
       {step === 'phone' ? (
         <form onSubmit={handleSendOtp} className="space-y-3">
           <label className="block space-y-1">
-            <span className="text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans">Mobile number</span>
-            <div className="flex rounded-2xl border border-white/70 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-white/50 backdrop-blur-md">
-              <span className="px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200/70 font-mono bg-white/40 rounded-l-2xl">+91</span>
+            <span className={panel ? 'text-sm font-medium text-[#1C1917] font-heroSans' : 'text-[11px] tracking-[0.16em] uppercase text-stone-400 font-heroSans'}>
+              Mobile number
+            </span>
+            <div
+              className={
+                panel
+                  ? 'flex rounded-xl border border-[#E7E3EE] bg-white focus-within:border-[#C4B5D4] focus-within:ring-2 focus-within:ring-[#EDE9FE]'
+                  : 'flex rounded-2xl border border-white/70 focus-within:border-[#D4C8E8] focus-within:ring-2 focus-within:ring-[#EDE9FE] bg-white/50 backdrop-blur-md'
+              }
+            >
+              <span
+                className={
+                  panel
+                    ? 'rounded-l-xl border-r border-[#E7E3EE] px-3 py-2.5 font-mono text-xs text-stone-500'
+                    : 'px-3 py-2.5 text-xs text-stone-500 border-r border-stone-200/70 font-mono bg-white/40 rounded-l-2xl'
+                }
+              >
+                +91
+              </span>
               <input
                 type="tel"
                 value={phone}
@@ -104,10 +132,14 @@ export function AuthMethods({
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full rounded-full bg-[#1C1917] text-white py-3 text-[13px] font-heroSans font-medium flex items-center justify-center gap-2 disabled:opacity-40"
+            disabled={Boolean(busy) || phone.length < 10}
+            className={
+              panel
+                ? 'flex w-full items-center justify-center gap-2 rounded-xl bg-[#6D5A8D] py-3 text-[13px] font-heroSans font-medium text-white hover:bg-[#5C4B78] disabled:opacity-40'
+                : 'w-full rounded-full bg-[#1C1917] text-white py-3 text-[13px] font-heroSans font-medium flex items-center justify-center gap-2 disabled:opacity-40'
+            }
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : 'Send OTP'}
+            {busy === 'otp' ? <Loader2 size={14} className="animate-spin" /> : 'Send OTP'}
           </button>
         </form>
       ) : (
@@ -118,17 +150,26 @@ export function AuthMethods({
             inputMode="numeric"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="w-full rounded-2xl border border-white/70 bg-white/50 px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE] backdrop-blur-md"
-            placeholder="000000"
+            className={
+              panel
+                ? 'w-full rounded-xl border border-[#E7E3EE] bg-white px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-[#C4B5D4] focus:ring-2 focus:ring-[#EDE9FE]'
+                : 'w-full rounded-2xl border border-white/70 bg-white/50 px-3 py-2.5 text-center tracking-[0.4em] text-lg outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE] backdrop-blur-md'
+            }
+            placeholder="6-digit code"
+            aria-label="Verification code"
             required
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             type="submit"
-            disabled={loading || otp.length < 6}
-            className="w-full rounded-full bg-[#1C1917] text-white py-3 text-[13px] font-heroSans font-medium flex items-center justify-center gap-2 disabled:opacity-40"
+            disabled={Boolean(busy) || otp.length < 6}
+            className={
+              panel
+                ? 'flex w-full items-center justify-center gap-2 rounded-xl bg-[#6D5A8D] py-3 text-[13px] font-heroSans font-medium text-white hover:bg-[#5C4B78] disabled:opacity-40'
+                : 'w-full rounded-full bg-[#1C1917] text-white py-3 text-[13px] font-heroSans font-medium flex items-center justify-center gap-2 disabled:opacity-40'
+            }
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : 'Verify & continue'}
+            {busy === 'verify' ? <Loader2 size={14} className="animate-spin" /> : 'Verify & continue'}
           </button>
           <button type="button" onClick={() => setStep('phone')} className="w-full text-[10px] uppercase tracking-wider text-stone-500">
             Change number

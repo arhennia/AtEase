@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { AtEaseLogo } from './AtEaseLogo';
 
@@ -19,7 +19,7 @@ export function LandingFooter() {
       links: [
         { label: 'Features', href: '#features' },
         { label: 'Pricing', href: '#pricing' },
-        { label: 'Studio', href: '#studio' },
+        { label: 'Connect', href: '#connect' },
       ],
     },
     {
@@ -37,7 +37,7 @@ export function LandingFooter() {
   ];
 
   return (
-    <footer className="bg-[#0B0B14] text-white overflow-hidden">
+    <footer id="connect" className="bg-[#0B0B14] text-white overflow-hidden scroll-mt-6">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-16 sm:py-20 grid sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr] gap-10">
         <div className="space-y-3 max-w-xs">
           <AtEaseLogo className="text-[1.5rem] text-white" />
@@ -86,9 +86,16 @@ export function LandingFooter() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 pt-8 flex items-center justify-between text-[11px] text-white/35 font-heroSans">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 pt-8 flex flex-wrap items-center justify-between gap-3 text-[11px] text-white/35 font-heroSans">
           <span>© {new Date().getFullYear()} AtEase. All rights reserved.</span>
-          <span className="hidden sm:inline">Privacy · Terms</span>
+          <span className="inline-flex items-center gap-3">
+            <Link to="/privacy" className="hover:text-white">
+              Privacy
+            </Link>
+            <Link to="/terms" className="hover:text-white">
+              Terms
+            </Link>
+          </span>
         </div>
         <p
           aria-hidden="true"

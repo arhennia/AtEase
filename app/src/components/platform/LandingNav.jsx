@@ -7,7 +7,7 @@ import { PillButton, GooeyPillButton } from './primitives';
 const LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
-  { label: 'Studio', href: '#studio' },
+  { label: 'Connect', href: '#connect' },
 ];
 
 export function LandingNav() {
@@ -45,10 +45,7 @@ export function LandingNav() {
         </div>
 
         <div className="hidden md:flex items-center">
-          <GooeyPillButton
-            label="Book a demo"
-            onClick={() => document.getElementById('connect')?.scrollIntoView({ behavior: 'smooth' })}
-          />
+          <GooeyPillButton label="Log in" onClick={() => navigate('/login')} />
         </div>
 
         <button
@@ -85,12 +82,12 @@ export function LandingNav() {
             ))}
           </div>
           <PillButton
-            label="Book a demo"
+            label="Log in"
             tone="purple"
             className="mt-6 w-full justify-center"
             onClick={() => {
               setOpen(false);
-              document.getElementById('connect')?.scrollIntoView({ behavior: 'smooth' });
+              navigate('/login');
             }}
           />
         </div>

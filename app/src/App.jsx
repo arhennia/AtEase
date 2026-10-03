@@ -23,6 +23,8 @@ import { BookingModal } from './components/common/BookingModal';
 import { Toast } from './components/common/Toast';
 import { AuthCallback } from './screens/AuthCallback';
 import { PublishedSite } from './screens/PublishedSite';
+import { Privacy } from './screens/Privacy';
+import { Terms } from './screens/Terms';
 import { GlassAmbient } from './components/platform/GlassAmbient';
 
 function LegacyStorefrontRedirect() {
@@ -53,6 +55,8 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
           <Route

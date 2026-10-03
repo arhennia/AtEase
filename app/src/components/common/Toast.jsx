@@ -15,7 +15,8 @@ export function Toast() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="fixed top-20 right-4 sm:right-8 z-50 max-w-md glass-strong text-[#1C1917] px-5 py-3.5 rounded-2xl flex items-center gap-3 text-sm font-heroSans"
+          role="status"
+          className="fixed top-20 left-4 right-4 z-[90] sm:left-auto sm:right-8 sm:max-w-md glass-strong text-[#1C1917] px-5 py-3.5 rounded-2xl flex items-center gap-3 text-sm font-heroSans"
         >
           <Info size={16} className="text-[#6D5A8D] shrink-0" />
           <span className="flex-1 font-sans">{toastMessage}</span>
