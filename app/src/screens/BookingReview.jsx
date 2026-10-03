@@ -43,18 +43,9 @@ export function BookingReview() {
       return;
     }
 
-    const waUrl = buildWhatsAppBookingUrl({
-      phone: state.whatsappNumber || partner?.whatsappNumber || partner?.ownerPhone,
-      clientName: String(clientName).trim(),
-      services: serviceName,
-      date,
-      time,
-      total: amount,
-      studioName: providerName,
-    });
-
-    if (!waUrl) {
-      showToast('This studio has not set a WhatsApp number yet.');
+    const studioId = ownerId || partner?.id;
+    if (!isSupabaseConfigured || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(studioId || '')) {
+      showToast('This studio cannot take a booking right now.');
       return;
     }
 
@@ -66,37 +57,54 @@ export function BookingReview() {
       serviceName,
       date,
       time,
+      bookingTime: state.bookingTime,
+      workingHours: state.workingHours || partner?.workingHours,
       location: address,
       amount,
-      providerName,
-      partnerId: ownerId || partner?.id,
-      ownerId: ownerId || partner?.id,
+      providerName: partner?.brandName || providerName,
+      partnerId: studioId,
+      ownerId: studioId,
       partnerSlug: partnerSlug || state.partnerSlug,
+      salonId: state.salonId || partner?.salonId,
+      serviceId: state.serviceId,
+      packageId: state.packageId,
       status: 'pending',
       bookingSource: 'whatsapp',
     };
 
-    if (isSupabaseConfigured && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bookingPayload.ownerId || '')) {
-      const result = await createAppointmentRecord(bookingPayload);
-      if (!result.success) {
-        setIsProcessing(false);
-        showToast(result.error || 'Could not save booking.');
-        return;
-      }
-      bookingPayload.id = result.data?.id || `saved-${Date.now()}`;
+    const result = await createAppointmentRecord(bookingPayload);
+    if (!result.success) {
+      setIsProcessing(false);
+      showToast(result.error || 'Could not save booking.');
+      return;
     }
 
-    const created = addAppointment(bookingPayload);
+    const studioPhone = partner?.whatsappNumber || state.whatsappNumber || partner?.ownerPhone;
+    const waUrl = buildWhatsAppBookingUrl({
+      phone: studioPhone,
+      clientName: bookingPayload.clientName,
+      services: serviceName,
+      date,
+      time,
+      total: amount,
+      studioName: bookingPayload.providerName,
+    });
+    const whatsappOpened = waUrl ? openWhatsApp(waUrl) : false;
+    if (result.data?.id) {
+      addAppointment({ ...bookingPayload, id: result.data.id, bookingRef: result.data.bookingRef });
+    }
     setIsProcessing(false);
-    openWhatsApp(waUrl);
 
     const slug = partnerSlug || state.partnerSlug;
     navigate(slug ? `/p/${slug}/success` : '/', {
       state: {
         ...state,
-        bookingId: created.id,
+        saved: true,
+        providerName: bookingPayload.providerName,
+        bookingId: result.data?.bookingRef || result.data?.id || '',
         amount,
         whatsappUrl: waUrl,
+        whatsappOpened,
       },
     });
   };
