@@ -1,27 +1,37 @@
 import { supabase, isSupabaseConfigured } from './client';
 import { normalizeAppointment } from './mappers';
 import { getAuthUser } from './auth';
+import { defaultWorkingHours, formatMinutes, parseBookingWhen, slotAllowed } from '../availability';
 
-function toBookingTime(dateStr, timeStr) {
-  if (!dateStr && !timeStr) return new Date().toISOString();
-  const combined = `${dateStr || ''} ${timeStr || ''}`.trim();
-  const parsed = new Date(combined);
-  if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
-  return new Date().toISOString();
+function resolveWhen(bookingData) {
+  if (bookingData?.bookingTime) {
+    const parsed = new Date(bookingData.bookingTime);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return parseBookingWhen(bookingData?.date, bookingData?.time);
 }
 
-export async function fetchAppointmentsByOwnerId(ownerId) {
-  if (!isSupabaseConfigured || !ownerId) return [];
+function nationalPhone(raw) {
+  return String(raw || '').replace(/\D/g, '').slice(-10);
+}
+
+export async function fetchBookingsByOwnerId(ownerId) {
+  if (!isSupabaseConfigured || !ownerId) {
+    return { ok: false, error: 'Supabase is not configured.', data: [] };
+  }
   const { data, error } = await supabase
     .from('bookings')
     .select('*')
     .eq('owner_id', ownerId)
-    .order('created_at', { ascending: false });
-  if (error) {
-    console.error('fetchAppointmentsByOwnerId', error);
-    return [];
-  }
-  return (data || []).map(normalizeAppointment);
+    .order('booking_time', { ascending: false });
+  if (error) return { ok: false, error: error.message, data: [] };
+  return { ok: true, data: (data || []).map(normalizeAppointment).filter(Boolean) };
+}
+
+export async function fetchAppointmentsByOwnerId(ownerId) {
+  const result = await fetchBookingsByOwnerId(ownerId);
+  if (!result.ok) console.error('fetchAppointmentsByOwnerId', result.error);
+  return result.data;
 }
 
 export async function createAppointmentRecord(bookingData) {
@@ -35,12 +45,27 @@ export async function createAppointmentRecord(bookingData) {
   }
 
   const clientName = String(bookingData.clientName || '').trim();
-  const clientPhone = String(bookingData.clientPhone || '').trim();
+  const clientPhone = nationalPhone(bookingData.clientPhone);
   if (!clientName) {
     return { success: false, error: 'Enter your name so the salon knows who is booking.' };
   }
-  if (clientPhone.replace(/\D/g, '').length < 10) {
+  if (clientPhone.length !== 10) {
     return { success: false, error: 'Enter a valid 10-digit phone number.' };
+  }
+
+  const when = resolveWhen(bookingData);
+  if (!when) {
+    return { success: false, error: 'That date and time are not valid.' };
+  }
+  const taken = await fetchTakenSlotLabels(ownerId, when);
+  const slot = slotAllowed(
+    bookingData.workingHours || defaultWorkingHours(),
+    when,
+    bookingData.time,
+    taken,
+  );
+  if (!slot.ok) {
+    return { success: false, error: slot.error };
   }
 
   const user = await getAuthUser();
@@ -60,7 +85,7 @@ export async function createAppointmentRecord(bookingData) {
     client_email: user?.email || bookingData.clientEmail || null,
     service_name: bookingData.serviceName || 'Booked service',
     service_price: amount,
-    booking_time: toBookingTime(bookingData.date, bookingData.time),
+    booking_time: when.toISOString(),
     location: bookingData.location || null,
     service_type: bookingData.serviceType || 'at-home',
     status: bookingData.status || 'pending',
@@ -80,6 +105,38 @@ export async function createAppointmentRecord(bookingData) {
   }
   return {
     success: true,
-    data: normalizeAppointment(data || payload),
+    data: data ? normalizeAppointment(data) : { saved: true },
   };
+}
+
+export async function delayBookingRecord(bookingId, bookingTimeIso) {
+  if (!isSupabaseConfigured) {
+    return { success: false, error: 'Supabase is not configured' };
+  }
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({ booking_time: bookingTimeIso })
+    .eq('id', bookingId)
+    .select('id, booking_time, booking_ref')
+    .single();
+  if (error) return { success: false, error: error.message };
+  return { success: true, data };
+}
+
+export async function fetchTakenSlotLabels(ownerId, dayDate) {
+  if (!isSupabaseConfigured || !ownerId || !(dayDate instanceof Date)) return [];
+  const start = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate(), 0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  const { data, error } = await supabase.rpc('taken_booking_slots', {
+    p_owner_id: ownerId,
+    p_day_start: start.toISOString(),
+    p_day_end: end.toISOString(),
+  });
+  if (error || !Array.isArray(data)) return [];
+  return data.map((row) => {
+    const at = new Date(row.slot_start);
+    if (Number.isNaN(at.getTime())) return '';
+    return formatMinutes(at.getHours() * 60 + at.getMinutes());
+  }).filter(Boolean);
 }
