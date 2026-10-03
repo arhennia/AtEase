@@ -12,15 +12,17 @@ export function BookingSuccess() {
   const { partnerSlug } = useParams();
   const state = location.state || {};
   const backToSite = partnerSlug ? `/p/${partnerSlug}` : '/';
+  const saved = Boolean(state.saved);
 
-  const bookingId = state.bookingId || 'ATEASE-' + Math.floor(10000 + Math.random() * 90000);
-  const providerName = state.providerName || 'Rajkumari Beauty & Aesthetics';
-  const serviceName = state.serviceName || 'Keratin Smoothing Treatment';
-  const dateStr = state.date || 'Today';
-  const timeStr = state.time || '11:30 AM';
-  const totalAmount = Number(state.amount) || 2500;
+  const bookingId = state.bookingId || '';
+  const providerName = state.providerName || 'Studio';
+  const serviceName = state.serviceName || '';
+  const dateStr = state.date || '';
+  const timeStr = state.time || '';
+  const totalAmount = Number(state.amount) || 0;
 
   useEffect(() => {
+    if (!saved) return undefined;
     try {
       confetti({
         particleCount: 40,
@@ -29,7 +31,8 @@ export function BookingSuccess() {
         colors: ['#B8A9D4', '#EDE9FE', '#1C1917']
       });
     } catch (e) {}
-  }, []);
+    return undefined;
+  }, [saved]);
 
   return (
     <div className="min-h-screen font-heroSans text-[#1C1917] antialiased flex flex-col justify-between relative z-10">
@@ -56,17 +59,24 @@ export function BookingSuccess() {
 
           <div className="space-y-1">
             <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-stone-500">
-              WhatsApp booking started
+              {saved ? 'WhatsApp booking started' : 'No booking on this page'}
             </span>
             <h1 className="font-heroSans text-2xl sm:text-3xl font-semibold tracking-tight text-[#1C1917]">
-              Message ready
+              {saved ? (state.whatsappOpened ? 'Message ready' : 'Booking saved') : 'Nothing was booked'}
             </h1>
-            <p className="text-xs font-mono text-stone-600 pt-1">
-              Booking Ref: <strong>{bookingId}</strong>
-            </p>
+            {saved && bookingId && (
+              <p className="text-xs font-mono text-stone-600 pt-1">
+                Booking Ref: <strong>{bookingId}</strong>
+              </p>
+            )}
+            {!saved && (
+              <p className="text-xs text-stone-500 pt-2">
+                This page only confirms a booking that was just saved.
+              </p>
+            )}
           </div>
 
-          {/* Details Box */}
+          {saved && (
           <div className="border border-stone-200/70 rounded-2xl p-4 bg-[#F7F6F8] text-left space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-stone-500">Provider:</span>
@@ -85,25 +95,30 @@ export function BookingSuccess() {
               <span className="font-mono font-bold text-sm text-[#111111]">₹{totalAmount.toLocaleString()}</span>
             </div>
           </div>
+          )}
 
           {/* EXACT PAYMENT DISCLOSURE NOTICE */}
           <div className="border border-[#E4D9F0] bg-[#F3EEF8] p-3 rounded-2xl text-[11px] text-[#4A3F5C] leading-relaxed text-left flex items-start gap-2.5">
             <ShieldCheck size={16} className="text-[#111111] shrink-0 mt-0.5" />
             <span>
-              {state.whatsappUrl
-                ? 'We saved this as pending and opened WhatsApp with the booking details.'
-                : 'Pay directly to the service provider at the time of service via Cash, UPI, or Card.'}
+              {!saved
+                ? 'Go back to the studio and complete the booking steps.'
+                : state.whatsappOpened
+                  ? 'We saved this as pending and opened WhatsApp with the booking details.'
+                  : state.whatsappUrl
+                    ? 'We saved this as pending. WhatsApp did not open, so the studio has not been messaged yet.'
+                    : 'We saved this as pending. This studio has no WhatsApp number on file, so no message was opened.'}
             </span>
           </div>
 
-          {state.whatsappUrl && (
+          {saved && state.whatsappUrl && (
             <button
               type="button"
               onClick={() => openWhatsApp(state.whatsappUrl)}
               className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors inline-flex items-center justify-center gap-2"
             >
               <MessageCircle size={14} />
-              Open WhatsApp again
+              {state.whatsappOpened ? 'Open WhatsApp again' : 'Open WhatsApp'}
             </button>
           )}
           <button
@@ -122,7 +137,7 @@ export function BookingSuccess() {
 
       {/* Footer */}
       <footer className="p-6 text-center border-t border-stone-200/70 text-[11px] text-stone-400 font-heroSans">
-        AtEase • Editorial Discovery &amp; Direct Booking
+        AtEase • Discovery &amp; Direct Booking
       </footer>
     </div>
   );
