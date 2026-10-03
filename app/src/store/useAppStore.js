@@ -24,7 +24,9 @@ import {
   deleteServiceRecord,
   createSalonRecord,
   fetchAppointmentsByOwnerId,
+  delayBookingRecord,
   ensureProfile,
+  fetchProfile,
   getAuthUser,
   isSupabaseConfigured,
   updateBrandOwnerRecord,
@@ -35,9 +37,12 @@ import {
   deleteVipMemberRecord,
   subscribeVipAsGuest,
 } from '../lib/supabase';
-import { isValidWhatsAppNumber, toWhatsAppDigits } from '../lib/whatsapp';
+import { safePostAuthPath } from '../lib/authRole';
+import { buildWhatsAppDelayUrl, isValidWhatsAppNumber, openWhatsApp, toWhatsAppDigits } from '../lib/whatsapp';
 import {
   defaultWorkingHours,
+  formatMinutes,
+  withinWorkingHours,
   normalizeServiceArea,
   normalizeWorkingHours,
   validateRadius,
@@ -139,12 +144,15 @@ export const useAppStore = create((set, get) => {
     persistSlice(get());
   },
 
-  applyAuthenticatedUser: async ({ intendedRole = 'client', nextPath } = {}) => {
+  applyAuthenticatedUser: async ({ nextPath } = {}) => {
     const user = await getAuthUser();
     if (!user) return { ok: false, error: 'No active session. Try signing in again.' };
 
-    const profile = await ensureProfile(user, intendedRole);
+    const profile = await ensureProfile(user);
     const role = profile?.role === 'brand_owner' ? 'partner' : 'client';
+    // #region agent log
+    fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'A',location:'useAppStore.js:applyAuthenticatedUser',message:'auth role from profile',data:{profileRole:profile?.role||null,appRole:role,pendingUserIdPresent:Boolean(get().pendingSignup?.userId)},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
 
     if (role === 'partner') {
       const brandRow = await fetchBrandOwnerByUserId(user.id);
@@ -164,7 +172,7 @@ export const useAppStore = create((set, get) => {
           authModalOpen: false,
         });
         persistSlice(get());
-        return { ok: true, role: 'partner', partner, redirectTo: nextPath || '/dashboard' };
+        return { ok: true, role: 'partner', partner, redirectTo: safePostAuthPath('brand_owner', nextPath || '/dashboard') };
       }
 
       set({
@@ -190,10 +198,11 @@ export const useAppStore = create((set, get) => {
       userName: profile?.full_name || user.user_metadata?.full_name || user.user_metadata?.name || 'Client',
       userEmail: user.email || profile?.email || '',
       userPhone: user.phone || profile?.phone || '',
+      pendingSignup: null,
       authModalOpen: false,
     });
     persistSlice(get());
-    return { ok: true, role: 'client', redirectTo: nextPath || '/' };
+    return { ok: true, role: 'client', redirectTo: safePostAuthPath('client', nextPath || '/') };
   },
 
   loginPartner: async ({ email, password } = {}) => {
@@ -205,7 +214,7 @@ export const useAppStore = create((set, get) => {
     }
     const authRes = await signInWithEmail({ email, password });
     if (!authRes.ok) return { ok: false, error: authRes.error };
-    return get().applyAuthenticatedUser({ intendedRole: 'brand_owner', nextPath: '/dashboard' });
+    return get().applyAuthenticatedUser({ nextPath: '/dashboard' });
   },
 
   signupPartner: async ({ email, password, ownerName }) => {
@@ -274,14 +283,18 @@ export const useAppStore = create((set, get) => {
     const description = `${craftLabel}. ${visitLabel}.`;
 
     if (isSupabaseConfigured) {
-      let userId = pending.userId;
-      if (!userId) {
-        const user = await getAuthUser();
-        userId = user?.id;
+      const user = await getAuthUser();
+      const userId = user?.id;
+      const profile = userId ? await fetchProfile(userId) : null;
+      // #region agent log
+      fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'D',location:'useAppStore.js:completeOnboarding',message:'onboarding role gate',data:{profileRole:profile?.role||null,allowed:profile?.role==='brand_owner'},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      if (!userId) return { ok: false, error: 'Sign in again to finish setup.' };
+      if (profile?.role !== 'brand_owner') {
+        return { ok: false, error: 'This account cannot create a studio.' };
       }
 
       if (userId) {
-        const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString();
         const brandPayload = {
           user_id: userId,
           brand_name: brandName.trim(),
@@ -297,8 +310,6 @@ export const useAppStore = create((set, get) => {
           cover_url: logoUrl || '',
           location: location || '',
           theme: { accent: theme || '#111111', mode: 'light' },
-          subscription_status: 'trial',
-          trial_ends_at: trialEndsAt,
           is_active: true,
         };
 
@@ -497,18 +508,7 @@ export const useAppStore = create((set, get) => {
     return { ok: true };
   },
 
-  activateSubscription: async (partnerId) => {
-    const id = partnerId || get().currentPartnerId;
-    if (isSupabaseConfigured && id) {
-      await updateBrandOwnerRecord(id, { subscription_status: 'active' });
-    }
-    set({
-      partners: get().partners.map((p) =>
-        p.id === id ? { ...p, subscriptionStatus: 'active' } : p
-      ),
-    });
-    get().showToast('Subscription activated. Your brand site stays live.');
-  },
+  refreshOwner: () => reloadOwnerFromServer(),
 
   logout: async () => {
     if (isSupabaseConfigured) {
@@ -649,8 +649,10 @@ export const useAppStore = create((set, get) => {
     try {
       const user = await getAuthUser();
       if (user) {
-        const intendedRole = get().pendingSignup?.userId ? 'brand_owner' : 'client';
-        await get().applyAuthenticatedUser({ intendedRole });
+        // #region agent log
+        fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'C',location:'useAppStore.js:syncAuthSession',message:'refresh ignores signup handoff',data:{pendingUserIdPresent:Boolean(get().pendingSignup?.userId),intendedRolePassed:false},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
+        await get().applyAuthenticatedUser();
         return;
       }
       set({
@@ -957,19 +959,67 @@ export const useAppStore = create((set, get) => {
     return appt;
   },
 
-  delayAppointment: (appointmentId, minutes = 15) => {
-    const updated = get().appointments.map((a) => {
-      if (a.id === appointmentId) {
-        return {
-          ...a,
-          time: a.time.includes('Delayed') ? a.time : `${a.time} (+${minutes}m delayed)`,
-          isDelayed: true,
-        };
-      }
-      return a;
+  delayAppointment: async (appointmentId, minutes = 15) => {
+    const appt = get().appointments.find((row) => row.id === appointmentId);
+    if (!appt) {
+      get().showToast('That booking is not on this list.');
+      return { ok: false };
+    }
+    if (!isUuid(appointmentId)) {
+      get().showToast('This booking is not saved, so the time was not changed and the client was not messaged.');
+      return { ok: false };
+    }
+    const base = appt.bookingTime ? new Date(appt.bookingTime) : null;
+    if (!base || Number.isNaN(base.getTime())) {
+      get().showToast('This booking has no time to move.');
+      return { ok: false };
+    }
+    const next = new Date(base.getTime() + minutes * 60 * 1000);
+    const partner = get().partners.find((row) => row.id === (appt.partnerId || appt.ownerId));
+    const hoursCheck = withinWorkingHours(partner?.workingHours || defaultWorkingHours(), next);
+    if (!hoursCheck.ok) {
+      get().showToast(hoursCheck.error);
+      return { ok: false };
+    }
+    const result = await delayBookingRecord(appointmentId, next.toISOString());
+    if (!result.success) {
+      get().showToast(result.error || 'Could not move this booking.');
+      return { ok: false };
+    }
+    const ownerId = appt.ownerId || appt.partnerId;
+    const dateLabel = next.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeLabel = formatMinutes(next.getHours() * 60 + next.getMinutes());
+    const fresh = await fetchAppointmentsByOwnerId(ownerId);
+    if (Array.isArray(fresh) && fresh.some((row) => row.id === appointmentId)) {
+      set({ appointments: fresh });
+    } else {
+      set({
+        appointments: get().appointments.map((row) => (
+          row.id === appointmentId
+            ? { ...row, bookingTime: next.toISOString(), date: dateLabel, time: timeLabel }
+            : row
+        )),
+      });
+    }
+    const waUrl = buildWhatsAppDelayUrl({
+      phone: appt.clientPhone,
+      studioName: partner?.brandName,
+      serviceName: appt.serviceName,
+      date: dateLabel,
+      time: timeLabel,
+      minutes,
     });
-    set({ appointments: updated });
-    get().showToast(`Appointment delayed by ${minutes} mins. Client notified.`);
+    if (!waUrl) {
+      get().showToast(`Time moved ${minutes} minutes. No client number is on this booking, so no message was opened.`);
+      return { ok: true, messaged: false };
+    }
+    const opened = openWhatsApp(waUrl, { replace: false });
+    get().showToast(
+      opened
+        ? `Time moved ${minutes} minutes. A WhatsApp draft is open for you to send.`
+        : `Time moved ${minutes} minutes. WhatsApp did not open, so the client was not messaged.`
+    );
+    return { ok: true, messaged: false, draftOpened: opened };
   },
 });
 });
