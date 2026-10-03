@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CalendarClock, Check, Globe, MessageCircle, Users } from 'lucide-react';
@@ -7,6 +7,8 @@ import { LandingFooter } from '../components/platform/LandingFooter';
 import { HolographicHero } from '../components/platform/HolographicHero';
 import { DashboardPreview } from '../components/platform/DashboardPreview';
 import { PillButton, SectionBadge } from '../components/platform/primitives';
+import { PLAN_CATALOG, presentPlans } from '../lib/plans';
+import { fetchPublicPlans } from '../lib/supabase';
 
 const FEATURES = [
   {
@@ -31,47 +33,19 @@ const FEATURES = [
   },
 ];
 
-const PLANS = [
-  {
-    eyebrow: 'Trial',
-    name: '14 days free',
-    price: '₹0',
-    cadence: 'for 14 days',
-    description: 'Full access to your booking page and dashboard. No card required.',
-    features: ['Your branded booking page', 'Dashboard & scheduling', 'Client records', 'No card required'],
-    cta: 'Start free',
-    tone: 'muted',
-    featured: false,
-    href: '/signup',
-  },
-  {
-    eyebrow: 'Self-Managed',
-    name: 'Run it yourself',
-    price: '₹549',
-    cadence: '/ month',
-    description: 'For professionals who want to manage and run every dashboard feature on their own.',
-    features: ['Everything in the trial', 'Unlimited bookings', 'Offers & client follow-ups', 'You run the dashboard'],
-    cta: 'Get Self-Managed',
-    tone: 'muted',
-    featured: false,
-    href: '/signup',
-  },
-  {
-    eyebrow: 'Managed & Boosted',
-    name: 'We run it with you',
-    price: '₹999',
-    cadence: '/ month',
-    description: 'For professionals who want us to fully manage, support, and boost their business.',
-    features: ['Everything in Self-Managed', 'We handle the dashboard', 'Support when you need it', 'Marketing boost'],
-    cta: 'Talk to us',
-    tone: 'purple',
-    featured: true,
-    href: '/signup',
-  },
-];
-
 export function PlatformLanding() {
   const navigate = useNavigate();
+  const [plans, setPlans] = useState(PLAN_CATALOG);
+
+  useEffect(() => {
+    let active = true;
+    fetchPublicPlans().then((rows) => {
+      if (active && rows.length) setPlans(presentPlans(rows));
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="bg-white min-h-screen text-[#111111] flex flex-col overflow-x-hidden">
@@ -158,7 +132,7 @@ export function PlatformLanding() {
             </p>
 
             <div className="grid md:grid-cols-3 gap-5 lg:gap-6">
-              {PLANS.map((plan) => (
+              {plans.map((plan) => (
                 <article
                   key={plan.eyebrow}
                   className={`relative flex flex-col rounded-[22px] p-7 sm:p-8 min-h-[420px] ${
