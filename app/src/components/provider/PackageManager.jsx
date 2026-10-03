@@ -15,6 +15,7 @@ export function PackageManager({ partner }) {
 
   const [drafts, setDrafts] = useState(packages);
   const [savingId, setSavingId] = useState('');
+  const [adding, setAdding] = useState(false);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -29,7 +30,9 @@ export function PackageManager({ partner }) {
   };
 
   const add = async () => {
+    setAdding(true);
     const res = await createPartnerPackage();
+    setAdding(false);
     if (!res.ok) {
       showToast(res.error || 'Could not add a package.');
       return;
@@ -67,12 +70,12 @@ export function PackageManager({ partner }) {
         <div>
           <h3 className={`${titleClass} text-xl`}>Super saver & VIP packages</h3>
           <p className={`${mutedClass} mt-1`}>
-            These appear as the first menu tile on the mobile site. Save each package to keep it on your account. VIP packages let a client book the same visit on a chosen date every month.
+            These appear as the first menu tile on the mobile site. Save each package to keep it on your account. A VIP package can be assigned to a client from the Clients tab.
           </p>
         </div>
-        <SoftButton onClick={add}>
+        <SoftButton onClick={add} disabled={adding}>
           <Plus size={14} />
-          Add package
+          {adding ? 'Adding…' : 'Add package'}
         </SoftButton>
       </div>
 
