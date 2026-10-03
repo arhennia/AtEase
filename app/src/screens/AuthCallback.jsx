@@ -12,9 +12,12 @@ export function AuthCallback() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const role = params.get('role') || 'client';
-      const next = params.get('next') || (role === 'brand_owner' ? '/dashboard' : '/');
-      const result = await applyAuthenticatedUser({ intendedRole: role, nextPath: next });
+      const queryRole = params.get('role');
+      const next = params.get('next') || '/';
+      // #region agent log
+      fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'A',location:'AuthCallback.jsx',message:'callback query role ignored',data:{queryRole,queryRoleUsedAsProof:false},timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
+      const result = await applyAuthenticatedUser({ nextPath: next });
       if (cancelled) return;
       if (!result.ok) {
         setError(result.error || 'Could not finish sign-in.');
