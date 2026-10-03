@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, Check, ImagePlus, Loader2 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { slugify, TRIAL_DAYS } from '../lib/tenancy';
 import { PlatformHeader } from '../components/platform/PlatformHeader';
-import { getAuthUser, isSupabaseConfigured, uploadOwnerImage } from '../lib/supabase';
+import { fetchProfile, getAuthUser, isSupabaseConfigured, uploadOwnerImage } from '../lib/supabase';
 import {
   CITIES,
   CRAFTS,
@@ -84,42 +84,51 @@ export function Onboarding() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState('');
   const [error, setError] = useState('');
-  const [ready, setReady] = useState(Boolean(pendingSignup));
-  const [userId, setUserId] = useState(pendingSignup?.userId || '');
+  const [ready, setReady] = useState(!isSupabaseConfigured && Boolean(pendingSignup));
+  const [userId, setUserId] = useState(isSupabaseConfigured ? '' : pendingSignup?.userId || '');
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (pendingSignup) {
-        setUserId(pendingSignup.userId || '');
+      if (!isSupabaseConfigured) {
+        setUserId(pendingSignup?.userId || '');
         setReady(true);
         return;
       }
       const user = await getAuthUser();
       if (cancelled) return;
-      if (user) {
-        useAppStore.setState({
-          pendingSignup: {
-            email: user.email || userEmail || '',
-            ownerName: user.user_metadata?.full_name || user.user_metadata?.name || userName || 'Owner',
-            userId: user.id,
-          },
-          isAuthenticated: true,
-          userRole: 'partner',
-        });
-        setUserId(user.id);
+      if (!user) {
+        setUserId('');
         setReady(true);
         return;
       }
+      const profile = await fetchProfile(user.id);
+      if (cancelled) return;
+      if (profile?.role !== 'brand_owner') {
+        useAppStore.setState({ userRole: 'client', pendingSignup: null });
+        setUserId('');
+        setReady(true);
+        return;
+      }
+      useAppStore.setState({
+        pendingSignup: {
+          email: user.email || userEmail || '',
+          ownerName: user.user_metadata?.full_name || user.user_metadata?.name || userName || 'Owner',
+          userId: user.id,
+        },
+        isAuthenticated: true,
+        userRole: 'partner',
+      });
+      setUserId(user.id);
       setReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [pendingSignup, userEmail, userName]);
+  }, [userEmail, userName]);
 
   const presets = useMemo(() => presetsForCrafts(crafts), [crafts]);
-  const canOnboard = Boolean(pendingSignup) || isAuthenticated;
+  const canOnboard = isSupabaseConfigured ? Boolean(userId) : Boolean(pendingSignup) || isAuthenticated;
   const isLast = step === STEPS.length - 1;
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -273,7 +282,8 @@ export function Onboarding() {
                     value={brandName}
                     onChange={(e) => setBrandName(e.target.value)}
                     className="w-full rounded-2xl border border-white/70 bg-white/50 px-4 py-3.5 text-base outline-none focus:border-[#D4C8E8] focus:ring-2 focus:ring-[#EDE9FE] backdrop-blur-md"
-                    placeholder="Luxe Studio"
+                    placeholder="Studio name"
+                    aria-label="Studio name"
                     autoFocus
                   />
                   <label className="flex items-center gap-4 cursor-pointer">
@@ -342,6 +352,7 @@ export function Onboarding() {
                       value={whatsappNumber}
                       onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                       placeholder="98765 43210"
+                      aria-label="WhatsApp number"
                       className="w-full bg-transparent px-4 py-3.5 text-base outline-none"
                       autoFocus
                     />
