@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { formatInr, nextVipDate, uniqueClients } from '../../lib/salonMenu';
+import { formatInr, nextVipDate } from '../../lib/salonMenu';
+import { bookingsForClient } from '../../lib/studioStats';
 import { SoftButton, SoftCard, eyebrowClass, inputClass, mutedClass, titleClass } from '../platform/ui';
 
-export function ClientInsights({ partner }) {
-  const appointments = useAppStore((s) => s.appointments).filter((row) => row.partnerId === partner.id);
+export function ClientInsights({ partner, clients = [], bookings = [], visitValue = 0, loading = false, error = '' }) {
   const reviews = useAppStore((s) => s.reviews).filter((row) => row.partnerId === partner.id);
   const subscribeVip = useAppStore((s) => s.subscribeVip);
   const removeVipMember = useAppStore((s) => s.removeVipMember);
   const showToast = useAppStore((s) => s.showToast);
-  const clients = uniqueClients(appointments);
   const vips = partner.vipMembers || [];
   const packages = partner.packages || [];
-  const revenue = appointments.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
 
   const [vipName, setVipName] = useState('');
   const [vipPhone, setVipPhone] = useState('');
@@ -58,7 +56,7 @@ export function ClientInsights({ partner }) {
         </SoftCard>
         <SoftCard className="p-5">
           <p className={eyebrowClass}>Bookings</p>
-          <p className="mt-2 text-3xl font-semibold">{appointments.length}</p>
+          <p className="mt-2 text-3xl font-semibold">{bookings.length}</p>
         </SoftCard>
         <SoftCard className="p-5">
           <p className={eyebrowClass}>VIP members</p>
@@ -69,19 +67,26 @@ export function ClientInsights({ partner }) {
           <p className="mt-2 text-3xl font-semibold">{reviews.length}</p>
         </SoftCard>
       </div>
-      <p className="text-sm text-stone-500">Recorded visit value {formatInr(revenue)} (paid to you directly).</p>
+      <p className="text-sm text-stone-500">Recorded visit value {formatInr(visitValue)} (paid to you directly).</p>
+      {loading && <p className="text-sm text-stone-500">Loading clients…</p>}
+      {error && <p className="text-sm text-red-700">{error}</p>}
 
       <SoftCard className="p-5 space-y-3">
         <p className={`${titleClass} text-lg`}>Add a VIP subscriber</p>
+        {packages.length === 0 ? (
+          <p className="text-sm text-stone-500">Add a package before saving a VIP membership.</p>
+        ) : (
         <form onSubmit={addVip} className="grid sm:grid-cols-2 gap-2">
-          <input value={vipName} onChange={(e) => setVipName(e.target.value)} className={inputClass} placeholder="Client name" />
+          <input value={vipName} onChange={(e) => setVipName(e.target.value)} className={inputClass} placeholder="Client name" aria-label="Client name" />
           <input
             value={vipPhone}
             onChange={(e) => setVipPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
             className={inputClass}
             placeholder="Phone"
+            aria-label="Phone"
+            inputMode="numeric"
           />
-          <select value={vipPackageId} onChange={(e) => setVipPackageId(e.target.value)} className={inputClass}>
+          <select value={vipPackageId} onChange={(e) => setVipPackageId(e.target.value)} className={inputClass} aria-label="Package">
             {packages.map((pkg) => (
               <option key={pkg.id} value={pkg.id}>
                 {pkg.name}
@@ -95,29 +100,48 @@ export function ClientInsights({ partner }) {
             value={vipDay}
             onChange={(e) => setVipDay(Number(e.target.value))}
             className={inputClass}
+            aria-label="Day of month"
           />
-          <SoftButton type="submit" className="sm:col-span-2" disabled={savingVip}>
+          <SoftButton
+            type="submit"
+            className="sm:col-span-2"
+            disabled={savingVip || !vipName.trim() || vipPhone.length < 10 || !vipPackageId}
+          >
             {savingVip ? 'Saving…' : 'Save VIP'}
           </SoftButton>
         </form>
+        )}
       </SoftCard>
 
       <div className="grid lg:grid-cols-2 gap-4">
         <SoftCard className="p-5">
           <p className={`${titleClass} text-lg mb-3`}>Client list</p>
           {clients.length === 0 ? (
-            <p className="text-sm text-stone-500">No bookings yet.</p>
+            <p className="text-sm text-stone-500">No clients yet. A booking adds the client here.</p>
           ) : (
             <ul className="divide-y divide-stone-100">
-              {clients.map((client) => (
-                <li key={client.id} className="py-3">
-                  <p className="text-sm font-medium">{client.name}</p>
-                  <p className="text-xs text-stone-500">
-                    {client.phone} · {client.bookings} visit{client.bookings === 1 ? '' : 's'} · {formatInr(client.spent)}
-                  </p>
-                  <p className="text-xs text-stone-400">{client.lastService}</p>
-                </li>
-              ))}
+              {clients.map((client) => {
+                const history = bookingsForClient(bookings, client);
+                const visits = Number(client.total_bookings) || history.length;
+                return (
+                  <li key={client.id} className="py-3">
+                    <p className="text-sm font-medium">{client.client_name}</p>
+                    <p className="text-xs text-stone-500">
+                      {client.client_phone} · {visits} visit{visits === 1 ? '' : 's'} · {formatInr(client.total_spent)}
+                    </p>
+                    {history.length === 0 ? (
+                      <p className="text-xs text-stone-400">No visit details yet.</p>
+                    ) : (
+                      history.map((booking) => (
+                        <p key={booking.id} className="text-xs text-stone-400">
+                          {booking.serviceName} · {booking.date}
+                          {booking.time ? ` · ${booking.time}` : ''}
+                        </p>
+                      ))
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </SoftCard>
