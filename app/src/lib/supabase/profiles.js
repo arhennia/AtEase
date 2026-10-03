@@ -1,3 +1,4 @@
+import { resolveStoredRole } from '../authRole';
 import { supabase, isSupabaseConfigured } from './client';
 
 export async function fetchProfile(userId) {
@@ -14,16 +15,13 @@ export async function ensureProfile(user, intendedRole = 'client') {
   if (!isSupabaseConfigured || !user?.id) return null;
 
   const existing = await fetchProfile(user.id);
-  const nextRole =
-    existing?.role === 'brand_owner'
-      ? 'brand_owner'
-      : intendedRole === 'partner' || intendedRole === 'brand_owner'
-        ? 'brand_owner'
-        : existing?.role || 'client';
+  const storedRole = resolveStoredRole(existing?.role);
+  // #region agent log
+  fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'B',location:'profiles.js:ensureProfile',message:'profile role write',data:{storedRole,requestedRole:intendedRole==='brand_owner'||intendedRole==='partner'?'brand_owner':'client',payloadIncludesRole:false,upgradesRole:false},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
 
   const payload = {
     id: user.id,
-    role: nextRole,
     full_name:
       existing?.full_name ||
       user.user_metadata?.full_name ||
