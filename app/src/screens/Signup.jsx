@@ -22,9 +22,13 @@ export function Signup() {
   const [showEmail, setShowEmail] = useState(false);
 
   const handleVerified = async () => {
-    const result = await applyAuthenticatedUser({ intendedRole: 'brand_owner' });
+    const result = await applyAuthenticatedUser({ nextPath: '/onboarding' });
     if (!result.ok) {
       setError(result.error);
+      return;
+    }
+    if (result.role !== 'partner') {
+      setError('This account is not a studio owner.');
       return;
     }
     showToast('Account ready. Set up your brand next.');
@@ -89,6 +93,7 @@ export function Signup() {
                 onChange={(e) => setOwnerName(e.target.value)}
                 className={inputClass}
                 placeholder="Your name"
+                aria-label="Your name"
               />
               <input
                 type="email"
@@ -96,6 +101,7 @@ export function Signup() {
                 onChange={(e) => setEmail(e.target.value)}
                 className={inputClass}
                 placeholder="you@studio.com"
+                aria-label="Email"
                 required
               />
               <input
@@ -104,6 +110,7 @@ export function Signup() {
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass}
                 placeholder="Password (min 6 characters)"
+                aria-label="Password"
                 required
               />
               {error && <p className="text-xs text-red-500">{error}</p>}
@@ -119,6 +126,17 @@ export function Signup() {
             <Link to="/login" className="underline underline-offset-2 text-[#1C1917]">
               Log in
             </Link>
+          </p>
+          <p className="text-xs text-stone-500 leading-relaxed">
+            Creating an account means you have read the{' '}
+            <Link to="/terms" className="underline underline-offset-2 text-[#1C1917]">
+              Terms
+            </Link>{' '}
+            and the{' '}
+            <Link to="/privacy" className="underline underline-offset-2 text-[#1C1917]">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </SoftCard>
       </main>
