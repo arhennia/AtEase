@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Sun, Sunrise, Moon, Calendar, Clock, ShieldCheck } from 'lucide-react';
 import { AtEaseLogo } from '../components/platform/AtEaseLogo';
 import { useAppStore } from '../store/useAppStore';
-import { isDayOpen, normalizeWorkingHours, slotLabels, slotsForDay } from '../lib/availability';
+import { isDayOpen, normalizeWorkingHours, omitTakenSlots, slotInstant, slotLabels, slotsForDay } from '../lib/availability';
+import { fetchTakenSlotLabels } from '../lib/supabase';
 
 export function DateTimeSelection() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export function DateTimeSelection() {
 
   const [selectedDate, setSelectedDate] = useState(0);
   const [selectedTime, setSelectedTime] = useState('');
+  const [takenLabels, setTakenLabels] = useState([]);
 
   useEffect(() => {
     if (partnerSlug) fetchPartnerBySlug(partnerSlug);
@@ -38,32 +40,51 @@ export function DateTimeSelection() {
 
   const activeDateObj = dates[selectedDate];
   const dayName = activeDateObj.dayName;
+  const dayKey = `${activeDateObj.full.getFullYear()}-${activeDateObj.full.getMonth()}-${activeDateObj.full.getDate()}`;
   const hoursKey = `${hours.start}|${hours.end}|${hours.daysOpen.join(',')}`;
   const dayClosed = !isDayOpen(hours, dayName);
-  const timeSlots = slotsForDay(hours, dayName);
+  const timeSlots = omitTakenSlots(slotsForDay(hours, dayName, activeDateObj.full), takenLabels);
   const openSlots = slotLabels(timeSlots);
 
   useEffect(() => {
+    const ownerId = partner?.id;
+    if (!ownerId) return undefined;
+    const [year, month, date] = dayKey.split('-').map(Number);
+    let active = true;
+    fetchTakenSlotLabels(ownerId, new Date(year, month, date)).then((labels) => {
+      if (active) setTakenLabels(labels);
+    });
+    return () => {
+      active = false;
+    };
+  }, [partner?.id, dayKey]);
+
+  useEffect(() => {
     const [start, end, days] = hoursKey.split('|');
-    const slots = slotLabels(slotsForDay({
+    const [year, month, date] = dayKey.split('-').map(Number);
+    const slots = slotLabels(omitTakenSlots(slotsForDay({
       start,
       end,
       daysOpen: days ? days.split(',').filter(Boolean) : [],
-    }, dayName));
+    }, dayName, new Date(year, month, date)), takenLabels));
     if (selectedTime && !slots.includes(selectedTime)) setSelectedTime('');
-  }, [hoursKey, selectedTime, dayName]);
+  }, [hoursKey, selectedTime, dayName, takenLabels, dayKey]);
 
   const handleConfirm = () => {
-    if (dayClosed || !openSlots.includes(selectedTime)) return;
+    if (!location.state?.serviceName || dayClosed || !openSlots.includes(selectedTime)) return;
+    const when = slotInstant(activeDateObj.full, selectedTime);
+    if (!when) return;
 
     navigate(partnerSlug ? `/p/${partnerSlug}/address` : '/', {
       state: {
         ...(location.state || {}),
         date: activeDateObj.formatted,
         time: selectedTime,
-        serviceName: location.state?.serviceName || 'Keratin Smoothing & Hair Spa',
-        amount: location.state?.amount || 2500,
-        providerName: location.state?.providerName || 'Studio',
+        bookingTime: when.toISOString(),
+        workingHours: hours,
+        serviceName: location.state?.serviceName,
+        amount: location.state?.amount,
+        providerName: location.state?.providerName,
         partnerSlug,
         partnerId: location.state?.partnerId
       }
@@ -145,7 +166,9 @@ export function DateTimeSelection() {
 
             {dayClosed || openSlots.length === 0 ? (
               <p className="text-xs text-stone-500 font-light">
-                Closed on {activeDateObj.dayName}. No booking times that day.
+                {dayClosed
+                  ? `Closed on ${activeDateObj.dayName}. No booking times that day.`
+                  : 'No open times left that day.'}
               </p>
             ) : (
               <div className="space-y-3">
@@ -184,7 +207,7 @@ export function DateTimeSelection() {
 
           <button
             onClick={handleConfirm}
-            disabled={dayClosed || !openSlots.includes(selectedTime)}
+            disabled={!location.state?.serviceName || dayClosed || !openSlots.includes(selectedTime)}
             className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <span>Continue to Address &amp; Review</span>
