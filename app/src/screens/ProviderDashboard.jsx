@@ -12,7 +12,9 @@ import { DashboardHome } from '../components/provider/DashboardHome';
 import { AtEaseLogo } from '../components/platform/AtEaseLogo';
 import { Calendar, Layers, Navigation, Clock, Globe, Users, Gift, LayoutDashboard, LogOut } from 'lucide-react';
 import { getPlanStatus, getTenantCatalog } from '../lib/tenancy';
-import { uniqueClients } from '../lib/salonMenu';
+import { PlanCheckout } from '../components/provider/PlanCheckout';
+import { fetchAnalyticsByOwnerId, fetchBookingsByOwnerId, fetchClientsByOwnerId } from '../lib/supabase';
+import { summarizeStudioStats } from '../lib/studioStats';
 import { isValidWhatsAppNumber, toNationalDigits } from '../lib/whatsapp';
 import { SoftButton, SoftCard, mutedClass, titleClass } from '../components/platform/ui';
 import { PastelShaderBackground } from '../components/ui/hero-shader';
@@ -23,7 +25,6 @@ export function ProviderDashboard() {
   const currentPartnerId = useAppStore((state) => state.currentPartnerId);
   const partner = partners.find((p) => p.id === currentPartnerId);
   const plan = getPlanStatus(partner);
-  const activateSubscription = useAppStore((state) => state.activateSubscription);
   const updatePartnerWhatsApp = useAppStore((state) => state.updatePartnerWhatsApp);
   const logout = useAppStore((state) => state.logout);
 
@@ -32,10 +33,15 @@ export function ProviderDashboard() {
   const [whatsappDraft, setWhatsappDraft] = useState('');
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
 
-  const allAppointments = useAppStore((state) => state.appointments);
   const showToast = useAppStore((state) => state.showToast);
-  const appointments = allAppointments.filter((a) => a.partnerId === partner?.id);
-  const clients = uniqueClients(appointments);
+  const [studio, setStudio] = useState({
+    loading: true,
+    error: '',
+    clients: [],
+    analytics: [],
+    bookings: [],
+  });
+  const stats = summarizeStudioStats(studio.clients, studio.analytics);
   const serviceCount = getTenantCatalog(partner).reduce((n, cat) => n + (cat.services?.length || 0), 0);
   const packageCount = partner?.packages?.length || 0;
   const vipCount = partner?.vipMembers?.length || 0;
@@ -43,6 +49,48 @@ export function ProviderDashboard() {
   useEffect(() => {
     setWhatsappDraft(toNationalDigits(partner?.whatsappNumber || partner?.ownerPhone || ''));
   }, [partner?.id, partner?.whatsappNumber, partner?.ownerPhone]);
+
+  useEffect(() => {
+    const ownerId = partner?.id;
+    const loadsStudio = activeTab === 'overview' || activeTab === 'clients' || activeTab === 'bookings';
+    if (!ownerId || !loadsStudio) return undefined;
+    let active = true;
+    setStudio((current) => ({ ...current, loading: true, error: '' }));
+    Promise.all([
+      fetchClientsByOwnerId(ownerId),
+      fetchAnalyticsByOwnerId(ownerId),
+      fetchBookingsByOwnerId(ownerId),
+    ]).then(([clientsRes, analyticsRes, bookingsRes]) => {
+      if (!active) return;
+      const error = [clientsRes, analyticsRes, bookingsRes]
+        .filter((result) => !result.ok)
+        .map((result) => result.error)
+        .filter(Boolean)
+        .join(' ');
+      setStudio({
+        loading: false,
+        error,
+        clients: clientsRes.data || [],
+        analytics: analyticsRes.data || [],
+        bookings: bookingsRes.data || [],
+      });
+      if (bookingsRes.ok) {
+        useAppStore.setState({ appointments: bookingsRes.data || [] });
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [partner?.id, activeTab]);
+
+  useEffect(() => {
+    if (!showPlanModal) return undefined;
+    const onKey = (event) => {
+      if (event.key === 'Escape') setShowPlanModal(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showPlanModal]);
 
   if (!partner) {
     return (
@@ -69,8 +117,8 @@ export function ProviderDashboard() {
 
   const tabs = [
     { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'bookings', label: 'Bookings', icon: Calendar, count: appointments.length },
-    { id: 'clients', label: 'Clients', icon: Users, count: clients.length },
+    { id: 'bookings', label: 'Bookings', icon: Calendar, count: studio.loading ? undefined : stats.bookingCount },
+    { id: 'clients', label: 'Clients', icon: Users, count: studio.loading ? undefined : stats.clientCount },
     { id: 'catalog', label: 'Menu', icon: Layers, count: serviceCount },
     { id: 'packages', label: 'Packages', icon: Gift, count: packageCount },
     { id: 'website', label: 'Website', icon: Globe },
@@ -126,10 +174,23 @@ export function ProviderDashboard() {
             <div className="lg:hidden">
               <AtEaseLogo className="text-[1.2rem] text-[#1C1917]" />
             </div>
-            <p className="hidden font-heroSans text-sm font-medium text-[#1C1917] lg:block">
+            <p className="hidden min-w-0 truncate font-heroSans text-sm font-medium text-[#1C1917] lg:block">
               {tabs.find((tab) => tab.id === activeTab)?.label}
             </p>
-            <SoftButton onClick={handleViewSite}>View website</SoftButton>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                aria-label="Log out"
+                onClick={() => {
+                  logout();
+                  navigate('/');
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-stone-500 hover:bg-[#F6F3FB] hover:text-[#1C1917] lg:hidden"
+              >
+                <LogOut size={16} />
+              </button>
+              <SoftButton onClick={handleViewSite}>View website</SoftButton>
+            </div>
           </div>
 
           <div className="flex gap-2 overflow-x-auto no-scrollbar border-b border-[#EDE9FE] px-3 py-3 lg:hidden">
@@ -142,11 +203,14 @@ export function ProviderDashboard() {
                 <DashboardHome
                   partner={partner}
                   plan={plan}
-                  appointments={appointments}
-                  clientCount={clients.length}
+                  bookings={studio.bookings}
+                  stats={stats}
                   vipCount={vipCount}
                   serviceCount={serviceCount}
+                  loading={studio.loading}
+                  error={studio.error}
                   onOpenBookings={() => setActiveTab('bookings')}
+                  onManagePlan={() => setShowPlanModal(true)}
                 />
                 <SoftCard className="p-5 space-y-3">
                   <div>
@@ -177,7 +241,16 @@ export function ProviderDashboard() {
               </div>
             )}
             {activeTab === 'website' && <SitePublisher partner={partner} />}
-            {activeTab === 'clients' && <ClientInsights partner={partner} />}
+            {activeTab === 'clients' && (
+              <ClientInsights
+                partner={partner}
+                clients={studio.clients}
+                bookings={studio.bookings}
+                visitValue={stats.visitValue}
+                loading={studio.loading}
+                error={studio.error}
+              />
+            )}
             {activeTab === 'bookings' && <BookingsList partnerId={partner.id} />}
             {activeTab === 'catalog' && <ServiceCatalogManager />}
             {activeTab === 'packages' && <PackageManager partner={partner} />}
@@ -189,26 +262,24 @@ export function ProviderDashboard() {
       </div>
 
       {showPlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/30 backdrop-blur-md">
-          <SoftCard className="w-full max-w-md p-7 space-y-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className={`${titleClass} text-xl`}>Keep {partner.brandName} live</h3>
-                <p className={`${mutedClass} mt-1`}>₹999 / month after the trial.</p>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/30 backdrop-blur-md"
+          onClick={() => setShowPlanModal(false)}
+        >
+          <SoftCard
+            className="w-full max-w-md max-h-[90vh] overflow-y-auto p-7 space-y-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex justify-between items-start gap-3">
+              <div className="min-w-0">
+                <h3 className={`${titleClass} text-xl break-words`}>Keep {partner.brandName} live</h3>
+                <p className={`${mutedClass} mt-1`}>A plan turns on only after Razorpay confirms the payment.</p>
               </div>
-              <button type="button" onClick={() => setShowPlanModal(false)} className="text-stone-400 hover:text-[#1C1917]">
+              <button type="button" aria-label="Close" onClick={() => setShowPlanModal(false)} className="text-stone-400 hover:text-[#1C1917]">
                 ✕
               </button>
             </div>
-            <SoftButton
-              className="w-full"
-              onClick={() => {
-                activateSubscription(partner.id);
-                setShowPlanModal(false);
-              }}
-            >
-              Activate plan
-            </SoftButton>
+            <PlanCheckout active={plan.status === 'active'} onChanged={() => setShowPlanModal(false)} />
           </SoftCard>
         </div>
       )}
