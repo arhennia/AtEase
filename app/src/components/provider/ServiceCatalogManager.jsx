@@ -274,11 +274,11 @@ export function ServiceCatalogManager() {
       )}
 
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="glass-modal w-full max-w-md p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowAddModal(false)}>
+          <div className="glass-modal w-full max-w-md p-6 space-y-5 max-h-[90vh] overflow-y-auto" onClick={(event) => event.stopPropagation()}>
             <div className="flex justify-between items-center">
               <h4 className="font-heroSans text-lg font-semibold tracking-tight">Add a service</h4>
-              <button type="button" onClick={() => setShowAddModal(false)} className="text-stone-400 hover:text-black">
+              <button type="button" aria-label="Close" onClick={() => setShowAddModal(false)} className="text-stone-400 hover:text-black">
                 ✕
               </button>
             </div>
@@ -349,13 +349,14 @@ export function ServiceCatalogManager() {
                 value={newBadge}
                 onChange={(e) => setNewBadge(e.target.value)}
                 className="w-full bg-[#F7F6F8] border border-stone-200 rounded-2xl px-3 py-2.5 text-sm"
+                aria-label="Menu label"
               >
                 <option value="">No label</option>
                 <option value="bestseller">Bestseller</option>
                 <option value="recommended">Recommended</option>
               </select>
               <label className="flex items-center gap-3 cursor-pointer">
-                <span className="w-14 h-14 border border-stone-200 bg-[#F9F9F9] overflow-hidden flex items-center justify-center">
+                <span className="w-14 h-14 rounded-2xl border border-stone-200 bg-[#F9F9F9] overflow-hidden flex items-center justify-center">
                   {newImage ? <img src={newImage} alt="" className="w-full h-full object-cover" /> : <ImagePlus size={16} className="text-stone-400" />}
                 </span>
                 <span className="text-sm text-stone-600">{uploading === 'new' ? 'Uploading…' : 'Photo for the menu'}</span>
@@ -365,7 +366,7 @@ export function ServiceCatalogManager() {
                 <button type="button" onClick={() => setShowAddModal(false)} className="h-11 w-1/3 rounded-full border border-stone-200 text-xs">
                   Cancel
                 </button>
-                <button type="submit" className="h-11 flex-1 rounded-full bg-[#1C1917] text-white text-[13px] font-medium">
+                <button type="submit" disabled={!newName.trim()} className="h-11 flex-1 rounded-full bg-[#1C1917] text-white text-[13px] font-medium disabled:opacity-40">
                   Add to menu
                 </button>
               </div>

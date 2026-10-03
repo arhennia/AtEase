@@ -115,14 +115,27 @@ export function isDayOpen(hours, dayName) {
   return normalized.daysOpen.includes(dayName);
 }
 
-export function slotsForDay(hours, dayName) {
+export function slotsForDay(hours, dayName, onDate = null) {
   const empty = { morning: [], afternoon: [], evening: [] };
   const check = validateWorkingHours(hours);
   if (!check.ok || !check.hours.daysOpen.includes(dayName)) return empty;
   const start = parseTimeToMinutes(check.hours.start);
   const end = parseTimeToMinutes(check.hours.end);
   const grouped = { morning: [], afternoon: [], evening: [] };
+  const now = Date.now();
   for (let cursor = start; cursor < end; cursor += 45) {
+    if (onDate instanceof Date) {
+      const slotAt = new Date(
+        onDate.getFullYear(),
+        onDate.getMonth(),
+        onDate.getDate(),
+        Math.floor(cursor / 60),
+        cursor % 60,
+        0,
+        0,
+      );
+      if (slotAt.getTime() <= now) continue;
+    }
     const label = formatMinutes(cursor);
     const hour = Math.floor(cursor / 60);
     if (hour < 12) grouped.morning.push(label);
@@ -130,6 +143,80 @@ export function slotsForDay(hours, dayName) {
     else grouped.evening.push(label);
   }
   return grouped;
+}
+
+export function omitTakenSlots(slots, takenLabels = []) {
+  const taken = new Set(takenLabels || []);
+  const keep = (list) => (list || []).filter((label) => !taken.has(label));
+  return {
+    morning: keep(slots?.morning),
+    afternoon: keep(slots?.afternoon),
+    evening: keep(slots?.evening),
+  };
+}
+
+export function weekdayName(date) {
+  return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+}
+
+export function parseBookingWhen(dateStr, timeStr) {
+  const combined = `${String(dateStr || '').trim()} ${String(timeStr || '').trim()}`.trim();
+  if (!combined) return null;
+  const parsed = new Date(combined);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
+export function slotInstant(dayDate, timeLabel) {
+  const minutes = parseTimeToMinutes(timeLabel);
+  if (minutes == null || !(dayDate instanceof Date) || Number.isNaN(dayDate.getTime())) return null;
+  return new Date(
+    dayDate.getFullYear(),
+    dayDate.getMonth(),
+    dayDate.getDate(),
+    Math.floor(minutes / 60),
+    minutes % 60,
+    0,
+    0,
+  );
+}
+
+export function withinWorkingHours(hours, when) {
+  if (!(when instanceof Date) || Number.isNaN(when.getTime())) {
+    return { ok: false, error: 'That date and time are not valid.' };
+  }
+  if (when.getTime() <= Date.now()) {
+    return { ok: false, error: 'That time has already passed.' };
+  }
+  const dayName = weekdayName(when);
+  const check = validateWorkingHours(hours);
+  if (!check.ok || !check.hours.daysOpen.includes(dayName)) {
+    return { ok: false, error: `Closed on ${dayName}.` };
+  }
+  const start = parseTimeToMinutes(check.hours.start);
+  const end = parseTimeToMinutes(check.hours.end);
+  const minute = when.getHours() * 60 + when.getMinutes();
+  if (minute < start || minute >= end) {
+    return { ok: false, error: 'That time is outside business hours.' };
+  }
+  return { ok: true, when };
+}
+
+export function slotAllowed(hours, when, timeLabel, takenLabels = []) {
+  const open = withinWorkingHours(hours, when);
+  if (!open.ok) return open;
+  const minute = when.getHours() * 60 + when.getMinutes();
+  if (parseTimeToMinutes(timeLabel) !== minute) {
+    return { ok: false, error: 'That date and time are not valid.' };
+  }
+  const labels = slotLabels(slotsForDay(hours, weekdayName(when)));
+  if (!labels.includes(timeLabel)) {
+    return { ok: false, error: 'That time is not an available slot.' };
+  }
+  if ((takenLabels || []).includes(timeLabel)) {
+    return { ok: false, error: 'That time is already booked.' };
+  }
+  return { ok: true, when };
 }
 
 export function slotLabels(slots) {

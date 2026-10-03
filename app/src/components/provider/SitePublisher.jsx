@@ -116,7 +116,7 @@ export function SitePublisher({ partner }) {
             value={draft.businessName}
             onChange={(e) => patch({ businessName: e.target.value })}
             className={inputClass}
-            placeholder="Rajkumari Beauty & Aesthetics"
+            placeholder="Your studio name"
           />
         </label>
 
@@ -126,7 +126,7 @@ export function SitePublisher({ partner }) {
             value={draft.subtitle}
             onChange={(e) => patch({ subtitle: e.target.value })}
             className={inputClass}
-            placeholder="Master hair & skin specialist"
+            placeholder="Specialist title"
           />
         </label>
 
@@ -174,7 +174,7 @@ export function SitePublisher({ partner }) {
             value={draft.about?.experience || ''}
             onChange={(e) => patchAbout({ experience: e.target.value })}
             className={inputClass}
-            placeholder="15+ years · Hair & skin"
+            placeholder="Years of experience"
           />
         </label>
 
