@@ -5,6 +5,8 @@ import { fetchPrimarySalon } from './salons';
 import { fetchSiteConfigByOwnerId } from './siteConfigs';
 import { fetchPackagesByOwnerId } from './packages';
 import { fetchVipMembersByOwnerId } from './vipMembers';
+import { fetchSubscriptionByOwnerId } from './subscriptions';
+import { withoutSubscriptionColumns } from '../subscriptionGuard';
 
 export async function fetchBrandOwnerByUserId(userId) {
   if (!isSupabaseConfigured || !userId) return null;
@@ -28,26 +30,44 @@ export async function fetchBrandOwnerBySlug(slug) {
 
 export async function hydratePartner(brandRow) {
   if (!brandRow) return null;
-  const [services, salon, siteConfig, packages, vipMembers] = await Promise.all([
+  const [services, salon, siteConfig, packages, vipMembers, subscription] = await Promise.all([
     fetchServicesByOwnerId(brandRow.id),
     fetchPrimarySalon(brandRow.id),
     fetchSiteConfigByOwnerId(brandRow.id),
     fetchPackagesByOwnerId(brandRow.id),
     fetchVipMembersByOwnerId(brandRow.id),
+    fetchSubscriptionByOwnerId(brandRow.id),
   ]);
-  return mapBrandOwnerFromDb(brandRow, services, salon, siteConfig, packages, vipMembers);
+  return mapBrandOwnerFromDb(
+    brandRow,
+    services,
+    salon,
+    siteConfig,
+    packages,
+    vipMembers,
+    subscription.ok ? subscription.data : null
+  );
 }
 
 export async function createBrandOwnerRecord(payload) {
   if (!isSupabaseConfigured) return { ok: false, error: 'Supabase not configured' };
-  const { data, error } = await supabase.from('brand_owners').insert([payload]).select().single();
+  const { data, error } = await supabase
+    .from('brand_owners')
+    .insert([withoutSubscriptionColumns(payload)])
+    .select()
+    .single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, data };
 }
 
 export async function updateBrandOwnerRecord(id, patch) {
   if (!isSupabaseConfigured) return { ok: false, error: 'Supabase not configured' };
-  const { data, error } = await supabase.from('brand_owners').update(patch).eq('id', id).select().single();
+  const { data, error } = await supabase
+    .from('brand_owners')
+    .update(withoutSubscriptionColumns(patch))
+    .eq('id', id)
+    .select()
+    .single();
   if (error) return { ok: false, error: error.message };
   return { ok: true, data };
 }
