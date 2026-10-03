@@ -14,7 +14,9 @@ export function AddressScreen() {
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
 
+  const phoneDigits = clientPhone.replace(/\D/g, '');
   const handleProceed = () => {
+    if (!clientName.trim() || phoneDigits.length < 10 || !customAddress.trim()) return;
     navigate(partnerSlug ? `/p/${partnerSlug}/review` : '/', {
       state: {
         ...state,
@@ -80,7 +82,7 @@ export function AddressScreen() {
                   <span>Residence</span>
                 </div>
                 <p className={`text-[10px] pt-1 truncate ${addressType === 'home' ? 'text-[#6D5A8D]' : 'text-stone-500'}`}>
-                  Kharabela Nagar, Bhubaneswar
+                  Home visit
                 </p>
               </button>
 
@@ -88,7 +90,7 @@ export function AddressScreen() {
                 type="button"
                 onClick={() => {
                   setAddressType('office');
-                  setCustomAddress('DLF Cyber City, Tower B, Infocity, Patia, Bhubaneswar');
+                  setCustomAddress('');
                 }}
                 className={`p-3.5 rounded-2xl border text-left transition-all ${
                   addressType === 'office'
@@ -101,7 +103,7 @@ export function AddressScreen() {
                   <span>Office / Suite</span>
                 </div>
                 <p className={`text-[10px] pt-1 truncate ${addressType === 'office' ? 'text-[#6D5A8D]' : 'text-stone-500'}`}>
-                  DLF Cybercity, Patia
+                  Office or suite
                 </p>
               </button>
             </div>
@@ -146,7 +148,8 @@ export function AddressScreen() {
 
           <button
             onClick={handleProceed}
-            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
+            disabled={!clientName.trim() || phoneDigits.length < 10 || !customAddress.trim()}
+            className="w-full rounded-full bg-[#1C1917] text-white py-3.5 text-[13px] font-medium hover:bg-black transition-colors flex items-center justify-center gap-2 disabled:opacity-40"
           >
             <span>Proceed to Summary</span>
             <ArrowRight size={14} />
