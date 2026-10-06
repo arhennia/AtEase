@@ -23,7 +23,7 @@ export function AuthCallback() {
         setError(result.error || 'Could not finish sign-in.');
         return;
       }
-      navigate(result.redirectTo || next, { replace: true });
+      navigate(result.redirectTo || '/', { replace: true });
     })();
     return () => {
       cancelled = true;
