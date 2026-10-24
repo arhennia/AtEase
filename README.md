@@ -2,6 +2,8 @@
 
 **AtEase** is a multi-tenant brand platform for independent service professionals. It is **not** a marketplace. The main domain sells the product to brand owners. Each owner gets an isolated client site. Clients of Partner A cannot browse Partner B.
 
+
+
 ---
 
 ## What changed (architecture)
