@@ -4,8 +4,8 @@ const DEFAULT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function defaultWorkingHours() {
   return {
-    start: '09:00 AM',
-    end: '08:00 PM',
+    start: '9:00 AM',
+    end: '8:00 PM',
     daysOpen: [...DEFAULT_DAYS],
   };
 }
@@ -36,7 +36,7 @@ export function formatMinutes(total) {
   const meridiem = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;
   if (hours === 0) hours = 12;
-  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${meridiem}`;
+  return `${hours}:${String(mins).padStart(2, '0')} ${meridiem}`;
 }
 
 function to24Hour(total) {

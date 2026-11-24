@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
-  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  envPrefix: ['VITE_'],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

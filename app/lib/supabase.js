@@ -1,2 +1,2 @@
-export * from '../src/lib/supabase';
-export { supabase as default } from '../src/lib/supabase';
+export * from '../src/lib/supabase/index.js';
+export { supabase as default } from '../src/lib/supabase/index.js';
