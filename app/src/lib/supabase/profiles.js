@@ -1,4 +1,3 @@
-import { resolveStoredRole } from '../authRole';
 import { supabase, isSupabaseConfigured } from './client';
 
 export async function fetchProfile(userId) {
@@ -11,15 +10,21 @@ export async function fetchProfile(userId) {
   return data;
 }
 
+/**
+ * Upsert the profile row for the given auth user.
+ *
+ * Role is set once by the handle_new_user trigger (migration 012) and cannot be
+ * changed from the client. If the stored role does not match the intended role,
+ * callers should treat the profile as authoritative and show a recovery message.
+ *
+ * Returns the profile row with an extra `_roleMismatch` flag when the stored
+ * role differs from the intended role.
+ */
 export async function ensureProfile(user, intendedRole = 'client') {
   if (!isSupabaseConfigured || !user?.id) return null;
 
   const existing = await fetchProfile(user.id);
-  const storedRole = resolveStoredRole(existing?.role);
-  // #region agent log
-  fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'B',location:'profiles.js:ensureProfile',message:'profile role write',data:{storedRole,requestedRole:intendedRole==='brand_owner'||intendedRole==='partner'?'brand_owner':'client',payloadIncludesRole:false,upgradesRole:false},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-
+  const intended = intendedRole === 'brand_owner' || intendedRole === 'partner' ? 'brand_owner' : 'client';
   const payload = {
     id: user.id,
     full_name:
@@ -39,5 +44,15 @@ export async function ensureProfile(user, intendedRole = 'client') {
     console.error('ensureProfile', error);
     return existing || payload;
   }
-  return data;
+
+  const profile = data || existing;
+  const storedRole = profile?.role || 'client';
+  if (storedRole !== intended) {
+    console.warn(
+      `ensureProfile: stored role "${storedRole}" does not match intended role "${intended}" for user ${user.id}. ` +
+      'Role is locked after signup — reset it from the Supabase dashboard (SQL) if this is wrong.'
+    );
+    return { ...profile, _roleMismatch: true };
+  }
+  return profile;
 }

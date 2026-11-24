@@ -150,10 +150,6 @@ export const useAppStore = create((set, get) => {
 
     const profile = await ensureProfile(user);
     const role = profile?.role === 'brand_owner' ? 'partner' : 'client';
-    // #region agent log
-    fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'A',location:'useAppStore.js:applyAuthenticatedUser',message:'auth role from profile',data:{profileRole:profile?.role||null,appRole:role,pendingUserIdPresent:Boolean(get().pendingSignup?.userId)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-
     if (role === 'partner') {
       const brandRow = await fetchBrandOwnerByUserId(user.id);
       if (brandRow) {
@@ -286,9 +282,6 @@ export const useAppStore = create((set, get) => {
       const user = await getAuthUser();
       const userId = user?.id;
       const profile = userId ? await fetchProfile(userId) : null;
-      // #region agent log
-      fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'D',location:'useAppStore.js:completeOnboarding',message:'onboarding role gate',data:{profileRole:profile?.role||null,allowed:profile?.role==='brand_owner'},timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (!userId) return { ok: false, error: 'Sign in again to finish setup.' };
       if (profile?.role !== 'brand_owner') {
         return { ok: false, error: 'This account cannot create a studio.' };
@@ -649,9 +642,6 @@ export const useAppStore = create((set, get) => {
     try {
       const user = await getAuthUser();
       if (user) {
-        // #region agent log
-        fetch('http://127.0.0.1:7399/ingest/41cf725c-f170-4baa-a011-9618af22c576',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'804de4'},body:JSON.stringify({sessionId:'804de4',hypothesisId:'C',location:'useAppStore.js:syncAuthSession',message:'refresh ignores signup handoff',data:{pendingUserIdPresent:Boolean(get().pendingSignup?.userId),intendedRolePassed:false},timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         await get().applyAuthenticatedUser();
         return;
       }

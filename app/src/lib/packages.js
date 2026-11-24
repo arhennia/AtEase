@@ -49,7 +49,7 @@ export function validatePackage(input) {
   const vipMonthly = Boolean(input?.vipMonthly);
   let vipDayOfMonth = null;
   if (vipMonthly) {
-    vipDayOfMonth = Number(input?.vipDayOfMonth || 5);
+    vipDayOfMonth = Number(input?.vipDayOfMonth ?? 5);
     if (!Number.isInteger(vipDayOfMonth) || vipDayOfMonth < 1 || vipDayOfMonth > 28) {
       return { ok: false, error: 'Pick a day of the month from 1 to 28.' };
     }
